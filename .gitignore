@@ -1,0 +1,24 @@
+# Dependances
+node_modules/
+
+# Secrets : ne jamais envoyer dans Git
+.env
+.env.*
+!.env.example
+
+# Fichiers generes
+dist/
+build/
+coverage/
+
+# Journaux
+*.log
+npm-debug.log*
+
+# Systeme
+Thumbs.db
+.DS_Store
+
+# Editeurs
+.vscode/
+.idea/

@@ -6,3 +6,569 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ============================================================
+// ENUMERATIONS
+// ============================================================
+
+enum StatutOrganisation {
+  ESSAI
+  ACTIF
+  SUSPENDU
+}
+
+enum RoleUtilisateur {
+  RESPONSABLE
+  GESTIONNAIRE
+  ADMINISTRATEUR
+}
+
+enum StatutQuestionnaire {
+  BROUILLON
+  ACTIF
+  INACTIF
+}
+
+enum TypeQuestion {
+  ETOILES
+  EMOJIS
+  NPS
+  CHOIX_UNIQUE
+  CHOIX_MULTIPLE
+  OUI_NON
+  ECHELLE
+  TEXTE_LIBRE
+}
+
+enum StatutTraitement {
+  NOUVEAU
+  EN_COURS
+  TRAITE
+  IGNORE
+}
+
+enum TypeSuivi {
+  CHANGEMENT_STATUT
+  NOTE
+}
+
+enum NiveauAlerte {
+  NORMAL
+  PRIORITAIRE
+}
+
+enum MotifAlerte {
+  NOTE_BASSE
+  NPS_BAS
+  RAPPEL_DEMANDE
+}
+
+// ============================================================
+// REFERENCE : secteurs et themes
+// ============================================================
+
+model Secteur {
+  id                   String   @id @default(uuid()) @db.Uuid
+  code                 String   @unique
+  nom_fr               String
+  nom_en               String
+  vocabulaire          Json     @default("{}")
+  indicateurs_suggeres Json     @default("[]")
+  actif                Boolean  @default(true)
+  cree_le              DateTime @default(now())
+
+  organisations  Organisation[]
+  themes         Theme[]
+  questionnaires Questionnaire[]
+
+  @@map("secteur")
+}
+
+model Theme {
+  id         String @id @default(uuid()) @db.Uuid
+  secteur_id String @db.Uuid
+  code       String
+  libelle_fr String
+  libelle_en String
+  ordre      Int    @default(0)
+
+  secteur   Secteur    @relation(fields: [secteur_id], references: [id])
+  questions Question[]
+
+  @@unique([secteur_id, code])
+  @@map("theme")
+}
+
+// ============================================================
+// STRUCTURE : organisations, sites, points de contact, utilisateurs
+// ============================================================
+
+model Organisation {
+  id                          String             @id @default(uuid()) @db.Uuid
+  secteur_id                  String             @db.Uuid
+  nom                         String
+  logo_url                    String?
+  couleur_principale          String?
+  pays                        String             @default("TG")
+  langue_defaut               String             @default("fr")
+  fuseau_horaire              String             @default("Africa/Lome")
+  statut                      StatutOrganisation @default(ESSAI)
+  seuil_alerte_note           Int                @default(2)
+  seuil_alerte_nps            Int                @default(6)
+  periode_anti_doublon_heures Int                @default(6)
+  duree_conservation_mois     Int                @default(24)
+  cree_le                     DateTime           @default(now())
+  modifie_le                  DateTime           @updatedAt
+  supprime_le                 DateTime?
+
+  secteur             Secteur            @relation(fields: [secteur_id], references: [id])
+  sites               Site[]
+  points_contact      PointContact[]
+  utilisateurs        Utilisateur[]
+  questionnaires      Questionnaire[]
+  scans               Scan[]
+  avis                Avis[]
+  reponses            Reponse[]
+  avis_suivis         AvisSuivi[]
+  alertes             Alerte[]
+  notifications       Notification[]
+  agregats_quotidiens AgregatQuotidien[]
+  audit_logs          AuditLog[]
+  acces_support       AccesSupport[]
+  jetons_invitation   JetonInvitation[]
+
+  @@index([secteur_id])
+  @@map("organisation")
+}
+
+model Site {
+  id              String    @id @default(uuid()) @db.Uuid
+  organisation_id String    @db.Uuid
+  nom             String
+  adresse         String?
+  ville           String?
+  telephone       String?
+  horaires        Json?
+  actif           Boolean   @default(true)
+  cree_le         DateTime  @default(now())
+  modifie_le      DateTime  @updatedAt
+  supprime_le     DateTime?
+
+  organisation        Organisation       @relation(fields: [organisation_id], references: [id])
+  points_contact      PointContact[]
+  utilisateurs_sites  UtilisateurSite[]
+  avis                Avis[]
+  agregats_quotidiens AgregatQuotidien[]
+
+  @@index([organisation_id])
+  @@map("site")
+}
+
+model PointContact {
+  id               String    @id @default(uuid()) @db.Uuid
+  organisation_id  String    @db.Uuid
+  site_id          String    @db.Uuid
+  questionnaire_id String?   @db.Uuid
+  nom              String
+  type             String    @default("table")
+  zone             String?
+  code_public      String    @unique
+  actif            Boolean   @default(true)
+  revoque_le       DateTime?
+  cree_le          DateTime  @default(now())
+  modifie_le       DateTime  @updatedAt
+  supprime_le      DateTime?
+
+  organisation        Organisation       @relation(fields: [organisation_id], references: [id])
+  site                Site               @relation(fields: [site_id], references: [id])
+  questionnaire       Questionnaire?     @relation(fields: [questionnaire_id], references: [id])
+  scans               Scan[]
+  avis                Avis[]
+  agregats_quotidiens AgregatQuotidien[]
+
+  @@index([organisation_id])
+  @@index([site_id])
+  @@index([questionnaire_id])
+  @@map("point_contact")
+}
+
+model Utilisateur {
+  id                 String          @id @default(uuid()) @db.Uuid
+  organisation_id    String?         @db.Uuid
+  email              String          @unique
+  mot_de_passe_hash  String
+  nom                String
+  role               RoleUtilisateur
+  langue             String          @default("fr")
+  alertes_groupees   Boolean         @default(false)
+  actif              Boolean         @default(true)
+  tentatives_echec   Int             @default(0)
+  verrouille_jusqua  DateTime?
+  derniere_connexion DateTime?
+  cree_le            DateTime        @default(now())
+  modifie_le         DateTime        @updatedAt
+  supprime_le        DateTime?
+
+  organisation            Organisation?              @relation(fields: [organisation_id], references: [id])
+  utilisateurs_sites      UtilisateurSite[]
+  sessions                Session[]
+  jetons_reinitialisation JetonReinitialisationMdp[]
+  invitations_emises      JetonInvitation[]
+  avis_suivis             AvisSuivi[]
+  alertes_assignees       Alerte[]
+  notifications           Notification[]
+  audit_logs              AuditLog[]
+  acces_support_accordes  AccesSupport[]
+
+  @@index([organisation_id])
+  @@map("utilisateur")
+}
+
+model UtilisateurSite {
+  utilisateur_id String @db.Uuid
+  site_id        String @db.Uuid
+
+  utilisateur Utilisateur @relation(fields: [utilisateur_id], references: [id])
+  site        Site        @relation(fields: [site_id], references: [id])
+
+  @@id([utilisateur_id, site_id])
+  @@index([site_id])
+  @@map("utilisateur_site")
+}
+
+// ============================================================
+// QUESTIONNAIRES : questionnaire, version, question
+// Un modele sectoriel = questionnaire avec est_modele = true,
+// organisation_id vide et secteur_id renseigne.
+// ============================================================
+
+model Questionnaire {
+  id                   String              @id @default(uuid()) @db.Uuid
+  organisation_id      String?             @db.Uuid
+  secteur_id           String?             @db.Uuid
+  est_modele           Boolean             @default(false)
+  titre                Json
+  message_accueil      Json?
+  message_remerciement Json?
+  langue_defaut        String              @default("fr")
+  statut               StatutQuestionnaire @default(BROUILLON)
+  date_debut           DateTime?
+  date_fin             DateTime?
+  cree_le              DateTime            @default(now())
+  modifie_le           DateTime            @updatedAt
+  supprime_le          DateTime?
+
+  organisation   Organisation?          @relation(fields: [organisation_id], references: [id])
+  secteur        Secteur?               @relation(fields: [secteur_id], references: [id])
+  versions       QuestionnaireVersion[]
+  points_contact PointContact[]
+
+  @@index([organisation_id])
+  @@index([secteur_id])
+  @@map("questionnaire")
+}
+
+model QuestionnaireVersion {
+  id               String    @id @default(uuid()) @db.Uuid
+  questionnaire_id String    @db.Uuid
+  numero           Int
+  publie_le        DateTime?
+  cree_le          DateTime  @default(now())
+
+  questionnaire Questionnaire @relation(fields: [questionnaire_id], references: [id])
+  questions     Question[]
+  avis          Avis[]
+
+  @@unique([questionnaire_id, numero])
+  @@map("questionnaire_version")
+}
+
+model Question {
+  id                  String       @id @default(uuid()) @db.Uuid
+  version_id          String       @db.Uuid
+  theme_id            String?      @db.Uuid
+  ordre               Int
+  type                TypeQuestion
+  libelle             Json
+  aide                Json?
+  obligatoire         Boolean      @default(true)
+  options             Json?
+  echelle_min         Int?
+  echelle_max         Int?
+  libelles_extremites Json?
+  condition           Json?
+
+  version  QuestionnaireVersion @relation(fields: [version_id], references: [id])
+  theme    Theme?               @relation(fields: [theme_id], references: [id])
+  reponses Reponse[]
+
+  @@index([version_id, ordre])
+  @@index([theme_id])
+  @@map("question")
+}
+
+// ============================================================
+// COLLECTE : scan, avis, reponse
+// ============================================================
+
+model Scan {
+  id               String   @id @default(uuid()) @db.Uuid
+  organisation_id  String   @db.Uuid
+  point_contact_id String   @db.Uuid
+  empreinte        String?
+  cree_le          DateTime @default(now())
+
+  organisation  Organisation @relation(fields: [organisation_id], references: [id])
+  point_contact PointContact @relation(fields: [point_contact_id], references: [id])
+
+  @@index([point_contact_id, cree_le])
+  @@index([organisation_id, cree_le])
+  @@map("scan")
+}
+
+model Avis {
+  id                String           @id @default(uuid()) @db.Uuid
+  organisation_id   String           @db.Uuid
+  site_id           String           @db.Uuid
+  point_contact_id  String           @db.Uuid
+  version_id        String           @db.Uuid
+  soumis_le         DateTime         @default(now())
+  langue            String           @default("fr")
+  appareil          String?
+  note_globale      Float?
+  nps               Int?
+  commentaire       String?          @db.Text
+  contact_nom       String?
+  contact_tel       String?
+  contact_email     String?
+  consentement      Boolean          @default(false)
+  rappel_demande    Boolean          @default(false)
+  statut_traitement StatutTraitement @default(NOUVEAU)
+  empreinte         String?
+  produit_ou_lot    String?
+  cle_idempotence   String?          @unique
+  supprime_le       DateTime?
+
+  organisation  Organisation         @relation(fields: [organisation_id], references: [id])
+  site          Site                 @relation(fields: [site_id], references: [id])
+  point_contact PointContact         @relation(fields: [point_contact_id], references: [id])
+  version       QuestionnaireVersion @relation(fields: [version_id], references: [id])
+  reponses      Reponse[]
+  suivis        AvisSuivi[]
+  alerte        Alerte?
+  notifications Notification[]
+
+  @@index([organisation_id, soumis_le])
+  @@index([point_contact_id, soumis_le])
+  @@index([site_id, soumis_le])
+  @@index([organisation_id, statut_traitement])
+  @@index([point_contact_id, empreinte, soumis_le])
+  @@map("avis")
+}
+
+model Reponse {
+  id               String  @id @default(uuid()) @db.Uuid
+  organisation_id  String  @db.Uuid
+  avis_id          String  @db.Uuid
+  question_id      String  @db.Uuid
+  valeur_numerique Float?
+  valeur_texte     String? @db.Text
+  valeur_choix     Json?
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  avis         Avis         @relation(fields: [avis_id], references: [id])
+  question     Question     @relation(fields: [question_id], references: [id])
+
+  @@unique([avis_id, question_id])
+  @@index([organisation_id, question_id])
+  @@index([question_id])
+  @@map("reponse")
+}
+
+// ============================================================
+// SUIVI : historique, alertes, notifications
+// Le statut de traitement vit uniquement sur l'avis.
+// Alerte ouverte = avis avec alerte dont le statut est NOUVEAU ou EN_COURS.
+// ============================================================
+
+model AvisSuivi {
+  id              String            @id @default(uuid()) @db.Uuid
+  organisation_id String            @db.Uuid
+  avis_id         String            @db.Uuid
+  utilisateur_id  String            @db.Uuid
+  type            TypeSuivi
+  ancien_statut   StatutTraitement?
+  nouveau_statut  StatutTraitement?
+  commentaire     String?           @db.Text
+  cree_le         DateTime          @default(now())
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  avis         Avis         @relation(fields: [avis_id], references: [id])
+  utilisateur  Utilisateur  @relation(fields: [utilisateur_id], references: [id])
+
+  @@index([avis_id, cree_le])
+  @@index([organisation_id])
+  @@map("avis_suivi")
+}
+
+model Alerte {
+  id              String        @id @default(uuid()) @db.Uuid
+  organisation_id String        @db.Uuid
+  avis_id         String        @unique @db.Uuid
+  niveau          NiveauAlerte  @default(NORMAL)
+  motifs          MotifAlerte[]
+  assigne_a_id    String?       @db.Uuid
+  cree_le         DateTime      @default(now())
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  avis         Avis         @relation(fields: [avis_id], references: [id])
+  assigne_a    Utilisateur? @relation(fields: [assigne_a_id], references: [id])
+
+  @@index([organisation_id, cree_le])
+  @@index([assigne_a_id])
+  @@map("alerte")
+}
+
+model Notification {
+  id              String    @id @default(uuid()) @db.Uuid
+  organisation_id String    @db.Uuid
+  utilisateur_id  String    @db.Uuid
+  avis_id         String?   @db.Uuid
+  type            String    @default("ALERTE_AVIS")
+  titre           String
+  message         String?
+  lue_le          DateTime?
+  email_envoye_le DateTime?
+  cree_le         DateTime  @default(now())
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  utilisateur  Utilisateur  @relation(fields: [utilisateur_id], references: [id])
+  avis         Avis?        @relation(fields: [avis_id], references: [id])
+
+  @@index([utilisateur_id, lue_le])
+  @@index([organisation_id])
+  @@map("notification")
+}
+
+// ============================================================
+// SECURITE : sessions, jetons, journal d'audit, acces support
+// Les jetons et les sessions sont stockes sous forme de hachage.
+// ============================================================
+
+model Session {
+  id                   String   @id @default(uuid()) @db.Uuid
+  utilisateur_id       String   @db.Uuid
+  token_hash           String   @unique
+  se_souvenir          Boolean  @default(false)
+  derniere_activite_le DateTime @default(now())
+  expire_le            DateTime
+  user_agent           String?
+  cree_le              DateTime @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateur_id], references: [id])
+
+  @@index([utilisateur_id])
+  @@index([expire_le])
+  @@map("session")
+}
+
+model JetonReinitialisationMdp {
+  id             String    @id @default(uuid()) @db.Uuid
+  utilisateur_id String    @db.Uuid
+  token_hash     String    @unique
+  expire_le      DateTime
+  utilise_le     DateTime?
+  cree_le        DateTime  @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateur_id], references: [id])
+
+  @@index([utilisateur_id])
+  @@map("jeton_reinitialisation_mdp")
+}
+
+model JetonInvitation {
+  id              String          @id @default(uuid()) @db.Uuid
+  organisation_id String          @db.Uuid
+  invite_par_id   String?         @db.Uuid
+  email           String
+  role            RoleUtilisateur
+  site_ids        Json            @default("[]")
+  token_hash      String          @unique
+  expire_le       DateTime
+  utilise_le      DateTime?
+  cree_le         DateTime        @default(now())
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  invite_par   Utilisateur? @relation(fields: [invite_par_id], references: [id])
+
+  @@index([organisation_id])
+  @@index([email])
+  @@map("jeton_invitation")
+}
+
+model AuditLog {
+  id              String   @id @default(uuid()) @db.Uuid
+  utilisateur_id  String?  @db.Uuid
+  organisation_id String?  @db.Uuid
+  action          String
+  entite          String?
+  entite_id       String?
+  details         Json?
+  ip              String?
+  cree_le         DateTime @default(now())
+
+  utilisateur  Utilisateur?  @relation(fields: [utilisateur_id], references: [id])
+  organisation Organisation? @relation(fields: [organisation_id], references: [id])
+
+  @@index([organisation_id, cree_le])
+  @@index([utilisateur_id, cree_le])
+  @@index([action, cree_le])
+  @@map("audit_log")
+}
+
+model AccesSupport {
+  id              String    @id @default(uuid()) @db.Uuid
+  organisation_id String    @db.Uuid
+  accorde_par_id  String    @db.Uuid
+  expire_le       DateTime
+  revoque_le      DateTime?
+  cree_le         DateTime  @default(now())
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  accorde_par  Utilisateur  @relation(fields: [accorde_par_id], references: [id])
+
+  @@index([organisation_id, expire_le])
+  @@map("acces_support")
+}
+
+// ============================================================
+// CHIFFRES : agregats quotidiens (recalcules chaque nuit et a chaque avis)
+// ============================================================
+
+model AgregatQuotidien {
+  id                String   @id @default(uuid()) @db.Uuid
+  organisation_id   String   @db.Uuid
+  site_id           String   @db.Uuid
+  point_contact_id  String   @db.Uuid
+  date              DateTime @db.Date
+  nb_avis           Int      @default(0)
+  nb_avis_notes     Int      @default(0)
+  somme_notes       Float    @default(0)
+  nb_satisfaits     Int      @default(0)
+  nb_nps            Int      @default(0)
+  nb_promoteurs     Int      @default(0)
+  nb_detracteurs    Int      @default(0)
+  nb_scans          Int      @default(0)
+  repartition_notes Json     @default("{}")
+  scores_themes     Json     @default("{}")
+  modifie_le        DateTime @updatedAt
+
+  organisation  Organisation @relation(fields: [organisation_id], references: [id])
+  site          Site         @relation(fields: [site_id], references: [id])
+  point_contact PointContact @relation(fields: [point_contact_id], references: [id])
+
+  @@unique([point_contact_id, date])
+  @@index([organisation_id, date])
+  @@index([site_id, date])
+  @@map("agregat_quotidien")
+}

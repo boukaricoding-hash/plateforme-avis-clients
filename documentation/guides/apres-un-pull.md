@@ -13,3 +13,5 @@ Ce guide dit quoi lancer apres avoir recupere le code. Il est mis a jour chaque 
 
 - Jour 1 : `npx prisma generate` (client Prisma), `npx prisma migrate deploy` (22 tables).
 - Jour 2 : quatre nouvelles variables dans backend/.env : SEED_ADMIN_EMAIL, SEED_ADMIN_MOT_DE_PASSE, SEED_RESPONSABLE_EMAIL, SEED_RESPONSABLE_MOT_DE_PASSE (chacun choisit ses propres mots de passe).
+
+- Jour 3 : aucune nouvelle commande ni variable. `npm test` demande que la base de donnees soit demarree (Docker Desktop ouvert).

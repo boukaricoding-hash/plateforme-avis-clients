@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { routesAuthentification } from "./modules/authentification/routes/auth.routes";
 import { routesSites } from "./modules/sites/routes/sites.routes";
 import { routesPointsContact } from "./modules/points-de-contact/routes/points-contact.routes";
+import { routesQuestionnaires } from "./modules/questionnaires/routes/questionnaires.routes";
 
 export const app = express();
 
@@ -36,6 +37,7 @@ app.get("/api/v1/sante", (_req, res) => {
 app.use("/api/v1/auth", routesAuthentification);
 app.use("/api/v1/sites", routesSites);
 app.use("/api/v1/points-contact", routesPointsContact);
+app.use("/api/v1/questionnaires", routesQuestionnaires);
 
 // 404 : aucune route ne correspond
 app.use((_req: Request, res: Response) => {

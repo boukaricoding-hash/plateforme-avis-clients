@@ -3,6 +3,7 @@ import { prisma } from "../../../configuration/base-de-donnees";
 import { schemaConnexion } from "../validations/connexion";
 import { hacherMotDePasse, verifierMotDePasse } from "../services/mots-de-passe";
 import { enregistrerEchec, estVerrouille } from "../services/verrouillage";
+import { enregistrerAudit } from "../../journal-audit/services/journal";
 import {
   NOM_COOKIE_SESSION,
   creerSession,
@@ -45,7 +46,13 @@ export async function connexion(req: Request, res: Response): Promise<void> {
 
   if (!utilisateur || !utilisateur.actif || compteVerrouille || !motDePasseValide) {
     if (utilisateur && utilisateur.actif && !compteVerrouille) {
-      await enregistrerEchec(utilisateur.id);
+      const vientDEtreVerrouille = await enregistrerEchec(utilisateur.id);
+      await enregistrerAudit({
+        action: vientDEtreVerrouille ? "COMPTE_VERROUILLE" : "CONNEXION_ECHEC",
+        utilisateurId: utilisateur.id,
+        organisationId: utilisateur.organisation_id,
+        ip: req.ip,
+      });
     }
     res.status(401).json({
       code: "IDENTIFIANTS_INVALIDES",
@@ -64,6 +71,13 @@ export async function connexion(req: Request, res: Response): Promise<void> {
   await prisma.utilisateur.update({
     where: { id: utilisateur.id },
     data: { derniere_connexion: new Date(), tentatives_echec: 0, verrouille_jusqua: null },
+  });
+  
+  await enregistrerAudit({
+    action: "CONNEXION_REUSSIE",
+    utilisateurId: utilisateur.id,
+    organisationId: utilisateur.organisation_id,
+    ip: req.ip,
   });
 
   const optionsCookie: CookieOptions = {
@@ -92,6 +106,19 @@ export async function connexion(req: Request, res: Response): Promise<void> {
 export async function deconnexion(req: Request, res: Response): Promise<void> {
   const jeton: unknown = req.cookies?.[NOM_COOKIE_SESSION];
   if (typeof jeton === "string" && jeton !== "") {
+    const session = await trouverSessionActive(jeton);
+    if (session) {
+      const utilisateur = await prisma.utilisateur.findUnique({
+        where: { id: session.utilisateur_id },
+        select: { organisation_id: true },
+      });
+      await enregistrerAudit({
+        action: "DECONNEXION",
+        utilisateurId: session.utilisateur_id,
+        organisationId: utilisateur?.organisation_id ?? null,
+        ip: req.ip,
+      });
+    }
     await supprimerSession(jeton);
   }
   res.clearCookie(NOM_COOKIE_SESSION, {

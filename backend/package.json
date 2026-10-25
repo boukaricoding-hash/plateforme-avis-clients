@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "tsx watch src/serveur.ts",
     "build": "tsc",
-    "start": "node dist/serveur.js",
+    "start": "node dist/src/serveur.js",
     "test": "vitest run --passWithNoTests"
   },
   "keywords": [],

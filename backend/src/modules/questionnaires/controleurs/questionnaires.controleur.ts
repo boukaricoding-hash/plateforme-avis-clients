@@ -8,6 +8,15 @@ import {
   themesValides,
 } from "../services/questionnaires";
 import { dupliquerQuestionnaire, publierQuestionnaire } from "../services/publication";
+import {
+  activerQuestionnaire,
+  desactiverQuestionnaire,
+  type ResultatStatut,
+} from "../services/activation";
+import { modifierDatesQuestionnaire } from "../services/dates";
+import { associerPointsContact } from "../services/points-contact";
+import { schemaDatesQuestionnaire } from "../validations/dates";
+import { schemaAssociationPointsContact } from "../validations/points-contact";
 import { schemaIdQuestionnaire, schemaQuestionnaire } from "../validations/questionnaire";
 
 // Les controles d'acces ont deja rempli ces deux valeurs ; on verifie quand meme.
@@ -30,6 +39,22 @@ function repondreThemesInvalides(res: Response): void {
 }
 
 const MESSAGE_INTROUVABLE = "Questionnaire introuvable.";
+
+// Reponse commune a l'activation et a la desactivation.
+function repondreStatut(res: Response, resultat: ResultatStatut): void {
+  if (resultat.etat === "introuvable") {
+    return repondreNonTrouve(res, MESSAGE_INTROUVABLE);
+  }
+  if (resultat.etat === "non_publie") {
+    res.status(409).json({
+      code: "NON_PUBLIE",
+      message: "Ce questionnaire n'a jamais ete publie : publiez-le d'abord.",
+      details: null,
+    });
+    return;
+  }
+  res.status(200).json({ questionnaire: { id: resultat.id, statut: resultat.statut } });
+}
 
 export async function listerLesQuestionnaires(req: Request, res: Response): Promise<void> {
   const ctx = contexte(req);
@@ -109,4 +134,65 @@ export async function dupliquerUnQuestionnaire(req: Request, res: Response): Pro
 
   const questionnaire = await lireQuestionnaire(ctx.organisationId, idCopie);
   res.status(201).json({ questionnaire });
+}
+
+export async function activerUnQuestionnaire(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdQuestionnaire.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+
+  repondreStatut(res, await activerQuestionnaire(ctx.organisationId, identifiant.data.id));
+}
+
+export async function desactiverUnQuestionnaire(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdQuestionnaire.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+
+  repondreStatut(res, await desactiverQuestionnaire(ctx.organisationId, identifiant.data.id));
+}
+
+export async function modifierLesDatesDuQuestionnaire(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdQuestionnaire.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+  const lecture = schemaDatesQuestionnaire.safeParse(req.body);
+  if (!lecture.success) return repondreDonneesInvalides(res, lecture.error);
+
+  const questionnaire = await modifierDatesQuestionnaire(
+    ctx.organisationId,
+    identifiant.data.id,
+    lecture.data,
+  );
+  if (!questionnaire) return repondreNonTrouve(res, MESSAGE_INTROUVABLE);
+  res.status(200).json({ questionnaire });
+}
+
+export async function associerLesPointsContact(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdQuestionnaire.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+  const lecture = schemaAssociationPointsContact.safeParse(req.body);
+  if (!lecture.success) return repondreDonneesInvalides(res, lecture.error);
+
+  const resultat = await associerPointsContact(
+    ctx.organisationId,
+    identifiant.data.id,
+    lecture.data.points_contact_ids,
+  );
+  if (resultat.etat === "introuvable") {
+    return repondreNonTrouve(res, MESSAGE_INTROUVABLE);
+  }
+  if (resultat.etat === "points_invalides") {
+    return repondreNonTrouve(res, "Point de contact introuvable.");
+  }
+  res.status(200).json({ points_contact: resultat.points_contact });
 }

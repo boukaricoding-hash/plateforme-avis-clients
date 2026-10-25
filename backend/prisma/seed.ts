@@ -31,8 +31,8 @@ const SECTEURS: SecteurDepart[] = [
     vocabulaire: { point_contact: "table" },
     themes: [
       { code: "accueil", libelle_fr: "Accueil", libelle_en: "Welcome" },
-      { code: "service", libelle_fr: "Service", libelle_en: "Service" },
       { code: "qualite_plats", libelle_fr: "Qualite des plats", libelle_en: "Food quality" },
+      { code: "rapidite", libelle_fr: "Rapidite", libelle_en: "Speed" },
       { code: "proprete", libelle_fr: "Proprete", libelle_en: "Cleanliness" },
       { code: "prix", libelle_fr: "Prix", libelle_en: "Price" },
       { code: "ambiance", libelle_fr: "Ambiance", libelle_en: "Atmosphere" },
@@ -79,6 +79,16 @@ const SECTEURS: SecteurDepart[] = [
     ],
   },
 ];
+
+// Annexe A1 du cahier des charges : questions en etoiles, avec leur theme.
+const QUESTIONS_ETOILES_RESTAURATION = [
+  ["accueil", "Comment avez-vous trouvé notre accueil ?", "How was our welcome?"],
+  ["qualite_plats", "Comment avez-vous trouvé la qualité des plats ?", "How was the food quality?"],
+  ["rapidite", "Comment avez-vous trouvé la rapidité du service ?", "How was the speed of service?"],
+  ["proprete", "Comment avez-vous trouvé la propreté du lieu ?", "How clean was the place?"],
+  ["prix", "Comment jugez-vous le rapport qualité-prix ?", "How would you rate the value for money?"],
+  ["ambiance", "Comment avez-vous trouvé l'ambiance ?", "How was the atmosphere?"],
+] as const;
 
 function lireVariable(nom: string): string {
   const valeur = process.env[nom];
@@ -131,6 +141,71 @@ async function main() {
 
   const idRestauration = idsSecteurs.get("restauration");
   if (!idRestauration) throw new Error("Secteur restauration introuvable.");
+
+  // 1b. Modele de questionnaire restauration (annexe A1), cree une seule fois
+  const modeleExistant = await prisma.questionnaire.findFirst({
+    where: { est_modele: true, secteur_id: idRestauration, supprime_le: null },
+    select: { id: true },
+  });
+  if (!modeleExistant) {
+    const themesRestauration = await prisma.theme.findMany({
+      where: { secteur_id: idRestauration },
+      select: { id: true, code: true },
+    });
+    const idTheme = (code: string): string => {
+      const theme = themesRestauration.find((t) => t.code === code);
+      if (!theme) throw new Error("Theme introuvable : " + code);
+      return theme.id;
+    };
+
+    await prisma.questionnaire.create({
+      data: {
+        est_modele: true,
+        secteur_id: idRestauration,
+        titre: { fr: "Avis restaurant", en: "Restaurant review" },
+        message_accueil: {
+          fr: "Votre avis nous aide à nous améliorer. Cela prend moins d'une minute.",
+          en: "Your feedback helps us improve. It takes less than a minute.",
+        },
+        message_remerciement: {
+          fr: "Merci pour votre avis !",
+          en: "Thank you for your feedback!",
+        },
+        langue_defaut: "fr",
+        statut: "ACTIF",
+        versions: {
+          create: {
+            numero: 1,
+            publie_le: new Date(),
+            questions: {
+              create: [
+                ...QUESTIONS_ETOILES_RESTAURATION.map(([code, fr, en], index) => ({
+                  ordre: index + 1,
+                  type: "ETOILES" as const,
+                  libelle: { fr, en },
+                  theme_id: idTheme(code),
+                  obligatoire: true,
+                  echelle_min: 1,
+                  echelle_max: 5,
+                })),
+                {
+                  ordre: QUESTIONS_ETOILES_RESTAURATION.length + 1,
+                  type: "NPS" as const,
+                  libelle: {
+                    fr: "De 0 à 10, recommanderiez-vous notre restaurant à un proche ?",
+                    en: "From 0 to 10, how likely are you to recommend our restaurant to a friend?",
+                  },
+                  obligatoire: true,
+                  echelle_min: 0,
+                  echelle_max: 10,
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+  }
 
   // 2. Organisation fictive (cherchee par nom, creee si absente)
   let organisation = await prisma.organisation.findFirst({
@@ -197,6 +272,9 @@ async function main() {
   console.log("Donnees de depart : ok.");
   console.log("Secteurs : " + (await prisma.secteur.count()));
   console.log("Themes : " + (await prisma.theme.count()));
+  console.log(
+    "Modeles de questionnaires : " + (await prisma.questionnaire.count({ where: { est_modele: true } })),
+  );
   console.log("Organisations : " + (await prisma.organisation.count()));
   console.log("Utilisateurs : " + (await prisma.utilisateur.count()));
   console.log("Sites : " + (await prisma.site.count()));

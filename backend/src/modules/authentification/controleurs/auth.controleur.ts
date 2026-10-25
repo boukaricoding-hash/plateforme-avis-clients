@@ -2,6 +2,7 @@ import type { CookieOptions, Request, Response } from "express";
 import { prisma } from "../../../configuration/base-de-donnees";
 import { schemaConnexion } from "../validations/connexion";
 import { hacherMotDePasse, verifierMotDePasse } from "../services/mots-de-passe";
+import { enregistrerEchec, estVerrouille } from "../services/verrouillage";
 import {
   NOM_COOKIE_SESSION,
   creerSession,
@@ -40,7 +41,12 @@ export async function connexion(req: Request, res: Response): Promise<void> {
     utilisateur ? utilisateur.mot_de_passe_hash : await hashFactice,
   );
 
-  if (!utilisateur || !utilisateur.actif || !motDePasseValide) {
+  const compteVerrouille = utilisateur !== null && estVerrouille(utilisateur.verrouille_jusqua);
+
+  if (!utilisateur || !utilisateur.actif || compteVerrouille || !motDePasseValide) {
+    if (utilisateur && utilisateur.actif && !compteVerrouille) {
+      await enregistrerEchec(utilisateur.id);
+    }
     res.status(401).json({
       code: "IDENTIFIANTS_INVALIDES",
       message: MESSAGE_IDENTIFIANTS_INVALIDES,
@@ -57,7 +63,7 @@ export async function connexion(req: Request, res: Response): Promise<void> {
 
   await prisma.utilisateur.update({
     where: { id: utilisateur.id },
-    data: { derniere_connexion: new Date() },
+    data: { derniere_connexion: new Date(), tentatives_echec: 0, verrouille_jusqua: null },
   });
 
   const optionsCookie: CookieOptions = {

@@ -1,4 +1,4 @@
-import type { Prisma } from "../../../../generated/prisma/client";
+import { Prisma } from "../../../../generated/prisma/client";
 import { prisma } from "../../../configuration/base-de-donnees";
 import type { DonneesQuestion, DonneesQuestionnaire } from "../validations/questionnaire";
 
@@ -101,6 +101,7 @@ export async function creerQuestionnaire(
     return questionnaire.id;
   });
 }
+
 export async function listerQuestionnaires(organisationId: string) {
   const questionnaires = await prisma.questionnaire.findMany({
     where: { organisation_id: organisationId, supprime_le: null },
@@ -180,4 +181,76 @@ export async function lireQuestionnaire(organisationId: string, questionnaireId:
 
   const { versions, ...reste } = questionnaire;
   return { ...reste, version: versions[0] ?? null };
+}
+
+// Modifie un questionnaire (PUT : tout le contenu est renvoye).
+// - La derniere version n'a aucun avis : on la remplace sur place.
+// - La derniere version a deja des avis : on cree la version suivante,
+//   les anciens avis restent lies a l'ancienne version.
+// Renvoie null si le questionnaire n'existe pas dans CETTE organisation.
+export async function modifierQuestionnaire(
+  organisationId: string,
+  questionnaireId: string,
+  donnees: DonneesQuestionnaire,
+): Promise<{ id: string; version: number; nouvelle_version: boolean } | null> {
+  return prisma.$transaction(async (tx) => {
+    const existant = await tx.questionnaire.findFirst({
+      where: { id: questionnaireId, organisation_id: organisationId, supprime_le: null },
+      select: {
+        id: true,
+        versions: {
+          orderBy: { numero: "desc" },
+          take: 1,
+          select: { id: true, numero: true, publie_le: true },
+        },
+      },
+    });
+    const derniere = existant?.versions[0];
+    if (!existant || !derniere) {
+      return null;
+    }
+
+    await tx.questionnaire.update({
+      where: { id: existant.id },
+      data: {
+        titre: json(donnees.titre),
+        langue_defaut: donnees.langue_defaut,
+        message_accueil:
+          donnees.message_accueil !== undefined ? json(donnees.message_accueil) : Prisma.DbNull,
+        message_remerciement:
+          donnees.message_remerciement !== undefined
+            ? json(donnees.message_remerciement)
+            : Prisma.DbNull,
+      },
+    });
+
+    const nombreAvis = await tx.avis.count({ where: { version_id: derniere.id } });
+
+    if (nombreAvis > 0) {
+      const nouvelle = await tx.questionnaireVersion.create({
+        data: {
+          questionnaire_id: existant.id,
+          numero: derniere.numero + 1,
+          // Si l'ancienne version etait publiee, la nouvelle l'est aussi.
+          publie_le: derniere.publie_le ? new Date() : null,
+        },
+        select: { id: true, numero: true },
+      });
+      await tx.question.createMany({
+        data: donnees.questions.map((question, index) =>
+          donneesQuestion(question, index, nouvelle.id),
+        ),
+      });
+      return { id: existant.id, version: nouvelle.numero, nouvelle_version: true };
+    }
+
+    // Aucun avis : aucune reponse ne depend de ces questions, on les remplace.
+    await tx.question.deleteMany({ where: { version_id: derniere.id } });
+    await tx.question.createMany({
+      data: donnees.questions.map((question, index) =>
+        donneesQuestion(question, index, derniere.id),
+      ),
+    });
+    return { id: existant.id, version: derniere.numero, nouvelle_version: false };
+  });
 }

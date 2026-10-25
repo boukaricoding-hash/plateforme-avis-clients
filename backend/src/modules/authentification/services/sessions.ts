@@ -38,3 +38,12 @@ export async function creerSession(params: {
 
   return { jeton, expireLe };
 }
+export async function trouverSessionActive(jeton: string) {
+  return prisma.session.findFirst({
+    where: { token_hash: empreinteJeton(jeton), expire_le: { gt: new Date() } },
+  });
+}
+
+export async function supprimerSession(jeton: string): Promise<void> {
+  await prisma.session.deleteMany({ where: { token_hash: empreinteJeton(jeton) } });
+}

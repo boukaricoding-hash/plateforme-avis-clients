@@ -2,8 +2,13 @@ import type { CookieOptions, Request, Response } from "express";
 import { prisma } from "../../../configuration/base-de-donnees";
 import { schemaConnexion } from "../validations/connexion";
 import { hacherMotDePasse, verifierMotDePasse } from "../services/mots-de-passe";
-import { NOM_COOKIE_SESSION, creerSession, dureeSessionMs } from "../services/sessions";
-
+import {
+  NOM_COOKIE_SESSION,
+  creerSession,
+  dureeSessionMs,
+  supprimerSession,
+  trouverSessionActive,
+} from "../services/sessions";
 const MESSAGE_IDENTIFIANTS_INVALIDES = "E-mail ou mot de passe incorrect.";
 
 // Sert a faire le meme travail (et donc prendre le meme temps) quand l'adresse
@@ -65,6 +70,49 @@ export async function connexion(req: Request, res: Response): Promise<void> {
     optionsCookie.maxAge = dureeSessionMs(true);
   }
   res.cookie(NOM_COOKIE_SESSION, session.jeton, optionsCookie);
+
+  res.status(200).json({
+    utilisateur: {
+      id: utilisateur.id,
+      email: utilisateur.email,
+      nom: utilisateur.nom,
+      role: utilisateur.role,
+      organisation_id: utilisateur.organisation_id,
+      langue: utilisateur.langue,
+    },
+  });
+}
+export async function deconnexion(req: Request, res: Response): Promise<void> {
+  const jeton: unknown = req.cookies?.[NOM_COOKIE_SESSION];
+  if (typeof jeton === "string" && jeton !== "") {
+    await supprimerSession(jeton);
+  }
+  res.clearCookie(NOM_COOKIE_SESSION, {
+    httpOnly: true,
+    secure: process.env["NODE_ENV"] === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+  res.status(204).send();
+}
+export async function moi(req: Request, res: Response): Promise<void> {
+  const jeton: unknown = req.cookies?.[NOM_COOKIE_SESSION];
+  const session =
+    typeof jeton === "string" && jeton !== "" ? await trouverSessionActive(jeton) : null;
+  const utilisateur = session
+    ? await prisma.utilisateur.findFirst({
+        where: { id: session.utilisateur_id, actif: true, supprime_le: null },
+      })
+    : null;
+
+  if (!utilisateur) {
+    res.status(401).json({
+      code: "NON_CONNECTE",
+      message: "Vous n'etes pas connecte.",
+      details: null,
+    });
+    return;
+  }
 
   res.status(200).json({
     utilisateur: {

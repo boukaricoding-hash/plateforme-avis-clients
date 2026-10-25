@@ -107,9 +107,48 @@ async function creerOrganisationDeTest(lettre: "A" | "B"): Promise<OrganisationD
 let orgA: OrganisationDeTest;
 let orgB: OrganisationDeTest;
 
+// Modeles de questionnaire (sans organisation) : un du secteur restauration, un d'un autre secteur.
+let modeleRestaurationId: string;
+let modeleAutreSecteurId: string;
+
+async function creerModeleDeTest(secteurId: string, titre: string): Promise<string> {
+  const modele = await prisma.questionnaire.create({
+    data: {
+      secteur_id: secteurId,
+      est_modele: true,
+      titre: { fr: titre },
+      versions: {
+        create: {
+          numero: 1,
+          questions: {
+            create: [
+              {
+                ordre: 1,
+                type: "ETOILES",
+                libelle: { fr: "Note ?" },
+                echelle_min: 1,
+                echelle_max: 5,
+              },
+            ],
+          },
+        },
+      },
+    },
+    select: { id: true },
+  });
+  return modele.id;
+}
+
 beforeAll(async () => {
   orgA = await creerOrganisationDeTest("A");
   orgB = await creerOrganisationDeTest("B");
+
+  const restauration = await prisma.secteur.findUniqueOrThrow({ where: { code: "restauration" } });
+  const autreSecteur = await prisma.secteur.create({
+    data: { code: "test-isolation-" + suffixe, nom_fr: "Secteur de test", nom_en: "Test sector" },
+  });
+  modeleRestaurationId = await creerModeleDeTest(restauration.id, "Modele test restauration");
+  modeleAutreSecteurId = await creerModeleDeTest(autreSecteur.id, "Modele test autre secteur");
 }, 30000);
 
 afterAll(async () => {
@@ -139,6 +178,15 @@ afterAll(async () => {
     where: { questionnaire: { organisation_id: { in: organisationIds } } },
   });
   await prisma.questionnaire.deleteMany({ where: { organisation_id: { in: organisationIds } } });
+  const modeleIds = [modeleRestaurationId, modeleAutreSecteurId].filter((id) => Boolean(id));
+  await prisma.question.deleteMany({
+    where: { version: { questionnaire: { id: { in: modeleIds } } } },
+  });
+  await prisma.questionnaireVersion.deleteMany({
+    where: { questionnaire: { id: { in: modeleIds } } },
+  });
+  await prisma.questionnaire.deleteMany({ where: { id: { in: modeleIds } } });
+  await prisma.secteur.deleteMany({ where: { code: "test-isolation-" + suffixe } });
   await prisma.site.deleteMany({ where: { organisation_id: { in: organisationIds } } });
   await prisma.utilisateur.deleteMany({ where: { id: { in: utilisateurIds } } });
   await prisma.organisation.deleteMany({ where: { id: { in: organisationIds } } });
@@ -160,6 +208,7 @@ describe("l'organisation A essaie d'atteindre les donnees de B", () => {
     await request(app).get("/api/v1/points-contact").expect(401);
     await request(app).get("/api/v1/questionnaires").expect(401);
     await request(app).get("/api/v1/questionnaires/" + orgB.questionnaireId).expect(401);
+    await request(app).get("/api/v1/questionnaires/modeles").expect(401);
   });
 
   it("ne modifie pas un site de B (404)", async () => {
@@ -278,6 +327,129 @@ describe("l'organisation A essaie d'atteindre les donnees de B", () => {
       where: { organisation_id: orgB.organisationId },
     });
     expect(nombreB).toBe(1);
+  });
+
+  it("n'active pas un questionnaire de B (404)", async () => {
+    await orgA.agent.post("/api/v1/questionnaires/" + orgB.questionnaireId + "/activer").expect(404);
+    const questionnaire = await prisma.questionnaire.findUniqueOrThrow({
+      where: { id: orgB.questionnaireId },
+    });
+    expect(questionnaire.statut).toBe("BROUILLON");
+  });
+
+  it("ne desactive pas un questionnaire de B (404)", async () => {
+    await orgA.agent
+      .post("/api/v1/questionnaires/" + orgB.questionnaireId + "/desactiver")
+      .expect(404);
+    const questionnaire = await prisma.questionnaire.findUniqueOrThrow({
+      where: { id: orgB.questionnaireId },
+    });
+    expect(questionnaire.statut).toBe("BROUILLON");
+  });
+
+  it("ne change pas les dates d'un questionnaire de B (404)", async () => {
+    await orgA.agent
+      .put("/api/v1/questionnaires/" + orgB.questionnaireId + "/dates")
+      .send({ date_debut: "2026-12-01T08:00:00Z", date_fin: "2026-12-02T08:00:00Z" })
+      .expect(404);
+    const questionnaire = await prisma.questionnaire.findUniqueOrThrow({
+      where: { id: orgB.questionnaireId },
+    });
+    expect(questionnaire.date_debut).toBeNull();
+    expect(questionnaire.date_fin).toBeNull();
+  });
+
+  it("n'associe pas un point de contact de B a un questionnaire de A (404)", async () => {
+    await orgA.agent
+      .put("/api/v1/questionnaires/" + orgA.questionnaireId + "/points-contact")
+      .send({ points_contact_ids: [orgB.pointContactId] })
+      .expect(404);
+    const point = await prisma.pointContact.findUniqueOrThrow({
+      where: { id: orgB.pointContactId },
+    });
+    expect(point.questionnaire_id).toBeNull();
+  });
+
+  it("n'associe rien a un questionnaire de B (404)", async () => {
+    await orgA.agent
+      .put("/api/v1/questionnaires/" + orgB.questionnaireId + "/points-contact")
+      .send({ points_contact_ids: [orgA.pointContactId] })
+      .expect(404);
+    const pointA = await prisma.pointContact.findUniqueOrThrow({
+      where: { id: orgA.pointContactId },
+    });
+    expect(pointA.questionnaire_id).toBeNull();
+    const nombreAssocies = await prisma.pointContact.count({
+      where: { questionnaire_id: orgB.questionnaireId },
+    });
+    expect(nombreAssocies).toBe(0);
+  });
+
+  it("A peut associer son propre point de contact a son propre questionnaire (200)", async () => {
+    const reponse = await orgA.agent
+      .put("/api/v1/questionnaires/" + orgA.questionnaireId + "/points-contact")
+      .send({ points_contact_ids: [orgA.pointContactId] })
+      .expect(200);
+    const ids = reponse.body.points_contact.map((point: { id: string }) => point.id);
+    expect(ids).toEqual([orgA.pointContactId]);
+  });
+});
+describe("modeles de questionnaire", () => {
+  it("ne propose que les modeles du secteur de l'organisation", async () => {
+    const reponse = await orgA.agent.get("/api/v1/questionnaires/modeles").expect(200);
+    const ids = reponse.body.modeles.map((modele: { id: string }) => modele.id);
+    expect(ids).toContain(modeleRestaurationId);
+    expect(ids).not.toContain(modeleAutreSecteurId);
+  });
+
+  it("ne clone pas un modele d'un autre secteur (404)", async () => {
+    const avant = await prisma.questionnaire.count({
+      where: { organisation_id: orgA.organisationId },
+    });
+    await orgA.agent
+      .post("/api/v1/questionnaires/modeles/" + modeleAutreSecteurId + "/cloner")
+      .expect(404);
+    const apres = await prisma.questionnaire.count({
+      where: { organisation_id: orgA.organisationId },
+    });
+    expect(apres).toBe(avant);
+  });
+
+  it("ne clone pas le questionnaire de B comme s'il etait un modele (404)", async () => {
+    await orgA.agent
+      .post("/api/v1/questionnaires/modeles/" + orgB.questionnaireId + "/cloner")
+      .expect(404);
+    const nombreB = await prisma.questionnaire.count({
+      where: { organisation_id: orgB.organisationId },
+    });
+    expect(nombreB).toBe(1);
+  });
+
+  it("clone un modele de son secteur : la copie appartient a A, pas a B (201)", async () => {
+    const reponse = await orgA.agent
+      .post("/api/v1/questionnaires/modeles/" + modeleRestaurationId + "/cloner")
+      .expect(201);
+    const copieId: string = reponse.body.questionnaire.id;
+
+    const copie = await prisma.questionnaire.findUniqueOrThrow({
+      where: { id: copieId },
+      select: {
+        organisation_id: true,
+        est_modele: true,
+        statut: true,
+        versions: { select: { numero: true, _count: { select: { questions: true } } } },
+      },
+    });
+    expect(copie.organisation_id).toBe(orgA.organisationId);
+    expect(copie.est_modele).toBe(false);
+    expect(copie.statut).toBe("BROUILLON");
+    expect(copie.versions).toHaveLength(1);
+    expect(copie.versions[0]?.numero).toBe(1);
+    expect(copie.versions[0]?._count.questions).toBe(1);
+
+    const listeB = await orgB.agent.get("/api/v1/questionnaires").expect(200);
+    const idsB = listeB.body.questionnaires.map((questionnaire: { id: string }) => questionnaire.id);
+    expect(idsB).not.toContain(copieId);
   });
 });
 describe("controle des roles", () => {

@@ -5,10 +5,12 @@ import { exigerRole } from "../../../middleware/exiger-role";
 import {
   activerUnQuestionnaire,
   associerLesPointsContact,
+  clonerUnModele,
   creerUnQuestionnaire,
   desactiverUnQuestionnaire,
   dupliquerUnQuestionnaire,
   lireUnQuestionnaire,
+  listerLesModeles,
   listerLesQuestionnaires,
   modifierLesDatesDuQuestionnaire,
   modifierUnQuestionnaire,
@@ -22,6 +24,10 @@ routesQuestionnaires.use(exigerConnexion, exigerOrganisation);
 
 routesQuestionnaires.get("/", exigerRole("RESPONSABLE", "GESTIONNAIRE"), listerLesQuestionnaires);
 routesQuestionnaires.post("/", exigerRole("RESPONSABLE"), creerUnQuestionnaire);
+// Les routes des modeles AVANT /:id, sinon "modeles" serait lu comme un identifiant.
+routesQuestionnaires.get("/modeles", exigerRole("RESPONSABLE", "GESTIONNAIRE"), listerLesModeles);
+routesQuestionnaires.post("/modeles/:id/cloner", exigerRole("RESPONSABLE"), clonerUnModele);
+
 routesQuestionnaires.get("/:id", exigerRole("RESPONSABLE", "GESTIONNAIRE"), lireUnQuestionnaire);
 routesQuestionnaires.put("/:id", exigerRole("RESPONSABLE"), modifierUnQuestionnaire);
 routesQuestionnaires.put("/:id/dates", exigerRole("RESPONSABLE"), modifierLesDatesDuQuestionnaire);

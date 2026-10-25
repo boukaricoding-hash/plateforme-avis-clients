@@ -14,6 +14,7 @@ import {
   type ResultatStatut,
 } from "../services/activation";
 import { modifierDatesQuestionnaire } from "../services/dates";
+import { clonerModele, listerModeles } from "../services/modeles";
 import { associerPointsContact } from "../services/points-contact";
 import { schemaDatesQuestionnaire } from "../validations/dates";
 import { schemaAssociationPointsContact } from "../validations/points-contact";
@@ -39,6 +40,7 @@ function repondreThemesInvalides(res: Response): void {
 }
 
 const MESSAGE_INTROUVABLE = "Questionnaire introuvable.";
+const MESSAGE_MODELE_INTROUVABLE = "Modele introuvable.";
 
 // Reponse commune a l'activation et a la desactivation.
 function repondreStatut(res: Response, resultat: ResultatStatut): void {
@@ -195,4 +197,26 @@ export async function associerLesPointsContact(req: Request, res: Response): Pro
     return repondreNonTrouve(res, "Point de contact introuvable.");
   }
   res.status(200).json({ points_contact: resultat.points_contact });
+}
+
+export async function listerLesModeles(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const modeles = await listerModeles(ctx.organisationId);
+  res.status(200).json({ modeles });
+}
+
+export async function clonerUnModele(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdQuestionnaire.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+
+  const idCopie = await clonerModele(ctx.organisationId, identifiant.data.id);
+  if (!idCopie) return repondreNonTrouve(res, MESSAGE_MODELE_INTROUVABLE);
+
+  const questionnaire = await lireQuestionnaire(ctx.organisationId, idCopie);
+  res.status(201).json({ questionnaire });
 }

@@ -47,3 +47,18 @@ export async function trouverSessionActive(jeton: string) {
 export async function supprimerSession(jeton: string): Promise<void> {
   await prisma.session.deleteMany({ where: { token_hash: empreinteJeton(jeton) } });
 }
+export async function prolongerSession(session: {
+  id: string;
+  se_souvenir: boolean;
+}): Promise<void> {
+  const maintenant = new Date();
+  await prisma.session.update({
+    where: { id: session.id },
+    data: session.se_souvenir
+      ? { derniere_activite_le: maintenant }
+      : {
+          derniere_activite_le: maintenant,
+          expire_le: new Date(maintenant.getTime() + dureeSessionMs(false)),
+        },
+  });
+}

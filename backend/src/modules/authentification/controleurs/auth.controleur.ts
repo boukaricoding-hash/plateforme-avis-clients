@@ -6,6 +6,7 @@ import {
   NOM_COOKIE_SESSION,
   creerSession,
   dureeSessionMs,
+  prolongerSession,
   supprimerSession,
   trouverSessionActive,
 } from "../services/sessions";
@@ -105,7 +106,7 @@ export async function moi(req: Request, res: Response): Promise<void> {
       })
     : null;
 
-  if (!utilisateur) {
+  if (!session || !utilisateur) {
     res.status(401).json({
       code: "NON_CONNECTE",
       message: "Vous n'etes pas connecte.",
@@ -113,6 +114,8 @@ export async function moi(req: Request, res: Response): Promise<void> {
     });
     return;
   }
+
+  await prolongerSession(session);
 
   res.status(200).json({
     utilisateur: {

@@ -13,6 +13,7 @@ import {
   NOM_COOKIE_APPAREIL,
   OPTIONS_COOKIE_APPAREIL,
 } from "../services/anti-doublon";
+import { apresCreationAvis } from "../services/apres-creation-avis";
 
 // Une erreur claire par situation : l'application du client choisit la page a afficher avec "code".
 const ERREURS: Record<EtatErreurPublic, { statut: number; code: string; message: string }> = {
@@ -169,6 +170,12 @@ export async function creerUnAvisPublic(req: Request, res: Response): Promise<vo
       details: creation.erreurs,
     });
     return;
+  }
+
+  // 8. Travaux apres l'enregistrement (alerte, plus tard agregats), seulement pour un nouvel avis.
+  // Ils sont proteges : une panne ici ne fait jamais perdre l'avis.
+  if (!creation.deja_existant) {
+    await apresCreationAvis(creation.avis_id);
   }
 
   // 200 si deux envois identiques sont arrives au meme instant, 201 pour un nouvel avis.

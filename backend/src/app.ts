@@ -8,6 +8,7 @@ import { routesSites } from "./modules/sites/routes/sites.routes";
 import { routesPointsContact } from "./modules/points-de-contact/routes/points-contact.routes";
 import { routesQuestionnaires } from "./modules/questionnaires/routes/questionnaires.routes";
 import { routesAvisPublic } from "./modules/avis-public/routes/avis-public.routes";
+import { routesAvis } from "./modules/avis/routes/avis.routes";
 
 export const app = express();
 
@@ -40,6 +41,7 @@ app.use("/api/v1/sites", routesSites);
 app.use("/api/v1/points-contact", routesPointsContact);
 app.use("/api/v1/questionnaires", routesQuestionnaires);
 app.use("/api/v1/public", routesAvisPublic);
+app.use("/api/v1/avis", routesAvis);
 
 // 404 : aucune route ne correspond
 app.use((_req: Request, res: Response) => {

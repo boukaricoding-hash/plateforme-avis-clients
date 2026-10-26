@@ -43,6 +43,59 @@ export type ResultatQuestionnairePublic =
   | { etat: "ok"; donnees: DonneesQuestionnairePublic }
   | { etat: EtatErreurPublic };
 
+// ------------------------------------------------------------
+// Verification commune du QR code (GET du questionnaire et POST d'un avis)
+// ------------------------------------------------------------
+
+type PointAVerifier = {
+  actif: boolean;
+  revoque_le: Date | null;
+  supprime_le: Date | null;
+  organisation: { statut: string; supprime_le: Date | null };
+  questionnaire: {
+    statut: string;
+    date_debut: Date | null;
+    date_fin: Date | null;
+    supprime_le: Date | null;
+  } | null;
+};
+
+// Renvoie l'erreur a afficher, ou null si le QR code peut etre utilise.
+// versionPubliee : vrai si le questionnaire a une version publiee utilisable.
+function verifierEtatQr(point: PointAVerifier, versionPubliee: boolean): EtatErreurPublic | null {
+  if (point.supprime_le !== null || point.revoque_le !== null || !point.actif) {
+    return "qr_desactive";
+  }
+
+  if (point.organisation.supprime_le !== null || point.organisation.statut === "SUSPENDU") {
+    return "organisation_suspendue";
+  }
+
+  const questionnaire = point.questionnaire;
+  if (
+    !questionnaire ||
+    !versionPubliee ||
+    questionnaire.supprime_le !== null ||
+    questionnaire.statut !== "ACTIF"
+  ) {
+    return "questionnaire_inactif";
+  }
+
+  const maintenant = new Date();
+  if (questionnaire.date_debut !== null && questionnaire.date_debut > maintenant) {
+    return "evenement_pas_commence";
+  }
+  if (questionnaire.date_fin !== null && questionnaire.date_fin < maintenant) {
+    return "evenement_termine";
+  }
+
+  return null;
+}
+
+// ------------------------------------------------------------
+// GET : afficher le questionnaire (et compter le scan)
+// ------------------------------------------------------------
+
 // Un scan est compte seulement quand le questionnaire est vraiment affiche.
 // Si l'enregistrement echoue, le client voit quand meme le questionnaire.
 async function enregistrerScan(organisationId: string, pointContactId: string): Promise<void> {
@@ -118,33 +171,17 @@ export async function lireQuestionnairePublic(code: string): Promise<ResultatQue
   if (!point) {
     return { etat: "qr_inconnu" };
   }
-  if (point.supprime_le !== null || point.revoque_le !== null || !point.actif) {
-    return { etat: "qr_desactive" };
-  }
 
   const organisation = point.organisation;
-  if (organisation.supprime_le !== null || organisation.statut === "SUSPENDU") {
-    return { etat: "organisation_suspendue" };
-  }
-
   const questionnaire = point.questionnaire;
   const version = questionnaire?.versions[0];
-  if (
-    !questionnaire ||
-    !version ||
-    questionnaire.supprime_le !== null ||
-    questionnaire.statut !== "ACTIF" ||
-    version.publie_le === null
-  ) {
-    return { etat: "questionnaire_inactif" };
-  }
 
-  const maintenant = new Date();
-  if (questionnaire.date_debut !== null && questionnaire.date_debut > maintenant) {
-    return { etat: "evenement_pas_commence" };
+  const erreur = verifierEtatQr(point, version !== undefined && version.publie_le !== null);
+  if (erreur !== null) {
+    return { etat: erreur };
   }
-  if (questionnaire.date_fin !== null && questionnaire.date_fin < maintenant) {
-    return { etat: "evenement_termine" };
+  if (!questionnaire || !version) {
+    return { etat: "questionnaire_inactif" };
   }
 
   await enregistrerScan(point.organisation_id, point.id);
@@ -167,6 +204,116 @@ export async function lireQuestionnairePublic(code: string): Promise<ResultatQue
         langue_defaut: questionnaire.langue_defaut,
         questions: version.questions,
       },
+    },
+  };
+}
+
+// ------------------------------------------------------------
+// POST : contexte necessaire pour enregistrer un avis (aucun scan compte)
+// ------------------------------------------------------------
+
+export type QuestionPourEnvoi = {
+  id: string;
+  type: string;
+  obligatoire: boolean;
+  options: unknown;
+  echelle_min: number | null;
+  echelle_max: number | null;
+};
+
+export type ContexteEnvoiAvis = {
+  organisation_id: string;
+  site_id: string;
+  point_contact_id: string;
+  version_id: string;
+  questions: QuestionPourEnvoi[];
+};
+
+export type EtatErreurEnvoi = EtatErreurPublic | "version_invalide";
+
+export type ResultatContexteEnvoi =
+  | { etat: "ok"; contexte: ContexteEnvoiAvis }
+  | { etat: EtatErreurEnvoi };
+
+// Verifie le QR code (memes regles que le GET) puis retrouve la version
+// du questionnaire que le client a vue. Cette version doit appartenir au
+// questionnaire du point de contact et etre publiee : l'avis reste lie a
+// la version vue, meme si une version plus recente existe.
+export async function lireContexteEnvoi(
+  code: string,
+  versionId: string,
+): Promise<ResultatContexteEnvoi> {
+  const point = await prisma.pointContact.findUnique({
+    where: { code_public: code },
+    select: {
+      id: true,
+      site_id: true,
+      organisation_id: true,
+      actif: true,
+      revoque_le: true,
+      supprime_le: true,
+      organisation: {
+        select: { statut: true, supprime_le: true },
+      },
+      questionnaire: {
+        select: {
+          id: true,
+          statut: true,
+          date_debut: true,
+          date_fin: true,
+          supprime_le: true,
+        },
+      },
+    },
+  });
+
+  if (!point) {
+    return { etat: "qr_inconnu" };
+  }
+
+  // La version est cherchee plus bas : ici on ne controle que le reste.
+  const erreur = verifierEtatQr(point, true);
+  if (erreur !== null) {
+    return { etat: erreur };
+  }
+  if (!point.questionnaire) {
+    return { etat: "questionnaire_inactif" };
+  }
+
+  const version = await prisma.questionnaireVersion.findFirst({
+    where: {
+      id: versionId,
+      questionnaire_id: point.questionnaire.id,
+      publie_le: { not: null },
+    },
+    select: {
+      id: true,
+      questions: {
+        orderBy: { ordre: "asc" },
+        select: {
+          id: true,
+          type: true,
+          obligatoire: true,
+          options: true,
+          echelle_min: true,
+          echelle_max: true,
+        },
+      },
+    },
+  });
+
+  if (!version) {
+    return { etat: "version_invalide" };
+  }
+
+  return {
+    etat: "ok",
+    contexte: {
+      organisation_id: point.organisation_id,
+      site_id: point.site_id,
+      point_contact_id: point.id,
+      version_id: version.id,
+      questions: version.questions,
     },
   };
 }

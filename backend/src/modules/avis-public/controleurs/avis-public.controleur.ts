@@ -7,7 +7,12 @@ import {
   type EtatErreurPublic,
   type ResultatQuestionnairePublic,
 } from "../services/questionnaire-public";
-import { creerAvis } from "../services/creer-avis";
+import { creerAvis, trouverAvisParCle } from "../services/creer-avis";
+import {
+  verifierAntiDoublon,
+  NOM_COOKIE_APPAREIL,
+  OPTIONS_COOKIE_APPAREIL,
+} from "../services/anti-doublon";
 
 // Une erreur claire par situation : l'application du client choisit la page a afficher avec "code".
 const ERREURS: Record<EtatErreurPublic, { statut: number; code: string; message: string }> = {
@@ -94,7 +99,18 @@ export async function creerUnAvisPublic(req: Request, res: Response): Promise<vo
   }
   const corps = lectureCorps.data;
 
-  // 3. QR code valide, organisation active, questionnaire ouvert, version vue par le client.
+  // 3. Champ piege : cache pour les humains, rempli par les robots.
+  // Refus sans explication, et rien n'est enregistre.
+  if (corps.site_web !== undefined && corps.site_web.trim() !== "") {
+    res.status(400).json({
+      code: "AVIS_INVALIDE",
+      message: "Les informations envoyees sont invalides.",
+      details: null,
+    });
+    return;
+  }
+
+  // 4. QR code valide, organisation active, questionnaire ouvert, version vue par le client.
   const contexte = await lireContexteEnvoi(lectureCode.data.code, corps.version_id);
   if (contexte.etat === "version_invalide") {
     res.status(400).json({
@@ -110,9 +126,41 @@ export async function creerUnAvisPublic(req: Request, res: Response): Promise<vo
     return;
   }
 
-  // 4. Verification des reponses et enregistrement.
+  // 5. Cle unique : un renvoi apres coupure du reseau ne cree pas de deuxieme avis.
+  // Ce controle passe AVANT l'anti-doublon, sinon le renvoi serait refuse.
+  if (corps.cle_unique !== undefined) {
+    const existant = await trouverAvisParCle(contexte.contexte.point_contact_id, corps.cle_unique);
+    if (existant !== null) {
+      res.status(200).json({ id: existant });
+      return;
+    }
+  }
+
+  // 6. Anti-doublon : un avis par appareil et par point de contact sur la periode.
+  const cookieRecu: unknown = req.cookies?.[NOM_COOKIE_APPAREIL];
+  const verification = await verifierAntiDoublon({
+    organisationId: contexte.contexte.organisation_id,
+    pointContactId: contexte.contexte.point_contact_id,
+    ip: req.ip,
+    userAgent: req.get("user-agent"),
+    appareilId: typeof cookieRecu === "string" ? cookieRecu : undefined,
+  });
+
+  // Le cookie de l'appareil est pose dans tous les cas (nouveau ou deja connu).
+  res.cookie(NOM_COOKIE_APPAREIL, verification.appareil_id, OPTIONS_COOKIE_APPAREIL);
+
+  if (verification.refuse) {
+    res.status(409).json({
+      code: "AVIS_DEJA_DONNE",
+      message: "Vous avez deja donne votre avis. Merci pour votre participation !",
+      details: null,
+    });
+    return;
+  }
+
+  // 7. Verification des reponses et enregistrement.
   const appareil = deduireAppareil(req.get("user-agent"));
-  const creation = await creerAvis(contexte.contexte, corps, appareil);
+  const creation = await creerAvis(contexte.contexte, corps, appareil, verification.empreinte);
 
   if (creation.etat === "invalide") {
     res.status(400).json({
@@ -123,5 +171,6 @@ export async function creerUnAvisPublic(req: Request, res: Response): Promise<vo
     return;
   }
 
-  res.status(201).json({ id: creation.avis_id });
+  // 200 si deux envois identiques sont arrives au meme instant, 201 pour un nouvel avis.
+  res.status(creation.deja_existant ? 200 : 201).json({ id: creation.avis_id });
 }

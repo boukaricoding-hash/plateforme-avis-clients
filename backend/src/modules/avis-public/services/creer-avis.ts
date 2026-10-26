@@ -5,7 +5,7 @@ import type { ContexteEnvoiAvis, QuestionPourEnvoi } from "./questionnaire-publi
 export type ErreurChamp = { champ: string; message: string };
 
 export type ResultatCreationAvis =
-  | { etat: "ok"; avis_id: string }
+  | { etat: "ok"; avis_id: string; deja_existant: boolean }
   | { etat: "invalide"; erreurs: ErreurChamp[] };
 
 type ValeurValidee = {
@@ -15,6 +15,42 @@ type ValeurValidee = {
 };
 
 type ResultatValeur = { ok: true; valeur: ValeurValidee } | { ok: false; message: string };
+
+// ------------------------------------------------------------
+// Cle unique (etape 3)
+// ------------------------------------------------------------
+
+// La cle envoyee par le telephone est rangee avec l'identifiant du point de contact :
+// la meme cle ne peut donc pas etre reutilisee sur un autre QR code.
+function cleStockee(pointContactId: string, cle: string): string {
+  return `${pointContactId}:${cle}`;
+}
+
+// Renvoie l'identifiant de l'avis deja cree avec cette cle, ou null.
+export async function trouverAvisParCle(
+  pointContactId: string,
+  cle: string,
+): Promise<string | null> {
+  const avis = await prisma.avis.findUnique({
+    where: { cle_idempotence: cleStockee(pointContactId, cle) },
+    select: { id: true },
+  });
+  return avis ? avis.id : null;
+}
+
+// Vrai si l'erreur vient d'une contrainte "unique" de la base (code Prisma P2002).
+function estErreurDoublon(erreur: unknown): boolean {
+  return (
+    typeof erreur === "object" &&
+    erreur !== null &&
+    "code" in erreur &&
+    (erreur as { code: unknown }).code === "P2002"
+  );
+}
+
+// ------------------------------------------------------------
+// Verification des reponses
+// ------------------------------------------------------------
 
 // Les options d'une question peuvent etre une liste de textes
 // ou une liste d'objets avec "valeur", "code" ou "id".
@@ -127,12 +163,27 @@ function validerValeur(question: QuestionPourEnvoi, valeur: unknown): ResultatVa
   }
 }
 
+// Un champ de contact vide ou fait d'espaces devient "pas de valeur".
+function texteOuNull(valeur: string | undefined): string | null {
+  if (valeur === undefined) {
+    return null;
+  }
+  const propre = valeur.trim();
+  return propre === "" ? null : propre;
+}
+
+// ------------------------------------------------------------
+// Enregistrement d'un avis
+// ------------------------------------------------------------
+
 // Enregistre un avis et ses reponses, apres avoir tout verifie.
 // Rien n'est enregistre si une seule reponse est invalide.
+// empreinte : hachage anti-doublon calcule par le service anti-doublon (etape 4).
 export async function creerAvis(
   contexte: ContexteEnvoiAvis,
   corps: CorpsAvis,
   appareil: string | null,
+  empreinte: string | null = null,
 ): Promise<ResultatCreationAvis> {
   const erreurs: ErreurChamp[] = [];
 
@@ -213,22 +264,45 @@ export async function creerAvis(
   const commentaire =
     corps.commentaire !== undefined && corps.commentaire.length > 0 ? corps.commentaire : null;
 
-  // 4. Enregistrement en une seule operation : l'avis et toutes ses reponses.
-  const avis = await prisma.avis.create({
-    data: {
-      organisation_id: contexte.organisation_id,
-      site_id: contexte.site_id,
-      point_contact_id: contexte.point_contact_id,
-      version_id: contexte.version_id,
-      langue: corps.langue,
-      appareil,
-      note_globale: noteGlobale,
-      nps,
-      commentaire,
-      reponses: { create: aEnregistrer },
-    },
-    select: { id: true },
-  });
+  // 4. Coordonnees : enregistrees seulement si le client a coche la case de consentement.
+  const consentement = corps.consentement === true;
+  const cle =
+    corps.cle_unique !== undefined ? cleStockee(contexte.point_contact_id, corps.cle_unique) : null;
 
-  return { etat: "ok", avis_id: avis.id };
+  // 5. Enregistrement en une seule operation : l'avis et toutes ses reponses.
+  try {
+    const avis = await prisma.avis.create({
+      data: {
+        organisation_id: contexte.organisation_id,
+        site_id: contexte.site_id,
+        point_contact_id: contexte.point_contact_id,
+        version_id: contexte.version_id,
+        langue: corps.langue,
+        appareil,
+        note_globale: noteGlobale,
+        nps,
+        commentaire,
+        consentement,
+        contact_nom: consentement ? texteOuNull(corps.contact_nom) : null,
+        contact_tel: consentement ? texteOuNull(corps.contact_tel) : null,
+        contact_email: consentement ? texteOuNull(corps.contact_email) : null,
+        cle_idempotence: cle,
+        empreinte,
+        reponses: { create: aEnregistrer },
+      },
+      select: { id: true },
+    });
+
+    return { etat: "ok", avis_id: avis.id, deja_existant: false };
+  } catch (erreur) {
+    // Deux envois identiques au meme instant : la base en refuse un,
+    // on renvoie l'avis qui a ete cree par l'autre.
+    if (corps.cle_unique !== undefined && estErreurDoublon(erreur)) {
+      const existant = await trouverAvisParCle(contexte.point_contact_id, corps.cle_unique);
+      if (existant !== null) {
+        return { etat: "ok", avis_id: existant, deja_existant: true };
+      }
+    }
+    throw erreur;
+  }
 }

@@ -128,6 +128,8 @@ afterAll(async () => {
     await prisma.reponse.deleteMany({ where: { organisation_id: organisationId } });
     await prisma.avis.deleteMany({ where: { organisation_id: organisationId } });
     await prisma.scan.deleteMany({ where: { organisation_id: organisationId } });
+    // ★ Jour 7 : les agregats quotidiens referencent le point de contact.
+    await prisma.agregatQuotidien.deleteMany({ where: { organisation_id: organisationId } });
     await prisma.pointContact.deleteMany({ where: { organisation_id: organisationId } });
     await prisma.utilisateurSite.deleteMany({
       where: { utilisateur: { organisation_id: organisationId } },

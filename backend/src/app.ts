@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { routesAuthentification } from "./modules/authentification/routes/auth.routes";
 import { routesSites } from "./modules/sites/routes/sites.routes";
 import { routesPointsContact } from "./modules/points-de-contact/routes/points-contact.routes";
+import { routesQrCodes } from "./modules/qr-codes/routes/qr-codes.routes";
 import { routesQuestionnaires } from "./modules/questionnaires/routes/questionnaires.routes";
 import { routesAvisPublic } from "./modules/avis-public/routes/avis-public.routes";
 import { routesAvis } from "./modules/avis/routes/avis.routes";
@@ -41,6 +42,8 @@ app.get("/api/v1/sante", (_req, res) => {
 app.use("/api/v1/auth", routesAuthentification);
 app.use("/api/v1/sites", routesSites);
 app.use("/api/v1/points-contact", routesPointsContact);
+// QR codes : meme adresse de base que les points de contact (/qr, /planche, /revoquer, /statistiques-qr)
+app.use("/api/v1/points-contact", routesQrCodes);
 app.use("/api/v1/questionnaires", routesQuestionnaires);
 app.use("/api/v1/public", routesAvisPublic);
 app.use("/api/v1/avis", routesAvis);

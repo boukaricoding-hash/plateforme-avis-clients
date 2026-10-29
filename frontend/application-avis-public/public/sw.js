@@ -12,13 +12,7 @@
 const NOM_CACHE = 'avis-v1'
 
 // Gardes des l'installation. '/' est la page de l'application (la meme pour tous les QR codes).
-const FICHIERS_DE_BASE = [
-  '/',
-  '/manifest.webmanifest',
-  '/favicon.svg',
-  '/icon-192.png',
-  '/icon-512.png',
-]
+const FICHIERS_DE_BASE = ['/', '/manifest.webmanifest', '/favicon.svg']
 
 self.addEventListener('install', (evenement) => {
   evenement.waitUntil(

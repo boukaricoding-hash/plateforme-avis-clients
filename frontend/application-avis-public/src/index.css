@@ -1,8 +1,90 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------
+   Variables globales de la page d'avis.
+   Les couleurs sont des variables CSS ordinaires : la couleur de l'organisation
+   (jour 16) pourra remplacer --couleur-principale sans toucher au reste.
+   ------------------------------------------------------------ */
 :root {
-  /* Couleur principale : remplacee plus tard par celle de l'organisation. */
-  --couleur-principale: #1e3a5f;
+  /* Fonds */
+  --fond: #f4f3ee;
+  --fond-alt: #fafaf8;
+  --surface: #ffffff;
+  --surface-douce: #edece6;
+
+  /* Couleur principale : celle des boutons (texte blanc dessus : contraste 4,6 sur 1).
+     Remplacee plus tard par la couleur de l'organisation. */
+  --couleur-principale: #af6046;
+  --couleur-principale-fonce: #9a5038;
+  /* Orange vif de la palette : decors seulement (etoiles, barre, coche, fond clair).
+     Jamais comme fond d'un bouton avec du texte blanc (contraste 3,1 sur 1). */
+  --couleur-decor: #d97757;
+  --couleur-decor-clair: #f0c4b0;
+
+  /* Textes */
+  --texte: #1f1e1d;
+  --texte-secondaire: #6b6a66;
+  /* Decor seulement : contraste 2,5 sur 1, a ne jamais utiliser pour du texte a lire. */
+  --texte-discret: #9c9b96;
+  --texte-sur-principale: #ffffff;
+
+  /* Bordures */
+  --bordure: #e5e3dc; /* separateurs discrets */
+  --bordure-forte: #d4d2c9; /* separateurs marques */
+  --bordure-champ: #85837c; /* contour des champs et des cases : contraste 3,4 sur 1 */
+
+  /* Etats : versions assez sombres pour du texte sur le fond */
+  --erreur: #c0392b;
+  --succes: #2f7a33;
+  --alerte: #d9a33d; /* decor seulement */
+  --info: #2f6a9b;
+
+  /* Rayons */
+  --rayon-sm: 6px;
+  --rayon-md: 10px;
+  --rayon-lg: 16px;
+  --rayon-xl: 22px;
+
+  /* Ombres douces */
+  --ombre-sm: 0 1px 3px rgb(0 0 0 / 0.05);
+  --ombre-md: 0 4px 10px rgb(0 0 0 / 0.08);
+  --ombre-lg: 0 8px 20px rgb(0 0 0 / 0.12);
+}
+
+/* Noms utilisables dans les classes : bg-fond, text-texte, border-bordure, shadow-moyen... */
+@theme inline {
+  --color-fond: var(--fond);
+  --color-fond-alt: var(--fond-alt);
+  --color-surface: var(--surface);
+  --color-surface-douce: var(--surface-douce);
+
+  --color-principale: var(--couleur-principale);
+  --color-principale-fonce: var(--couleur-principale-fonce);
+  --color-decor: var(--couleur-decor);
+  --color-decor-clair: var(--couleur-decor-clair);
+
+  --color-texte: var(--texte);
+  --color-texte-secondaire: var(--texte-secondaire);
+  --color-texte-discret: var(--texte-discret);
+  --color-texte-sur-principale: var(--texte-sur-principale);
+
+  --color-bordure: var(--bordure);
+  --color-bordure-forte: var(--bordure-forte);
+  --color-bordure-champ: var(--bordure-champ);
+
+  --color-erreur: var(--erreur);
+  --color-succes: var(--succes);
+  --color-alerte: var(--alerte);
+  --color-info: var(--info);
+
+  --shadow-doux: var(--ombre-sm);
+  --shadow-moyen: var(--ombre-md);
+  --shadow-fort: var(--ombre-lg);
+}
+
+/* Polices : aucune police a telecharger (page legere). */
+@theme {
+  --font-titre: Georgia, "Iowan Old Style", "Palatino Linotype", Charter, serif;
 }
 
 html,
@@ -15,8 +97,8 @@ body {
   margin: 0;
   font-family:
     system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--fond);
+  color: var(--texte);
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
 }

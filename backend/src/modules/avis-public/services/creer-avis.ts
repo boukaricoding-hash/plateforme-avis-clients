@@ -53,7 +53,8 @@ function estErreurDoublon(erreur: unknown): boolean {
 // ------------------------------------------------------------
 
 // Les options d'une question peuvent etre une liste de textes
-// ou une liste d'objets avec "valeur", "code" ou "id".
+// ou une liste d'objets. La valeur d'un choix est, dans l'ordre :
+// "valeur", "code", "id", puis "fr" (cas des options { fr, en } creees par l'API).
 function valeursOptions(options: unknown): string[] {
   if (!Array.isArray(options)) {
     return [];
@@ -64,7 +65,7 @@ function valeursOptions(options: unknown): string[] {
       valeurs.push(option);
     } else if (option !== null && typeof option === "object") {
       const objet = option as Record<string, unknown>;
-      for (const cle of ["valeur", "code", "id"]) {
+      for (const cle of ["valeur", "code", "id", "fr"]) {
         const v = objet[cle];
         if (typeof v === "string") {
           valeurs.push(v);

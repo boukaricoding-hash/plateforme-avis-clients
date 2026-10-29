@@ -10,7 +10,8 @@
     "dev": "tsx watch src/serveur.ts",
     "build": "tsc",
     "start": "node dist/src/serveur.js",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "demo": "tsx src/scripts/demonstration.ts"
   },
   "keywords": [],
   "author": "",

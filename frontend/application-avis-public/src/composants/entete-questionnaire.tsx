@@ -6,7 +6,8 @@ type Proprietes = {
   pointContact: QuestionnairePublic['point_contact']
 }
 
-// Logo (ou initiale si pas de logo), nom de l'organisation et nom du point de contact (« Table 12 »).
+// Logo (ou initiale si pas de logo) et nom du point de contact (« Table 12 »).
+// Le nom de l'organisation est affiche en haut a gauche de la page, pas ici.
 export function EnteteQuestionnaire({ organisation, pointContact }: Proprietes) {
   // Si l'image du logo ne charge pas, on affiche l'initiale.
   const [logoEnErreur, setLogoEnErreur] = useState(false)
@@ -15,24 +16,23 @@ export function EnteteQuestionnaire({ organisation, pointContact }: Proprietes) 
   const initiale = organisation.nom.trim().charAt(0).toUpperCase()
 
   return (
-    <header className="flex flex-col items-center gap-3 text-center">
+    <header className="flex flex-col items-center gap-4 text-center">
       {afficherLogo ? (
         <img
           src={organisation.logo_url ?? undefined}
           alt={organisation.nom}
           onError={() => setLogoEnErreur(true)}
-          className="h-20 w-20 rounded-2xl bg-white object-contain p-1 shadow-sm"
+          className="h-24 w-24 rounded-3xl bg-surface/70 object-contain p-1.5 shadow-doux"
         />
       ) : (
         <div
           aria-hidden="true"
-          className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--couleur-principale)] text-3xl font-bold text-white"
+          className="flex h-24 w-24 items-center justify-center rounded-3xl bg-principale font-titre text-4xl font-bold text-texte-sur-principale shadow-moyen"
         >
           {initiale}
         </div>
       )}
-      <h1 className="text-2xl font-bold text-slate-900">{organisation.nom}</h1>
-      <p className="rounded-full bg-slate-100 px-4 py-1 text-base font-semibold text-slate-700">
+      <p className="rounded-full bg-surface/60 px-4 py-1 text-base font-semibold text-texte-secondaire backdrop-blur-sm">
         {pointContact.nom}
       </p>
     </header>

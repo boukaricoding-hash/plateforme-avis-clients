@@ -85,6 +85,69 @@
 /* Polices : aucune police a telecharger (page legere). */
 @theme {
   --font-titre: Georgia, "Iowan Old Style", "Palatino Linotype", Charter, serif;
+
+  /* Mouvements : classes animate-monte, animate-logo, animate-trace, animate-halo, animate-sortie.
+     A utiliser avec motion-reduce:animate-none pour les personnes qui reduisent les animations. */
+
+  /* Un element apparait en montant doucement (fondu + glissement de 16 px). */
+  --animate-monte: monte 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  @keyframes monte {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Le logo apparait en grossissant avec un tout petit rebond. */
+  --animate-logo: logo 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  @keyframes logo {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Un cercle SVG se dessine : le cercle doit avoir pathLength="1" et stroke-dasharray="1". */
+  --animate-trace: trace 1.4s cubic-bezier(0.65, 0, 0.35, 1) both;
+  @keyframes trace {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Petite pulsation douce d'un halo, en boucle. */
+  --animate-halo: halo 2.8s ease-in-out infinite;
+  @keyframes halo {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.12);
+    }
+  }
+
+  /* Sortie de l'ecran d'ouverture : fondu + leger agrandissement. */
+  --animate-sortie: sortie 0.5s ease-in both;
+  @keyframes sortie {
+    to {
+      opacity: 0;
+      transform: scale(1.04);
+    }
+  }
 }
 
 html,

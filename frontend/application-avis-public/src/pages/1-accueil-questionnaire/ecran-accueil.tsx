@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { EnteteQuestionnaire } from '../../composants/entete-questionnaire'
+import { Mascotte } from '../../composants/mascotte'
 import { SelecteurLangue } from '../../composants/selecteur-langue'
 import { utiliserLangue } from '../../hooks/utiliser-langue'
 import type { QuestionnairePublic } from '../../types/avis-public'
@@ -103,6 +105,31 @@ function FlecheDroite() {
   )
 }
 
+// Petit logo de l'organisation (ou son initiale si pas de logo), a gauche du nom.
+function LogoEntete({ organisation }: { organisation: QuestionnairePublic['organisation'] }) {
+  // Si l'image du logo ne charge pas, on affiche l'initiale.
+  const [logoEnErreur, setLogoEnErreur] = useState(false)
+
+  const afficherLogo = organisation.logo_url !== null && !logoEnErreur
+  const initiale = organisation.nom.trim().charAt(0).toUpperCase()
+
+  return afficherLogo ? (
+    <img
+      src={organisation.logo_url ?? undefined}
+      alt=""
+      onError={() => setLogoEnErreur(true)}
+      className="h-11 w-11 shrink-0 rounded-xl bg-surface/70 object-contain p-1 shadow-doux"
+    />
+  ) : (
+    <div
+      aria-hidden="true"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-principale font-titre text-xl font-bold text-texte-sur-principale shadow-doux"
+    >
+      {initiale}
+    </div>
+  )
+}
+
 // Un bloc qui apparait en montant doucement, apres un petit retard (en millisecondes).
 function Entree({
   actif,
@@ -126,8 +153,8 @@ function Entree({
 }
 
 // Ecran E1 : pas de carte, tout est pose directement sur la page.
-// En haut : le nom de l'organisation a gauche, l'icone de langue a droite.
-// Au centre : logo, point de contact, message d'accueil, duree et bouton Commencer.
+// En haut : le logo et le nom de l'organisation a gauche, l'icone de langue a droite.
+// Au centre : mascotte, point de contact, message d'accueil, duree et bouton Commencer.
 export function EcranAccueil({ donnees, commencer, entreeActive }: Proprietes) {
   const { langue, t } = utiliserLangue()
 
@@ -140,42 +167,54 @@ export function EcranAccueil({ donnees, commencer, entreeActive }: Proprietes) {
       <DecorAccueil />
 
       <div className="flex items-center justify-between gap-4 px-5 pt-[max(1rem,env(safe-area-inset-top))]">
-        {/* Le nom, souligne par une ligne qui se trace de gauche a droite en s'affaiblissant. */}
-        <div className="min-w-0">
-          <h1
+        <div className="flex min-w-0 items-center gap-3">
+          <div
             className={
-              'truncate font-titre text-xl font-semibold tracking-wide text-texte transition-opacity duration-700 motion-reduce:opacity-100 motion-reduce:transition-none ' +
+              'transition-opacity duration-700 motion-reduce:opacity-100 motion-reduce:transition-none ' +
               (entreeActive ? 'opacity-100' : 'opacity-0')
             }
           >
-            {donnees.organisation.nom}
-          </h1>
-          <span
-            aria-hidden="true"
-            className={
-              'mt-1.5 block h-[2px] w-full origin-left rounded-full transition-transform duration-1000 ease-out motion-reduce:scale-x-100 motion-reduce:transition-none ' +
-              (entreeActive ? 'scale-x-100' : 'scale-x-0')
-            }
-            style={{
-              transitionDelay: '350ms',
-              background:
-                'linear-gradient(90deg, var(--couleur-principale) 0%, var(--couleur-decor) 40%, transparent 100%)',
-            }}
-          />
+            <LogoEntete organisation={donnees.organisation} />
+          </div>
+
+          {/* Le nom, souligne par une ligne qui se trace de gauche a droite en s'affaiblissant. */}
+          <div className="min-w-0">
+            <h1
+              className={
+                'truncate font-titre text-xl font-semibold tracking-wide text-texte transition-opacity duration-700 motion-reduce:opacity-100 motion-reduce:transition-none ' +
+                (entreeActive ? 'opacity-100' : 'opacity-0')
+              }
+            >
+              {donnees.organisation.nom}
+            </h1>
+            <span
+              aria-hidden="true"
+              className={
+                'mt-1.5 block h-[2px] w-full origin-left rounded-full transition-transform duration-1000 ease-out motion-reduce:scale-x-100 motion-reduce:transition-none ' +
+                (entreeActive ? 'scale-x-100' : 'scale-x-0')
+              }
+              style={{
+                transitionDelay: '350ms',
+                background:
+                  'linear-gradient(90deg, var(--couleur-principale) 0%, var(--couleur-decor) 40%, transparent 100%)',
+              }}
+            />
+          </div>
         </div>
 
         <SelecteurLangue />
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-[max(4rem,env(safe-area-inset-bottom))] pt-6">
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pb-[max(4rem,env(safe-area-inset-bottom))] pt-4">
         <Entree actif={entreeActive} retard={0}>
-          <EnteteQuestionnaire
-            organisation={donnees.organisation}
-            pointContact={donnees.point_contact}
-          />
+          <Mascotte humeur="accueil" taille={170} />
         </Entree>
 
         <Entree actif={entreeActive} retard={150}>
+          <EnteteQuestionnaire pointContact={donnees.point_contact} />
+        </Entree>
+
+        <Entree actif={entreeActive} retard={300}>
           <section className="flex flex-col items-center gap-3 text-center">
             <h2 className="font-titre text-3xl font-semibold text-texte">
               {t('accueil.titreParDefaut')}
@@ -185,7 +224,7 @@ export function EcranAccueil({ donnees, commencer, entreeActive }: Proprietes) {
           </section>
         </Entree>
 
-        <Entree actif={entreeActive} retard={300}>
+        <Entree actif={entreeActive} retard={450}>
           <button
             type="button"
             onClick={commencer}

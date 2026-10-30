@@ -3,6 +3,8 @@ import express, { type NextFunction, type Request, type Response } from "express
 import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import fs from "node:fs";
+import path from "node:path";
 import { routesAuthentification } from "./modules/authentification/routes/auth.routes";
 import { routesSites } from "./modules/sites/routes/sites.routes";
 import { routesPointsContact } from "./modules/points-de-contact/routes/points-contact.routes";
@@ -14,13 +16,25 @@ import { routesNotifications } from "./modules/notifications/routes/notification
 import { routesDashboard } from "./modules/tableaux-de-bord/routes/dashboard.routes";
 
 export const app = express();
-
+// Nombre d'intermediaires (tunnel, Nginx) entre le client et le serveur.
+// 0 = aucun (en local). 1 = un intermediaire.
+app.set("trust proxy", Number(process.env["NOMBRE_PROXYS"]) || 0);
 const originesAutorisees = (process.env["ORIGINES_AUTORISEES"] ?? "")
   .split(",")
   .map((origine) => origine.trim())
   .filter((origine) => origine !== "");
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        // Autorise les logos d'organisations hébergés ailleurs (en HTTPS).
+        "img-src": ["'self'", "data:", "https:"],
+      },
+    },
+  }),
+);
 app.use(
   cors({
     origin: originesAutorisees,
@@ -30,6 +44,20 @@ app.use(
 
 app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
+
+// Page d'avis (version finale) : servie par le serveur quand le dossier "page" existe (dans Docker).
+// Toute adresse hors /api renvoie la page, par exemple /q/ABC123 : c'est la page qui lit le code.
+const dossierPage = path.join(process.cwd(), "page");
+if (fs.existsSync(dossierPage)) {
+  app.use(express.static(dossierPage, { index: false }));
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.method !== "GET" || req.path.startsWith("/api/")) {
+      next();
+      return;
+    }
+    res.sendFile(path.join(dossierPage, "index.html"));
+  });
+}
 
 app.get("/", (_req, res) => {
   res.send("<h1>Plateforme d'avis clients</h1><p>Le serveur fonctionne.</p>");

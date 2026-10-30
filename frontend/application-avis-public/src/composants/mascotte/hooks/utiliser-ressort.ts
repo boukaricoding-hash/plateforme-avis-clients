@@ -77,7 +77,7 @@ export function utiliserRessort<T extends Nombres>(
     if (reduit) return
 
     const arrivee = aplatir(cible)
-    const { position, vitesse } = etat.current
+    const { position } = etat.current
     if (position.length !== arrivee.length) {
       etat.current = { position: [...arrivee], vitesse: arrivee.map(() => 0) }
     }

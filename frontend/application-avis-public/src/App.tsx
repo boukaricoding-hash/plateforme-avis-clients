@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Route, Routes, useParams } from 'react-router'
 import {
   creerBrouillonVide,
@@ -9,6 +10,7 @@ import {
 import type { Brouillon } from './brouillon-hors-connexion/brouillon'
 import { utiliserLangue } from './hooks/utiliser-langue'
 import { utiliserQuestionnaire } from './hooks/utiliser-questionnaire'
+import { EcranLancement } from './pages/0-lancement/ecran-lancement'
 import { EcranAccueil } from './pages/1-accueil-questionnaire/ecran-accueil'
 import { EcranQuestion } from './pages/2-ecran-question/ecran-question'
 import { EcranCommentaire } from './pages/3-commentaire-coordonnees/ecran-commentaire'
@@ -72,12 +74,14 @@ function construireCorps(brouillon: Brouillon): CorpsAvis {
 type ProprietesParcours = {
   code: string
   donnees: QuestionnairePublic
+  // Vrai quand l'ecran d'ouverture est fini : l'accueil peut alors faire son entree.
+  lancementFini: boolean
 }
 
 // Parcours du client une fois le questionnaire charge :
 // accueil -> questions -> commentaire et coordonnees -> remerciement.
 // Tout est garde dans un brouillon sur le telephone, avec la cle unique de l'envoi.
-function ParcoursAvis({ code, donnees }: ProprietesParcours) {
+function ParcoursAvis({ code, donnees, lancementFini }: ProprietesParcours) {
   const { langue } = utiliserLangue()
   const versionId = donnees.questionnaire.version_id
   const nombreQuestions = donnees.questionnaire.questions.length
@@ -215,6 +219,7 @@ function ParcoursAvis({ code, donnees }: ProprietesParcours) {
     return (
       <EcranAccueil
         donnees={donnees}
+        entreeActive={lancementFini}
         commencer={() => {
           setDepartQuestions(0)
           setEcran('questions')
@@ -256,28 +261,41 @@ type ProprietesPageAvis = {
   code: string | undefined
 }
 
-// Page d'avis d'un QR code : chargement, erreur (E5), puis le parcours.
+// Page d'avis d'un QR code : ecran d'ouverture anime des le scan, erreur (E5), puis le parcours.
 function PageAvis({ code }: ProprietesPageAvis) {
-  const { t } = utiliserLangue()
   const { etat, recharger } = utiliserQuestionnaire(code)
 
-  if (etat.statut === 'chargement') {
-    return (
-      <main className="flex min-h-svh items-center justify-center p-6 text-center">
-        <p className="text-lg text-slate-600">{t('commun.chargement')}</p>
-      </main>
-    )
-  }
+  // L'ecran d'ouverture ne se joue qu'une fois par scan.
+  const [lancementFini, setLancementFini] = useState(false)
+  const terminerLancement = useCallback(() => setLancementFini(true), [])
 
+  // Pas d'ecran d'ouverture si le QR est inconnu ou en erreur : on montre l'erreur tout de suite.
+  const afficherLancement = !lancementFini && etat.statut !== 'erreur' && code !== undefined
+
+  let contenu: ReactNode = null
   if (etat.statut === 'erreur' || code === undefined) {
     const erreur =
       etat.statut === 'erreur'
         ? etat.erreur
         : new ErreurService(404, 'QR_INCONNU', 'Code absent.', null)
-    return <EcranErreur erreur={erreur} reessayer={recharger} />
+    contenu = <EcranErreur erreur={erreur} reessayer={recharger} />
+  } else if (etat.statut === 'pret') {
+    contenu = <ParcoursAvis code={code} donnees={etat.donnees} lancementFini={lancementFini} />
   }
 
-  return <ParcoursAvis code={code} donnees={etat.donnees} />
+  // Le parcours se charge en dessous de l'ecran d'ouverture, qui s'efface pour le reveler.
+  // L'ecran d'ouverture garde toujours la meme place ici : son animation ne repart pas a zero.
+  return (
+    <>
+      {contenu}
+      {afficherLancement && (
+        <EcranLancement
+          organisation={etat.statut === 'pret' ? etat.donnees.organisation : null}
+          terminer={terminerLancement}
+        />
+      )}
+    </>
+  )
 }
 
 // La cle remet tout a zero si le code du QR change dans l'adresse.

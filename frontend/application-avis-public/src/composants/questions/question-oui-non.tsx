@@ -26,10 +26,10 @@ export function QuestionOuiNon({ valeur, changer }: ProprietesQuestion) {
             aria-checked={choisi}
             onClick={() => changer(element.valeur)}
             className={
-              'flex h-16 items-center justify-center rounded-xl border-2 text-lg font-semibold transition-colors ' +
+              'flex h-16 items-center justify-center rounded-[var(--rayon-md)] border text-lg font-semibold transition active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-principale ' +
               (choisi
-                ? 'border-[var(--couleur-principale)] bg-[var(--couleur-principale)] text-white'
-                : 'border-slate-300 bg-white text-slate-700')
+                ? 'border-principale bg-principale text-texte-sur-principale shadow-doux'
+                : 'border-bordure-forte bg-surface/70 text-texte hover:border-principale')
             }
           >
             {element.texte}

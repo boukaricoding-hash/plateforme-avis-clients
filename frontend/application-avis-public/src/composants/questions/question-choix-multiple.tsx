@@ -25,7 +25,7 @@ export function QuestionChoixMultiple({ question, valeur, changer }: ProprietesQ
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-slate-500">{t('question.plusieursReponses')}</p>
+      <p className="text-center text-sm text-texte-secondaire">{t('question.plusieursReponses')}</p>
       <div role="group" className="flex flex-col gap-3">
         {options.map((option) => {
           const valeurDeLOption = valeurOption(option)
@@ -38,25 +38,23 @@ export function QuestionChoixMultiple({ question, valeur, changer }: ProprietesQ
               aria-checked={cochee}
               onClick={() => basculer(valeurDeLOption)}
               className={
-                'flex min-h-12 w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left text-base transition-colors ' +
+                'flex min-h-12 w-full items-center gap-3 rounded-[var(--rayon-md)] border px-4 py-3 text-left text-base transition active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-principale ' +
                 (cochee
-                  ? 'border-[var(--couleur-principale)] bg-white font-semibold text-slate-900'
-                  : 'border-slate-300 bg-white text-slate-700')
+                  ? 'border-principale bg-surface font-semibold text-texte shadow-doux'
+                  : 'border-bordure-forte bg-surface/70 text-texte hover:border-principale')
               }
             >
               <span
                 aria-hidden="true"
                 className={
-                  'flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 ' +
-                  (cochee
-                    ? 'border-[var(--couleur-principale)] bg-[var(--couleur-principale)]'
-                    : 'border-slate-300')
+                  'flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border ' +
+                  (cochee ? 'border-principale bg-principale' : 'border-bordure-champ')
                 }
               >
                 {cochee ? (
                   <svg
                     viewBox="0 0 24 24"
-                    className="h-4 w-4 stroke-white"
+                    className="h-3.5 w-3.5 stroke-texte-sur-principale"
                     fill="none"
                     strokeWidth="3"
                     strokeLinecap="round"

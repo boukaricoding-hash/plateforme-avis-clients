@@ -36,10 +36,10 @@ export function QuestionNps({ question, valeur, changer }: ProprietesQuestion) {
               aria-checked={choisie}
               onClick={() => changer(note)}
               className={
-                'flex h-12 min-w-11 items-center justify-center rounded-xl border-2 text-lg font-semibold transition-colors ' +
+                'flex h-12 min-w-11 items-center justify-center rounded-[var(--rayon-md)] border text-lg font-semibold transition active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-principale ' +
                 (choisie
-                  ? 'border-[var(--couleur-principale)] bg-[var(--couleur-principale)] text-white'
-                  : 'border-slate-300 bg-white text-slate-700')
+                  ? 'border-principale bg-principale text-texte-sur-principale shadow-doux'
+                  : 'border-bordure-forte bg-surface/70 text-texte hover:border-principale')
               }
             >
               {note}
@@ -47,7 +47,7 @@ export function QuestionNps({ question, valeur, changer }: ProprietesQuestion) {
           )
         })}
       </div>
-      <div className="flex items-start justify-between gap-4 text-sm text-slate-500">
+      <div className="flex items-start justify-between gap-4 text-sm text-texte-secondaire">
         <span className="max-w-[45%]">{libelleMin}</span>
         <span className="max-w-[45%] text-right">{libelleMax}</span>
       </div>

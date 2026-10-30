@@ -20,9 +20,9 @@ export function QuestionTexteLibre({ valeur, changer }: ProprietesQuestion) {
         maxLength={LONGUEUR_MAX}
         rows={6}
         // text-base (16 px) evite le zoom automatique sur iPhone a la selection du champ.
-        className="min-h-40 w-full resize-none rounded-xl border-2 border-slate-300 bg-white p-4 text-base text-slate-900 outline-none focus:border-[var(--couleur-principale)]"
+        className="min-h-40 w-full resize-none rounded-[var(--rayon-md)] border border-bordure-champ bg-surface p-4 text-base text-texte outline-none transition placeholder:text-texte-discret focus:border-principale focus:shadow-doux"
       />
-      <p className="text-right text-sm text-slate-400" aria-hidden="true">
+      <p className="text-right text-sm text-texte-discret" aria-hidden="true">
         {texte.length} / {LONGUEUR_MAX}
       </p>
     </div>

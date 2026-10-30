@@ -24,22 +24,20 @@ export function QuestionChoixUnique({ question, valeur, changer }: ProprietesQue
             aria-checked={choisie}
             onClick={() => changer(valeurDeLOption)}
             className={
-              'flex min-h-12 w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left text-base transition-colors ' +
+              'flex min-h-12 w-full items-center gap-3 rounded-[var(--rayon-md)] border px-4 py-3 text-left text-base transition active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-principale ' +
               (choisie
-                ? 'border-[var(--couleur-principale)] bg-white font-semibold text-slate-900'
-                : 'border-slate-300 bg-white text-slate-700')
+                ? 'border-principale bg-surface font-semibold text-texte shadow-doux'
+                : 'border-bordure-forte bg-surface/70 text-texte hover:border-principale')
             }
           >
             <span
               aria-hidden="true"
               className={
-                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ' +
-                (choisie ? 'border-[var(--couleur-principale)]' : 'border-slate-300')
+                'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ' +
+                (choisie ? 'border-principale' : 'border-bordure-champ')
               }
             >
-              {choisie ? (
-                <span className="h-3 w-3 rounded-full bg-[var(--couleur-principale)]" />
-              ) : null}
+              {choisie ? <span className="h-2.5 w-2.5 rounded-full bg-principale" /> : null}
             </span>
             <span>{libelleOption(option, langue)}</span>
           </button>

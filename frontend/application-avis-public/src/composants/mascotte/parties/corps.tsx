@@ -1,22 +1,29 @@
 import { CLAIR, CORPS, QUEUE, SOMBRE } from '../constantes'
 
+// Lumiere du bord (cote ombre) et lumiere qui rebondit sur le sol : toutes deux tirees
+// de la couleur principale, donc elles suivent la teinte de l'organisation.
+const LUMIERE_BORD = 'color-mix(in srgb, var(--couleur-principale) 50%, white)'
+const LUMIERE_REBOND = 'color-mix(in srgb, var(--couleur-principale) 60%, white)'
+const MILIEU_SOMBRE = 'color-mix(in srgb, var(--couleur-principale) 92%, black)'
+
 type Proprietes = {
   // Identifiant unique de cette mascotte, pour les degrades et les masques.
   id: string
 }
 
 // Le corps : une bulle de dialogue en volume. La lumiere vient d'en haut a gauche.
-// - degrade en 3 tons (clair, couleur principale, sombre) ;
-// - ombre de forme : le bas droit s'assombrit doucement ;
-// - bord eclaire fin cote ombre (la lumiere qui contourne la bulle) ;
+// - degrade en 4 tons (clair, couleur principale, un peu plus sombre, sombre) ;
+// - ombre de forme : le bas droit s'assombrit, et le dessous du corps encore plus ;
+// - lumiere de rebond discrete en bas a droite ;
+// - bord eclaire cote ombre (la lumiere qui contourne la bulle) ;
 // - ombre de contact au-dessus de la queue, et queue plus sombre ;
-// - reflet net en haut a gauche.
+// - gros reflet doux, trait net le long du coin et petits points.
 // Que des degrades : pas de filtre SVG, donc leger meme sur un petit telephone.
 export function Corps({ id }: Proprietes) {
   return (
     <>
       <defs>
-        {/* Degrade principal, 3 tons */}
+        {/* Degrade principal, 4 tons */}
         <linearGradient
           id={id + '-corps'}
           gradientUnits="userSpaceOnUse"
@@ -26,7 +33,8 @@ export function Corps({ id }: Proprietes) {
           y2="182"
         >
           <stop offset="0%" style={{ stopColor: CLAIR }} />
-          <stop offset="48%" style={{ stopColor: 'var(--couleur-principale)' }} />
+          <stop offset="38%" style={{ stopColor: 'var(--couleur-principale)' }} />
+          <stop offset="72%" style={{ stopColor: MILIEU_SOMBRE }} />
           <stop offset="100%" style={{ stopColor: SOMBRE }} />
         </linearGradient>
 
@@ -34,12 +42,37 @@ export function Corps({ id }: Proprietes) {
         <radialGradient
           id={id + '-forme'}
           gradientUnits="userSpaceOnUse"
-          cx="70"
-          cy="62"
+          cx="68"
+          cy="58"
           r="140"
         >
-          <stop offset="55%" stopColor="black" stopOpacity="0" />
-          <stop offset="100%" stopColor="black" stopOpacity="0.22" />
+          <stop offset="45%" stopColor="black" stopOpacity="0" />
+          <stop offset="100%" stopColor="black" stopOpacity="0.3" />
+        </radialGradient>
+
+        {/* Dessous du corps plus sombre */}
+        <linearGradient
+          id={id + '-dessous'}
+          gradientUnits="userSpaceOnUse"
+          x1="0"
+          y1="108"
+          x2="0"
+          y2="152"
+        >
+          <stop offset="0%" stopColor="black" stopOpacity="0" />
+          <stop offset="100%" stopColor="black" stopOpacity="0.2" />
+        </linearGradient>
+
+        {/* Lumiere qui rebondit sur le sol, en bas a droite */}
+        <radialGradient
+          id={id + '-rebond'}
+          gradientUnits="userSpaceOnUse"
+          cx="150"
+          cy="132"
+          r="44"
+        >
+          <stop offset="0%" style={{ stopColor: LUMIERE_REBOND, stopOpacity: 0.4 }} />
+          <stop offset="100%" style={{ stopColor: LUMIERE_REBOND, stopOpacity: 0 }} />
         </radialGradient>
 
         {/* Bord eclaire : visible seulement vers le bas droit */}
@@ -51,8 +84,8 @@ export function Corps({ id }: Proprietes) {
           x2="170"
           y2="160"
         >
-          <stop offset="55%" style={{ stopColor: CLAIR, stopOpacity: 0 }} />
-          <stop offset="100%" style={{ stopColor: CLAIR, stopOpacity: 0.75 }} />
+          <stop offset="50%" style={{ stopColor: LUMIERE_BORD, stopOpacity: 0 }} />
+          <stop offset="100%" style={{ stopColor: LUMIERE_BORD, stopOpacity: 0.95 }} />
         </linearGradient>
 
         {/* Ombre de contact au-dessus de la queue */}
@@ -71,8 +104,20 @@ export function Corps({ id }: Proprietes) {
           y2="178"
         >
           <stop offset="0%" stopColor="black" stopOpacity="0" />
-          <stop offset="100%" stopColor="black" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="black" stopOpacity="0.3" />
         </linearGradient>
+
+        {/* Gros reflet doux en haut a gauche */}
+        <radialGradient
+          id={id + '-reflet'}
+          gradientUnits="userSpaceOnUse"
+          cx="62"
+          cy="48"
+          r="32"
+        >
+          <stop offset="0%" stopColor="white" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
 
         {/* Tout ce qui est dessine dans le corps reste dans le corps */}
         <clipPath id={id + '-decoupe'}>
@@ -88,9 +133,11 @@ export function Corps({ id }: Proprietes) {
         style={{ fill: 'url(#' + id + '-corps)', stroke: 'url(#' + id + '-corps)' }}
       />
 
-      {/* Ombre de forme et ombre de contact, decoupees dans le corps */}
+      {/* Ombres et lumieres de volume, decoupees dans le corps */}
       <g clipPath={'url(#' + id + '-decoupe)'}>
         <rect x="20" y="24" width="160" height="160" fill={'url(#' + id + '-forme)'} />
+        <rect x="20" y="24" width="160" height="160" fill={'url(#' + id + '-dessous)'} />
+        <rect x="20" y="24" width="160" height="160" fill={'url(#' + id + '-rebond)'} />
         <ellipse cx="94" cy="148" rx="26" ry="8" fill={'url(#' + id + '-contact)'} />
       </g>
 
@@ -100,29 +147,29 @@ export function Corps({ id }: Proprietes) {
       {/* Bord eclaire cote ombre */}
       <path
         d={CORPS}
-        strokeWidth="3"
+        strokeWidth="3.4"
         strokeLinejoin="round"
         fill="none"
         stroke={'url(#' + id + '-bord)'}
       />
 
-      {/* Reflet : zone douce, trait net le long du coin, deux petits points */}
+      {/* Reflet : zone douce, trait net le long du coin, petits points */}
       <ellipse
-        cx="64"
+        cx="62"
         cy="48"
-        rx="22"
-        ry="9"
-        transform="rotate(-24 64 48)"
-        style={{ fill: 'white', opacity: 0.18 }}
+        rx="32"
+        ry="16"
+        transform="rotate(-24 62 48)"
+        fill={'url(#' + id + '-reflet)'}
       />
       <path
         d="M40 76 A34 34 0 0 1 74 42"
         strokeWidth="5"
         strokeLinecap="round"
-        style={{ stroke: 'white', opacity: 0.55 }}
+        style={{ stroke: 'white', opacity: 0.6 }}
       />
-      <circle cx="88" cy="41" r="2.4" style={{ fill: 'white', opacity: 0.6 }} />
-      <circle cx="36" cy="92" r="1.8" style={{ fill: 'white', opacity: 0.45 }} />
+      <circle cx="88" cy="41" r="2.6" style={{ fill: 'white', opacity: 0.65 }} />
+      <circle cx="36" cy="92" r="1.9" style={{ fill: 'white', opacity: 0.5 }} />
     </>
   )
 }

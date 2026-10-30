@@ -5,7 +5,15 @@
 // - triste : mauvaise note, elle est embetee (sans dramatiser) ;
 // - ecoute : le client ecrit son commentaire, elle penche la tete ;
 // - ravi : merci, elle est ravie et il y a des confettis.
-export type HumeurMascotte = 'accueil' | 'attentif' | 'content' | 'triste' | 'ecoute' | 'ravi'
+export type HumeurMascotte =
+  | 'accueil'
+  | 'attentif'
+  | 'content'
+  | 'triste'
+  | 'ecoute'
+  | 'ravi'
+  | 'reflexion'
+  | 'surpris'
 
 export type ProprietesMascotte = {
   humeur: HumeurMascotte

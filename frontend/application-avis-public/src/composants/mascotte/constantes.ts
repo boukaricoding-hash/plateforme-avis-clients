@@ -1,17 +1,21 @@
 // Couleurs tirees de la couleur principale de l'organisation : la mascotte change de teinte
 // avec elle. Le reste vient des variables du site (texte, decor, alerte, info...).
-export const CLAIR = 'color-mix(in srgb, var(--couleur-principale) 62%, white)'
+// Lumiere chaude (comme un soleil doux) : elle eclaircit sans griser la couleur principale.
+export const LUMIERE = '#ffcf9f'
+// Ombre chaude : assombrit sans griser (un noir pur donnerait du marron terne).
+export const OMBRE_CHAUDE = '#3a1208'
+export const CLAIR = 'color-mix(in srgb, var(--couleur-principale) 70%, ' + LUMIERE + ')'
 export const FONCE = 'color-mix(in srgb, var(--couleur-principale) 78%, black)'
-// Ton le plus sombre du corps (cote ombre, dessous) : la lumiere vient d'en haut a gauche.
-export const SOMBRE = 'color-mix(in srgb, var(--couleur-principale) 84%, black)'
-export const JOUE = 'color-mix(in srgb, var(--couleur-decor) 70%, white)'
+// Tons sombres du corps (bas de la bulle) : la lumiere vient d'en haut.
+export const SOMBRE = 'color-mix(in srgb, var(--couleur-principale) 70%, ' + OMBRE_CHAUDE + ')'
+export const JOUE = 'color-mix(in srgb, var(--couleur-decor) 55%, #ff7f6e)'
 
-// Forme du corps : une bulle de dialogue avec sa petite queue en bas a gauche.
+// Forme du corps : une bulle de dialogue bien ronde et joufflue, avec sa petite queue en bas a gauche.
 export const CORPS =
-  'M74 30 H126 A46 46 0 0 1 172 76 V102 A46 46 0 0 1 126 148 H106 Q88 152 54 178 Q68 162 76 148 A46 46 0 0 1 28 102 V76 A46 46 0 0 1 74 30 Z'
+  'M64 28 Q100 24 136 28 C160 28 176 44 176 68 Q179 84 176 98 C176 126 158 146 132 146 H110 Q94 150 60 174 Q70 160 76 146 C44 146 24 126 24 98 Q21 84 24 68 C24 44 40 28 64 28 Z'
 
 // Contour de la petite queue seule (pour l'assombrir : elle est dans l'ombre du corps).
-export const QUEUE = 'M106 148 Q88 152 54 178 Q68 162 76 148 Z'
+export const QUEUE = 'M110 146 Q94 150 60 174 Q70 160 76 146 Z'
 
 // Etoile a 4 branches (centree sur 0,0) pour les eclats.
 export const ETOILE = 'M0 -9 Q1.6 -1.6 9 0 Q1.6 1.6 0 9 Q-1.6 1.6 -9 0 Q-1.6 -1.6 0 -9 Z'

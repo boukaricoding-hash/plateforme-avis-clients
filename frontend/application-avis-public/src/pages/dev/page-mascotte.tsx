@@ -16,14 +16,14 @@ const HUMEURS: HumeurMascotte[] = [
   'surpris',
 ]
 
-const COULEURS_EXEMPLES = ['#af6046', '#1e3a5f', '#2f7a33', '#7a3fa0', '#c0392b']
+const COULEURS_EXEMPLES = ['#c65e3d', '#1e3a5f', '#2f7a33', '#7a3fa0', '#c0392b']
 
 // Duree entre deux humeurs quand l'enchainement automatique est actif.
 const DUREE_ENCHAINEMENT_MS = 2200
 
 export function PageMascotte() {
   const [taille, setTaille] = useState(160)
-  const [couleur, setCouleur] = useState('#af6046')
+  const [couleur, setCouleur] = useState('#c65e3d')
   const [fondSombre, setFondSombre] = useState(false)
   const [humeurActive, setHumeurActive] = useState<HumeurMascotte>('accueil')
   const [enchainer, setEnchainer] = useState(false)

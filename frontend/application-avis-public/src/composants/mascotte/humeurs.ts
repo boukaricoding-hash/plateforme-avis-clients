@@ -68,7 +68,7 @@ export const PARAMETRES_HUMEURS: Record<HumeurMascotte, ParametresHumeur> = {
       opacite: 1,
     },
     yeux: { ouverture: 1, rire: 0, pupilleX: -4, pupilleY: -3, rayonPupille: 9 },
-    joues: { opacite: 0.45 },
+    joues: { opacite: 0.7 },
     goutte: { opacite: 0 },
   },
   surpris: {
@@ -88,9 +88,9 @@ export const PARAMETRES_HUMEURS: Record<HumeurMascotte, ParametresHumeur> = {
   },
   accueil: {
     bouche: {
-      gx: 82, gy: 108, dx: 118, dy: 108,
-      bas: 126, haut: 126, remplissage: 0,
-      langueY: 118, langueRx: 0, langueRy: 0,
+      gx: 81, gy: 106, dx: 119, dy: 106,
+      bas: 144, haut: 110, remplissage: 1,
+      langueY: 122, langueRx: 9, langueRy: 5.5,
     },
     sourcils: {
       g: { x1: 64, y1: 60, cx: 78, cy: 52, x2: 92, y2: 58 },
@@ -98,7 +98,7 @@ export const PARAMETRES_HUMEURS: Record<HumeurMascotte, ParametresHumeur> = {
       opacite: 1,
     },
     yeux: { ouverture: 1, rire: 0, pupilleX: 0, pupilleY: 0, rayonPupille: 9 },
-    joues: { opacite: 0.45 },
+    joues: { opacite: 0.7 },
     goutte: { opacite: 0 },
   },
   attentif: {
@@ -113,7 +113,7 @@ export const PARAMETRES_HUMEURS: Record<HumeurMascotte, ParametresHumeur> = {
       opacite: 1,
     },
     yeux: { ouverture: 1, rire: 0, pupilleX: 4, pupilleY: 3, rayonPupille: 9.5 },
-    joues: { opacite: 0.45 },
+    joues: { opacite: 0.7 },
     goutte: { opacite: 0 },
   },
   content: {
@@ -143,7 +143,7 @@ export const PARAMETRES_HUMEURS: Record<HumeurMascotte, ParametresHumeur> = {
       opacite: 1,
     },
     yeux: { ouverture: 1, rire: 0, pupilleX: 0, pupilleY: 4, rayonPupille: 8 },
-    joues: { opacite: 0.45 },
+    joues: { opacite: 0.7 },
     goutte: { opacite: 1 },
   },
   ecoute: {
@@ -158,7 +158,7 @@ export const PARAMETRES_HUMEURS: Record<HumeurMascotte, ParametresHumeur> = {
       opacite: 1,
     },
     yeux: { ouverture: 1, rire: 0, pupilleX: -3, pupilleY: -4, rayonPupille: 9 },
-    joues: { opacite: 0.45 },
+    joues: { opacite: 0.7 },
     goutte: { opacite: 0 },
   },
   ravi: {

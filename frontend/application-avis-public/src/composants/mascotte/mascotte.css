@@ -82,8 +82,8 @@
   transform-box: view-box;
   transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.mascotte-haut-bras { transform-origin: 32px 104px; }
-.mascotte-avant-bras { transform-origin: 22px 120px; }
+.mascotte-haut-bras { transform-origin: 24px 108px; }
+.mascotte-avant-bras { transform-origin: 14px 122px; }
 
 .mascotte[data-humeur='triste'] .mascotte-haut-bras { transform: rotate(-6deg); }
 .mascotte[data-humeur='content'] .mascotte-haut-bras { transform: rotate(112deg); }
@@ -92,8 +92,8 @@
 .mascotte[data-humeur='ravi'] .mascotte-avant-bras { transform: rotate(50deg); }
 /* Coucou : le bras droit se leve, l'avant-bras balance autour du coude.
    La pose fixe sert quand les animations sont reduites. */
-.mascotte[data-humeur='accueil'] .mascotte-bras-d .mascotte-haut-bras { transform: rotate(105deg); }
-.mascotte[data-humeur='accueil'] .mascotte-bras-d .mascotte-avant-bras {
+.mascotte[data-humeur='accueil'] .mascotte-bras-g .mascotte-haut-bras { transform: rotate(105deg); }
+.mascotte[data-humeur='accueil'] .mascotte-bras-g .mascotte-avant-bras {
   transform: rotate(75deg);
   animation: mascotte-coucou 1.2s ease-in-out infinite;
 }
@@ -138,8 +138,8 @@
 .mascotte-main-ouverte { opacity: 0; }
 .mascotte-main-poing,
 .mascotte-main-ouverte { transition: opacity 0.2s ease; }
-.mascotte[data-humeur='accueil'] .mascotte-bras-d .mascotte-main-ouverte { opacity: 1; }
-.mascotte[data-humeur='accueil'] .mascotte-bras-d .mascotte-main-poing { opacity: 0; }
+.mascotte[data-humeur='accueil'] .mascotte-bras-g .mascotte-main-ouverte { opacity: 1; }
+.mascotte[data-humeur='accueil'] .mascotte-bras-g .mascotte-main-poing { opacity: 0; }
 
 /* Reflexion : le bras droit de derriere disparait, la main au menton (devant) arrive. */
 .mascotte-bras-d { transition: opacity 0.25s ease; }

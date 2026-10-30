@@ -15,27 +15,27 @@ export function MainMenton({ id }: Proprietes) {
   return (
     <g className="mascotte-main-menton" aria-hidden="true">
       {/* Haut du bras, coude et avant-bras */}
-      <path d="M170 108 L177 132" strokeWidth="12" strokeLinecap="round" stroke={remplissage} />
-      <path d="M177 132 L138 137" strokeWidth="10.5" strokeLinecap="round" stroke={remplissage} />
-      <circle cx="177" cy="132" r="6.3" fill={remplissage} />
+      <path d="M168 106 L178 128" strokeWidth="12" strokeLinecap="round" stroke={remplissage} />
+      <path d="M178 128 L134 131" strokeWidth="10.5" strokeLinecap="round" stroke={remplissage} />
+      <circle cx="178" cy="128" r="6.8" fill={remplissage} />
 
       {/* Poing, pouce, plis des doigts, reflet */}
-      <ellipse cx="121" cy="137" rx="9.8" ry="9" fill={remplissage} />
+      <ellipse cx="121" cy="131.5" rx="10.4" ry="9.6" fill={remplissage} />
       <ellipse
-        cx="118"
-        cy="127.5"
+        cx="117.5"
+        cy="121.5"
         rx="3.8"
         ry="6.4"
-        transform="rotate(-12 118 127.5)"
+        transform="rotate(-12 117.5 121.5)"
         fill={remplissage}
       />
       <path
-        d="M117 135 L117 143 M121 135.5 L121 144 M125 135 L125 143"
+        d="M117 129.5 L117 137.5 M121 130 L121 138.5 M125 129.5 L125 137.5"
         strokeWidth="1.3"
         strokeLinecap="round"
         style={{ stroke: PLI, opacity: 0.55 }}
       />
-      <ellipse cx="117.5" cy="133" rx="3.6" ry="2.4" style={{ fill: 'white', opacity: 0.25 }} />
+      <ellipse cx="117.5" cy="127" rx="3.6" ry="2.4" style={{ fill: 'white', opacity: 0.25 }} />
     </g>
   )
 }

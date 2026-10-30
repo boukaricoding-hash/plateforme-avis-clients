@@ -10,8 +10,13 @@ import { Visage } from './parties/visage'
 import { MainMenton, TraitsSurprise } from './parties/effets'
 import type { ProprietesMascotte } from './types'
 
-// La mascotte : une bulle de dialogue avec un visage. Elle prend la couleur principale
-// de l'organisation, donc elle convient a tous les secteurs.
+// Couleur de base de la mascotte (blanc rose). Elle est fixe : elle ne suit plus la couleur
+// de l'organisation. Tous les tons du corps, des bras, des yeux, des sourcils et de la bouche
+// sont calcules a partir d'elle (voir constantes.ts et parties/).
+// Les confettis et les eclats, eux, restent dans les couleurs de la page.
+const COULEUR_MASCOTTE = '#f4ecec'
+
+// La mascotte : une bulle de dialogue avec un visage.
 export function Mascotte({ humeur, taille = 160, className, titre }: ProprietesMascotte) {
   // Identifiants uniques (sans les « : » que React met dans useId) pour les degrades et les masques.
   const id = 'mascotte-' + useId().replace(/:/g, '')
@@ -42,8 +47,13 @@ export function Mascotte({ humeur, taille = 160, className, titre }: ProprietesM
       </g>
       <Confettis />
 
-      {/* animation: none : le mouvement du corps ne vient plus du CSS mais de utiliserMouvement */}
-      <g ref={refCorps} className="mascotte-corps" style={{ animation: 'none' }}>
+      {/* animation: none : le mouvement du corps ne vient plus du CSS mais de utiliserMouvement.
+          --couleur-principale est redefinie ici : tout ce qui est dans le corps utilise la couleur de la mascotte. */}
+      <g
+        ref={refCorps}
+        className="mascotte-corps"
+        style={{ animation: 'none', ['--couleur-principale' as string]: COULEUR_MASCOTTE }}
+      >
         {/* Bras, derriere le corps */}
         <Bras id={id} />
 

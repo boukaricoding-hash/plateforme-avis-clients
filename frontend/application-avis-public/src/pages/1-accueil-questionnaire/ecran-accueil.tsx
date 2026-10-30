@@ -16,64 +16,92 @@ type Proprietes = {
   entreeActive: boolean
 }
 
-// Decor anime : deux halos qui flottent et une vague en bas.
-// Purement decoratif, cache aux lecteurs d'ecran et si l'animation est reduite.
+// Fond de la page : du peche tres clair en haut (le ton du haut de la mascotte),
+// puis le beige de la page, puis un beige rose un peu plus soutenu en bas.
+// Le degrade est deux fois plus haut que l'ecran et glisse tres lentement (voir STYLES).
+const FOND_ACCUEIL =
+  'linear-gradient(170deg, color-mix(in srgb, var(--couleur-decor-clair) 40%, var(--fond-alt)) 0%, var(--fond) 35%, var(--fond-alt) 62%, var(--surface-douce) 100%)'
+
+// Mouvements du fond (les noms commencent par « accueil- »).
+// - lumiere : le degrade glisse tres lentement de haut en bas, puis revient ;
+// - vague : la vague defile d'une demi-largeur puis recommence (le dessin se repete, donc sans coupure).
+const STYLES = `
+@keyframes accueil-lumiere {
+  from { background-position: 0% 0%; }
+  to { background-position: 0% 100%; }
+}
+@keyframes accueil-vague {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.accueil-fond {
+  background-size: 100% 220%;
+  animation: accueil-lumiere 28s ease-in-out infinite alternate;
+}
+.accueil-vague-1 {
+  animation: accueil-vague 24s linear infinite;
+}
+.accueil-vague-2 {
+  animation: accueil-vague 15s linear infinite reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accueil-fond,
+  .accueil-vague-1,
+  .accueil-vague-2 {
+    animation: none;
+  }
+}
+`
+
+// Une vague : le dessin se repete deux fois (800 de large, periode 400),
+// donc en la decalant de la moitie on retombe exactement sur le meme dessin.
+const VAGUE = 'M0 50 C 100 10, 300 90, 400 50 C 500 10, 700 90, 800 50 L800 100 L0 100 Z'
+
+// Decor : un degrade qui glisse tres lentement, une trame de points fins qui s'efface vers le bas,
+// et deux vagues basses. Sobre, dans les tons de la mascotte.
+// Purement decoratif : cache aux lecteurs d'ecran et sans effet sur les clics.
 function DecorAccueil() {
   return (
-    <svg
+    <div
       aria-hidden="true"
-      viewBox="0 0 400 800"
-      preserveAspectRatio="xMidYMid slice"
-      className="pointer-events-none absolute inset-0 -z-10 h-full w-full motion-reduce:hidden"
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
-      <defs>
-        <radialGradient id="accueil-halo-a">
-          <stop offset="0%" style={{ stopColor: 'var(--couleur-decor)', stopOpacity: 0.35 }} />
-          <stop offset="100%" style={{ stopColor: 'var(--couleur-decor)', stopOpacity: 0 }} />
-        </radialGradient>
-        <radialGradient id="accueil-halo-b">
-          <stop offset="0%" style={{ stopColor: 'var(--couleur-decor-clair)', stopOpacity: 0.7 }} />
-          <stop offset="100%" style={{ stopColor: 'var(--couleur-decor-clair)', stopOpacity: 0 }} />
-        </radialGradient>
-      </defs>
+      <style>{STYLES}</style>
 
-      <circle cx="90" cy="150" r="190" fill="url(#accueil-halo-a)">
-        <animateTransform
-          attributeName="transform"
-          type="translate"
-          values="0 0; 40 50; 0 0"
-          dur="14s"
-          repeatCount="indefinite"
-        />
-      </circle>
+      {/* Degrade qui glisse */}
+      <div className="accueil-fond absolute inset-0" style={{ background: FOND_ACCUEIL, backgroundSize: '100% 220%' }} />
 
-      <circle cx="330" cy="560" r="220" fill="url(#accueil-halo-b)">
-        <animateTransform
-          attributeName="transform"
-          type="translate"
-          values="0 0; -50 -40; 0 0"
-          dur="18s"
-          repeatCount="indefinite"
-        />
-      </circle>
-
-      <path
-        d="M0 710 C 100 670, 220 750, 400 700 L400 800 L0 800 Z"
-        style={{ fill: 'var(--couleur-decor-clair)', fillOpacity: 0.5 }}
+      {/* Trame de points fins, plus visible en haut, effacee vers le bas */}
+      <svg
+        className="absolute inset-0 h-full w-full"
+        style={{
+          opacity: 0.07,
+          WebkitMaskImage: 'linear-gradient(180deg, #000 0%, transparent 70%)',
+          maskImage: 'linear-gradient(180deg, #000 0%, transparent 70%)',
+        }}
       >
-        <animate
-          attributeName="d"
-          dur="10s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.4 0 0.6 1;0.4 0 0.6 1"
-          values="M0 710 C 100 670, 220 750, 400 700 L400 800 L0 800 Z;
-                  M0 720 C 120 760, 240 670, 400 720 L400 800 L0 800 Z;
-                  M0 710 C 100 670, 220 750, 400 700 L400 800 L0 800 Z"
-        />
-      </path>
-    </svg>
+        <defs>
+          <pattern id="accueil-points" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.2" style={{ fill: 'var(--texte)' }} />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#accueil-points)" />
+      </svg>
+
+      {/* Vagues : deux couches qui defilent doucement en sens inverses. */}
+      <div className="accueil-vague-1 absolute bottom-0 left-0 h-36 w-[200%]">
+        <svg viewBox="0 0 800 100" preserveAspectRatio="none" className="h-full w-full">
+          <path d={VAGUE} style={{ fill: 'var(--surface-douce)', fillOpacity: 0.9 }} />
+        </svg>
+      </div>
+      <div className="accueil-vague-2 absolute bottom-0 left-0 h-24 w-[200%]">
+        <svg viewBox="0 0 800 100" preserveAspectRatio="none" className="h-full w-full">
+          <path d={VAGUE} style={{ fill: 'var(--couleur-decor-clair)', fillOpacity: 0.4 }} />
+        </svg>
+      </div>
+    </div>
   )
 }
 
@@ -118,7 +146,7 @@ function LogoEntete({ organisation }: { organisation: QuestionnairePublic['organ
       src={organisation.logo_url ?? undefined}
       alt=""
       onError={() => setLogoEnErreur(true)}
-      className="h-11 w-11 shrink-0 rounded-xl bg-surface/70 object-contain p-1 shadow-doux"
+      className="h-11 w-11 shrink-0 rounded-xl bg-surface object-contain p-1 shadow-doux"
     />
   ) : (
     <div
@@ -152,9 +180,9 @@ function Entree({
   )
 }
 
-// Ecran E1 : pas de carte, tout est pose directement sur la page.
+// Ecran E1 : pas de carte, tout est pose directement sur la page, devant un fond sobre et vivant.
 // En haut : le logo et le nom de l'organisation a gauche, l'icone de langue a droite.
-// Au centre : mascotte, point de contact, message d'accueil, duree et bouton Commencer.
+// Au centre : mascotte, numero de table en gras, message d'accueil, duree et bouton Commencer.
 export function EcranAccueil({ donnees, commencer, entreeActive }: Proprietes) {
   const { langue, t } = utiliserLangue()
 
@@ -163,78 +191,83 @@ export function EcranAccueil({ donnees, commencer, entreeActive }: Proprietes) {
   const message = messageChoisi !== '' ? messageChoisi : t('accueil.messageParDefaut')
 
   return (
-    <main className="relative isolate mx-auto flex min-h-svh w-full max-w-md flex-col overflow-hidden">
+    <div
+      className="relative isolate min-h-svh w-full overflow-hidden"
+      style={{ background: 'var(--fond)' }}
+    >
       <DecorAccueil />
 
-      <div className="flex items-center justify-between gap-4 px-5 pt-[max(1rem,env(safe-area-inset-top))]">
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className={
-              'transition-opacity duration-700 motion-reduce:opacity-100 motion-reduce:transition-none ' +
-              (entreeActive ? 'opacity-100' : 'opacity-0')
-            }
-          >
-            <LogoEntete organisation={donnees.organisation} />
-          </div>
-
-          {/* Le nom, souligne par une ligne qui se trace de gauche a droite en s'affaiblissant. */}
-          <div className="min-w-0">
-            <h1
+      <main className="mx-auto flex min-h-svh w-full max-w-md flex-col">
+        <div className="flex items-center justify-between gap-4 px-5 pt-[max(1rem,env(safe-area-inset-top))]">
+          <div className="flex min-w-0 items-center gap-3">
+            <div
               className={
-                'truncate font-titre text-xl font-semibold tracking-wide text-texte transition-opacity duration-700 motion-reduce:opacity-100 motion-reduce:transition-none ' +
+                'transition-opacity duration-700 motion-reduce:opacity-100 motion-reduce:transition-none ' +
                 (entreeActive ? 'opacity-100' : 'opacity-0')
               }
             >
-              {donnees.organisation.nom}
-            </h1>
-            <span
-              aria-hidden="true"
-              className={
-                'mt-1.5 block h-[2px] w-full origin-left rounded-full transition-transform duration-1000 ease-out motion-reduce:scale-x-100 motion-reduce:transition-none ' +
-                (entreeActive ? 'scale-x-100' : 'scale-x-0')
-              }
-              style={{
-                transitionDelay: '350ms',
-                background:
-                  'linear-gradient(90deg, var(--couleur-principale) 0%, var(--couleur-decor) 40%, transparent 100%)',
-              }}
-            />
+              <LogoEntete organisation={donnees.organisation} />
+            </div>
+
+            {/* Le nom, souligne par une ligne qui se trace de gauche a droite en s'affaiblissant. */}
+            <div className="min-w-0">
+              <h1
+                className={
+                  'truncate font-titre text-xl font-semibold tracking-wide text-texte transition-opacity duration-700 motion-reduce:opacity-100 motion-reduce:transition-none ' +
+                  (entreeActive ? 'opacity-100' : 'opacity-0')
+                }
+              >
+                {donnees.organisation.nom}
+              </h1>
+              <span
+                aria-hidden="true"
+                className={
+                  'mt-1.5 block h-[2px] w-full origin-left rounded-full transition-transform duration-1000 ease-out motion-reduce:scale-x-100 motion-reduce:transition-none ' +
+                  (entreeActive ? 'scale-x-100' : 'scale-x-0')
+                }
+                style={{
+                  transitionDelay: '350ms',
+                  background:
+                    'linear-gradient(90deg, var(--couleur-principale) 0%, var(--couleur-decor) 40%, transparent 100%)',
+                }}
+              />
+            </div>
           </div>
+
+          <SelecteurLangue />
         </div>
 
-        <SelecteurLangue />
-      </div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pb-[max(4rem,env(safe-area-inset-bottom))] pt-4">
+          <Entree actif={entreeActive} retard={0}>
+            <Mascotte humeur="accueil" taille={170} />
+          </Entree>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pb-[max(4rem,env(safe-area-inset-bottom))] pt-4">
-        <Entree actif={entreeActive} retard={0}>
-          <Mascotte humeur="accueil" taille={170} />
-        </Entree>
+          <Entree actif={entreeActive} retard={150}>
+            <EnteteQuestionnaire pointContact={donnees.point_contact} />
+          </Entree>
 
-        <Entree actif={entreeActive} retard={150}>
-          <EnteteQuestionnaire pointContact={donnees.point_contact} />
-        </Entree>
+          <Entree actif={entreeActive} retard={300}>
+            <section className="flex flex-col items-center gap-3 text-center">
+              <h2 className="font-titre text-3xl font-semibold text-texte">
+                {t('accueil.titreParDefaut')}
+              </h2>
+              <p className="whitespace-pre-line text-base text-texte-secondaire">{message}</p>
+              <p className="text-sm text-texte-secondaire">{t('accueil.duree')}</p>
+            </section>
+          </Entree>
 
-        <Entree actif={entreeActive} retard={300}>
-          <section className="flex flex-col items-center gap-3 text-center">
-            <h2 className="font-titre text-3xl font-semibold text-texte">
-              {t('accueil.titreParDefaut')}
-            </h2>
-            <p className="whitespace-pre-line text-base text-texte-secondaire">{message}</p>
-            <p className="text-sm text-texte-secondaire">{t('accueil.duree')}</p>
-          </section>
-        </Entree>
-
-        <Entree actif={entreeActive} retard={450}>
-          <button
-            type="button"
-            onClick={commencer}
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-[var(--rayon-sm)] border-2 border-principale-fonce bg-transparent pl-7 pr-6 text-base font-semibold text-principale-fonce transition hover:bg-principale-fonce hover:text-texte-sur-principale active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-principale"
-          >
-            {t('accueil.commencer')}
-            <FlecheDroite />
-          </button>
-        </Entree>
-      </div>
-    </main>
+          <Entree actif={entreeActive} retard={450}>
+            <button
+              type="button"
+              onClick={commencer}
+              className="inline-flex h-12 items-center justify-center gap-3 rounded-[var(--rayon-sm)] border-2 border-principale-fonce bg-transparent pl-7 pr-6 text-base font-semibold text-principale-fonce transition hover:bg-principale-fonce hover:text-texte-sur-principale active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-principale"
+            >
+              {t('accueil.commencer')}
+              <FlecheDroite />
+            </button>
+          </Entree>
+        </div>
+      </main>
+    </div>
   )
 }

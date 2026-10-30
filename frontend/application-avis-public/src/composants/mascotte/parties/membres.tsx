@@ -1,8 +1,8 @@
-import { CLAIR } from '../constantes'
+import { CLAIR, OMBRE_CHAUDE } from '../constantes'
 
-// Les bras sont un peu plus clairs en haut (la lumiere vient d'en haut) et plus sombres en bas.
-const BRAS_CLAIR = 'color-mix(in srgb, var(--couleur-principale) 90%, black)'
-const BRAS_SOMBRE = 'color-mix(in srgb, var(--couleur-principale) 62%, black)'
+// Les bras sont de la couleur du corps en haut et un peu plus sombres en bas (ils sont derriere le corps).
+const BRAS_CLAIR = 'var(--couleur-principale)'
+const BRAS_SOMBRE = 'color-mix(in srgb, var(--couleur-principale) 84%, ' + OMBRE_CHAUDE + ')'
 // Plis entre les doigts du poing.
 const PLI = 'color-mix(in srgb, var(--couleur-principale) 38%, black)'
 
@@ -12,10 +12,11 @@ type Proprietes = {
 }
 
 // Un bras gauche, dessine le long du corps (pose de repos), avec ses deux articulations :
-// - le bras (epaule en 32,104) pivote autour de l'epaule ;
-// - l'avant-bras et la main (coude en 22,120) pivotent autour du coude.
-// Les membres sont fins vers le poignet. La main existe en deux versions : un poing
-// (pose de repos, bras leves) et une main ouverte (coucou). Le CSS choisit laquelle voir.
+// - le bras (epaule en 24,108) pivote autour de l'epaule ;
+// - l'avant-bras et la main (coude en 14,122) pivotent autour du coude.
+// Les membres sont gros et arrondis, comme ceux d'un personnage de dessin anime.
+// La main existe en deux versions : un poing (pose de repos) et une main ouverte a quatre
+// doigts (coucou). Le CSS choisit laquelle voir.
 // Le bras droit est le meme dessin retourne comme dans un miroir : les deux cotes
 // utilisent donc exactement les memes angles (voir mascotte.css).
 function BrasDessine({ id }: Proprietes) {
@@ -24,64 +25,66 @@ function BrasDessine({ id }: Proprietes) {
   return (
     <g className="mascotte-haut-bras">
       {/* Epaule, haut du bras et coude */}
-      <circle cx="32" cy="104" r="7.5" fill={remplissage} />
-      <path d="M38.4 108.0 L27.3 123.3 L16.7 116.7 L25.6 100.0 Z" fill={remplissage} />
-      <circle cx="22" cy="120" r="6.2" fill={remplissage} />
+      <circle cx="24" cy="108" r="8" fill={remplissage} />
       <path
-        d="M25 104.5 L19.5 116"
+        d="M24 108 L14 122"
+        strokeWidth="14"
+        strokeLinecap="round"
+        stroke={remplissage}
+      />
+      <path
+        d="M22 106 L15 116"
         strokeWidth="2.4"
         strokeLinecap="round"
         style={{ stroke: CLAIR, opacity: 0.3 }}
       />
 
       <g className="mascotte-avant-bras">
-        {/* Avant-bras et poignet */}
-        <path d="M28.2 120.0 L27.2 134.0 L16.8 134.0 L15.8 120.0 Z" fill={remplissage} />
-        <circle cx="22" cy="134" r="5.2" fill={remplissage} />
+        {/* Avant-bras */}
         <path
-          d="M19 123 L18.7 133"
-          strokeWidth="2.4"
+          d="M14 122 L14 135"
+          strokeWidth="12.5"
           strokeLinecap="round"
-          style={{ stroke: CLAIR, opacity: 0.3 }}
+          stroke={remplissage}
         />
 
         {/* Pouce, du cote exterieur */}
         <ellipse
-          cx="13.6"
-          cy="138"
-          rx="3.8"
+          cx="4.6"
+          cy="141"
+          rx="4"
           ry="6.4"
-          transform="rotate(28 13.6 138)"
+          transform="rotate(28 4.6 141)"
           fill={remplissage}
         />
 
         {/* Poing : paume ronde, plis des doigts, reflet */}
         <g className="mascotte-main-poing">
-          <ellipse cx="22" cy="141.5" rx="9.6" ry="8.8" fill={remplissage} />
+          <ellipse cx="14" cy="144.5" rx="10.8" ry="10" fill={remplissage} />
           <path
-            d="M18.6 142 L18.6 149 M22 142 L22 150 M25.4 142 L25.4 149"
+            d="M10.4 145 L10.4 153 M14 145 L14 154 M17.6 145 L17.6 153"
             strokeWidth="1.3"
             strokeLinecap="round"
             style={{ stroke: PLI, opacity: 0.55 }}
           />
-          <ellipse cx="19" cy="137.8" rx="3.8" ry="2.6" style={{ fill: 'white', opacity: 0.25 }} />
+          <ellipse cx="10.6" cy="140.4" rx="4" ry="2.8" style={{ fill: 'white', opacity: 0.25 }} />
         </g>
 
-        {/* Main ouverte : quatre doigts ecartes et une paume */}
+        {/* Main ouverte : quatre doigts ronds et une paume */}
         <g className="mascotte-main-ouverte">
           <g
-            strokeWidth="4.2"
+            strokeWidth="5.4"
             strokeLinecap="round"
             fill="none"
             style={{ stroke: BRAS_SOMBRE }}
           >
-            <path d="M16.2 146 L14.4 157.5" />
-            <path d="M20.4 147 L19.8 160.5" />
-            <path d="M24.6 147 L25.2 160" />
-            <path d="M28.8 146 L30.8 156" />
+            <path d="M7.6 149 L6 157" />
+            <path d="M12 151 L11.6 159.5" />
+            <path d="M16.4 151 L17 159" />
+            <path d="M20.4 149 L22.4 156" />
           </g>
-          <ellipse cx="22" cy="141.5" rx="9" ry="8" fill={remplissage} />
-          <ellipse cx="19.2" cy="138.4" rx="3.6" ry="2.4" style={{ fill: 'white', opacity: 0.25 }} />
+          <ellipse cx="14" cy="144.5" rx="10.4" ry="9.2" fill={remplissage} />
+          <ellipse cx="10.8" cy="140.6" rx="3.8" ry="2.6" style={{ fill: 'white', opacity: 0.25 }} />
         </g>
       </g>
     </g>

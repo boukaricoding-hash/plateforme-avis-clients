@@ -3,8 +3,8 @@ import type { ParametresHumeur, Sourcil } from '../humeurs'
 
 // Les yeux et les sourcils prennent la teinte de la couleur principale, assombrie :
 // marron chocolat avec le terracotta, bleu nuit avec un bleu, etc.
-const IRIS_CLAIR = 'color-mix(in srgb, var(--couleur-principale) 84%, black)'
-const IRIS_SOMBRE = 'color-mix(in srgb, var(--couleur-principale) 48%, black)'
+const IRIS_CLAIR = 'color-mix(in srgb, var(--couleur-principale) 78%, black)'
+const IRIS_SOMBRE = 'color-mix(in srgb, var(--couleur-principale) 30%, black)'
 const PUPILLE = 'color-mix(in srgb, var(--couleur-principale) 12%, black)'
 const SOURCIL = 'color-mix(in srgb, var(--couleur-principale) 34%, black)'
 // Interieur de la bouche (rouge sombre) et langue (rose vif).
@@ -12,6 +12,14 @@ const BOUCHE_HAUT = 'color-mix(in srgb, var(--couleur-principale) 14%, black)'
 const BOUCHE_BAS = 'color-mix(in srgb, var(--couleur-principale) 40%, #3a0a14)'
 const LANGUE = 'color-mix(in srgb, var(--couleur-decor) 45%, #ff4f6d)'
 const LANGUE_REFLET = 'color-mix(in srgb, var(--couleur-decor) 40%, white)'
+
+// Placement des yeux : bien ecartes, comme un personnage de dessin anime.
+const OEIL_G = 72
+const OEIL_D = 128
+const OEIL_RX = 16
+const OEIL_RY = 17
+// Les sourcils de humeurs.ts sont dessines pour des yeux a 78 et 122 : on les decale vers l'exterieur.
+const DECALAGE_SOURCILS = 6
 
 type Proprietes = {
   // Identifiant unique de cette mascotte, pour les masques et les degrades.
@@ -51,13 +59,13 @@ function traceSourcil(s: Sourcil, epaisseur: number): string {
 type ProprietesOeil = {
   id: string
   nom: 'g' | 'd'
-  // Centre de l'oeil (78 a gauche, 122 a droite).
+  // Centre de l'oeil.
   cx: number
   yeux: ParametresHumeur['yeux']
 }
 
 // Un oeil : blanc, iris avec pupille et reflets (qui bougent et se dilatent),
-// ombre de la paupiere sur l'oeil, paupiere du haut et sa ligne epaisse.
+// ombre de la paupiere sur l'oeil, paupiere du haut et sa fine ligne.
 // La paupiere est dessinee avec le degrade du corps : elle se fond dans la bulle.
 function Oeil({ id, nom, cx, yeux }: ProprietesOeil) {
   const fermeture = 1 - limiter(yeux.ouverture)
@@ -68,39 +76,45 @@ function Oeil({ id, nom, cx, yeux }: ProprietesOeil) {
   // puis qui descend et s'aplatit en se fermant.
   const bordY = 84 + 2 * fermeture
   const bordControle = 61.3 + 26.7 * fermeture
-  const g = cx - 15
-  const d = cx + 15
+  const g = cx - OEIL_RX
+  const d = cx + OEIL_RX
   const bord =
     'M' + g + ' ' + bordY + ' C' + g + ' ' + bordControle + ' ' + d + ' ' + bordControle + ' ' + d + ' ' + bordY
 
-  // Les valeurs de rayonPupille (8 a 10) donnent la taille de l'iris ; la pupille se dilate avec lui.
+  // Les valeurs de rayonPupille (7 a 10) donnent la taille de l'iris ; la pupille se dilate avec lui.
   const iris = Math.max(0, yeux.rayonPupille) * 1.4
-  const pupille = iris * 0.44
+  const pupille = iris * 0.56
   const decoupe = 'url(#' + id + '-oeil-' + nom + ')'
 
   return (
     <>
       <g style={{ opacity: blanc }}>
-        <ellipse cx={cx} cy="84" rx="15" ry="17" style={{ fill: 'var(--surface)' }} />
+        <ellipse cx={cx} cy="84" rx={OEIL_RX} ry={OEIL_RY} style={{ fill: 'var(--surface)' }} />
         <g clipPath={decoupe}>
           <g transform={'translate(' + yeux.pupilleX + ' ' + yeux.pupilleY + ')'}>
             <circle cx={cx} cy="86" r={iris} fill={'url(#' + id + '-iris)'} />
             <circle cx={cx} cy="86" r={pupille} style={{ fill: PUPILLE }} />
             <circle
-              cx={cx - iris * 0.32}
-              cy={86 - iris * 0.38}
-              r={iris * 0.24}
+              cx={cx - iris * 0.4}
+              cy={86 - iris * 0.43}
+              r={iris * 0.31}
               style={{ fill: 'white' }}
             />
             <circle
-              cx={cx + iris * 0.38}
-              cy={86 + iris * 0.42}
-              r={iris * 0.14}
+              cx={cx + iris * 0.42}
+              cy={86 + iris * 0.46}
+              r={iris * 0.16}
               style={{ fill: 'white', opacity: 0.85 }}
             />
           </g>
           {/* Ombre de la paupiere sur le haut de l'oeil */}
-          <ellipse cx={cx} cy="84" rx="15" ry="17" fill={'url(#' + id + '-ombre-paupiere)'} />
+          <ellipse
+            cx={cx}
+            cy="84"
+            rx={OEIL_RX}
+            ry={OEIL_RY}
+            fill={'url(#' + id + '-ombre-paupiere)'}
+          />
         </g>
       </g>
 
@@ -108,12 +122,12 @@ function Oeil({ id, nom, cx, yeux }: ProprietesOeil) {
       <g clipPath={decoupe}>
         <path d={bord + ' L' + d + ' 50 L' + g + ' 50 Z'} fill={'url(#' + id + '-corps)'} />
       </g>
-      {/* Ligne epaisse de la paupiere */}
+      {/* Fine ligne de la paupiere */}
       <path
         d={bord}
-        strokeWidth="2.8"
+        strokeWidth="1.8"
         strokeLinecap="round"
-        style={{ stroke: PUPILLE, opacity: Math.min(1, limiter(yeux.ouverture) * 3) }}
+        style={{ stroke: PUPILLE, opacity: Math.min(1, limiter(yeux.ouverture) * 3) * 0.9 }}
       />
     </>
   )
@@ -127,10 +141,17 @@ export function Visage({ id, parametres }: Proprietes) {
   const remplissage = limiter(bouche.remplissage)
   // Contour de la bouche : la courbe du bas, puis le retour par la courbe du haut.
   // Quand les deux courbes sont egales, c'est un simple trait.
+  // Les coins restent a la meme place, mais les courbes sont plus rondes (forme en D) :
+  // les points de controle sont juste sous les coins. Quand bas = haut, les deux
+  // courbes se confondent et la bouche reste un simple trait.
+  const largeurBouche = bouche.dx - bouche.gx
+  const retrait = largeurBouche * 0.18
+  const profondeurBas = bouche.gy + (bouche.bas - bouche.gy) * (2 / 3)
+  const profondeurHaut = bouche.dy + (bouche.haut - bouche.dy) * (2 / 3)
   const traceBouche =
     'M' + bouche.gx + ' ' + bouche.gy +
-    ' Q100 ' + bouche.bas + ' ' + bouche.dx + ' ' + bouche.dy +
-    ' Q100 ' + bouche.haut + ' ' + bouche.gx + ' ' + bouche.gy + ' Z'
+    ' C' + (bouche.gx + retrait) + ' ' + profondeurBas + ' ' + (bouche.dx - retrait) + ' ' + profondeurBas + ' ' + bouche.dx + ' ' + bouche.dy +
+    ' C' + (bouche.dx - retrait) + ' ' + profondeurHaut + ' ' + (bouche.gx + retrait) + ' ' + profondeurHaut + ' ' + bouche.gx + ' ' + bouche.gy + ' Z'
   const langueRx = Math.max(0, bouche.langueRx) * 1.15
   const langueRy = Math.max(0, bouche.langueRy) * 1.3
 
@@ -141,13 +162,13 @@ export function Visage({ id, parametres }: Proprietes) {
           <path d={traceBouche} />
         </clipPath>
         <clipPath id={id + '-oeil-g'}>
-          <ellipse cx="78" cy="84" rx="15" ry="17" />
+          <ellipse cx={OEIL_G} cy="84" rx={OEIL_RX} ry={OEIL_RY} />
         </clipPath>
         <clipPath id={id + '-oeil-d'}>
-          <ellipse cx="122" cy="84" rx="15" ry="17" />
+          <ellipse cx={OEIL_D} cy="84" rx={OEIL_RX} ry={OEIL_RY} />
         </clipPath>
         {/* Iris : plus clair vers le bas, sombre sur le bord */}
-        <radialGradient id={id + '-iris'} cx="50%" cy="60%" r="62%">
+        <radialGradient id={id + '-iris'} cx="50%" cy="62%" r="60%">
           <stop offset="0%" style={{ stopColor: IRIS_CLAIR }} />
           <stop offset="100%" style={{ stopColor: IRIS_SOMBRE }} />
         </radialGradient>
@@ -160,7 +181,7 @@ export function Visage({ id, parametres }: Proprietes) {
           x2="0"
           y2="101"
         >
-          <stop offset="0%" stopColor="black" stopOpacity="0.28" />
+          <stop offset="0%" stopColor="black" stopOpacity="0.2" />
           <stop offset="50%" stopColor="black" stopOpacity="0" />
         </linearGradient>
         {/* Joues : rose au centre, qui s'estompe sur les bords */}
@@ -185,46 +206,52 @@ export function Visage({ id, parametres }: Proprietes) {
 
       {/* Joues */}
       <g style={{ opacity: limiter(joues.opacite) }}>
-        <ellipse cx="56" cy="108" rx="13" ry="8.5" fill={'url(#' + id + '-joue)'} />
-        <ellipse cx="144" cy="108" rx="13" ry="8.5" fill={'url(#' + id + '-joue)'} />
+        <ellipse cx="53" cy="108" rx="13" ry="8.5" fill={'url(#' + id + '-joue)'} />
+        <ellipse cx="147" cy="108" rx="13" ry="8.5" fill={'url(#' + id + '-joue)'} />
       </g>
 
       {/* Yeux (le clignement du CSS agit sur ce groupe) */}
       <g className="mascotte-yeux">
-        <Oeil id={id} nom="g" cx={78} yeux={yeux} />
-        <Oeil id={id} nom="d" cx={122} yeux={yeux} />
+        <Oeil id={id} nom="g" cx={OEIL_G} yeux={yeux} />
+        <Oeil id={id} nom="d" cx={OEIL_D} yeux={yeux} />
       </g>
 
       {/* Yeux qui rient : arcs qui apparaissent quand les paupieres sont fermees */}
       <g style={{ opacity: limiter(yeux.rire) }}>
         <path
-          d="M63 90 Q78 70 93 90"
-          strokeWidth="5.5"
+          d="M57 90 Q72 70 87 90"
+          strokeWidth="5"
           strokeLinecap="round"
           style={{ stroke: PUPILLE }}
         />
         <path
-          d="M107 90 Q122 70 137 90"
-          strokeWidth="5.5"
+          d="M113 90 Q128 70 143 90"
+          strokeWidth="5"
           strokeLinecap="round"
           style={{ stroke: PUPILLE }}
         />
       </g>
 
-      {/* Sourcils effiles */}
+      {/* Sourcils fins et effiles, decales vers l'exterieur comme les yeux */}
       <g
-        strokeWidth="1.4"
+        strokeWidth="1"
         strokeLinejoin="round"
         style={{ fill: SOURCIL, stroke: SOURCIL, opacity: limiter(sourcils.opacite) }}
       >
-        <path d={traceSourcil(sourcils.g, 6.5)} />
-        <path d={traceSourcil(sourcils.d, 6.5)} />
+        <path
+          transform={'translate(' + -DECALAGE_SOURCILS + ' 0)'}
+          d={traceSourcil(sourcils.g, 4.6)}
+        />
+        <path
+          transform={'translate(' + DECALAGE_SOURCILS + ' 0)'}
+          d={traceSourcil(sourcils.d, 4.6)}
+        />
       </g>
 
       {/* Bouche : trait ou bouche ouverte, c'est le meme dessin qui se deforme */}
       <path
         d={traceBouche}
-        strokeWidth={5 * (1 - remplissage)}
+        strokeWidth={4.5 * (1 - remplissage)}
         strokeLinecap="round"
         strokeLinejoin="round"
         fill={'url(#' + id + '-bouche-interieur)'}

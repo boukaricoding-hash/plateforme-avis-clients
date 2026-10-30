@@ -4,16 +4,18 @@
    Variables globales de la page d'avis.
    Les couleurs sont des variables CSS ordinaires : la couleur de l'organisation
    (jour 16) pourra remplacer --couleur-principale sans toucher au reste.
+   La palette est chaude et legerement rosee pour s'accorder avec la mascotte
+   (blanc rose, yeux et sourcils bruns).
    ------------------------------------------------------------ */
 :root {
-  /* Fonds */
-  --fond: #f4f3ee;
-  --fond-alt: #fafaf8;
-  --surface: #ffffff;
-  --surface-douce: #edece6;
+  /* Fonds : beige rose, un peu plus soutenu que la mascotte pour qu'elle ressorte */
+  --fond: #efe6e1;
+  --fond-alt: #f7f1ed;
+  --surface: #fffdfc;
+  --surface-douce: #e6dbd5;
 
   /* Couleur principale : celle des boutons (texte blanc dessus : contraste 4,6 sur 1).
-     Remplacee plus tard par la couleur de l'organisation. */
+     Remplacee plus tard par la couleur de l'organisation. La mascotte ne la suit pas. */
   --couleur-principale: #af6046;
   --couleur-principale-fonce: #9a5038;
   /* Orange vif de la palette : decors seulement (etoiles, barre, coche, fond clair).
@@ -21,17 +23,17 @@
   --couleur-decor: #d97757;
   --couleur-decor-clair: #f0c4b0;
 
-  /* Textes */
-  --texte: #1f1e1d;
-  --texte-secondaire: #6b6a66;
-  /* Decor seulement : contraste 2,5 sur 1, a ne jamais utiliser pour du texte a lire. */
-  --texte-discret: #9c9b96;
+  /* Textes : brun tres fonce (meme famille que les yeux de la mascotte) */
+  --texte: #2a1f1c;
+  --texte-secondaire: #6d5d57; /* contraste 5 sur 1 sur le fond */
+  /* Decor seulement : contraste faible (environ 2,8 sur 1), a ne jamais utiliser pour du texte a lire. */
+  --texte-discret: #a39792;
   --texte-sur-principale: #ffffff;
 
   /* Bordures */
-  --bordure: #e5e3dc; /* separateurs discrets */
-  --bordure-forte: #d4d2c9; /* separateurs marques */
-  --bordure-champ: #85837c; /* contour des champs et des cases : contraste 3,4 sur 1 */
+  --bordure: #e2d6cf; /* separateurs discrets */
+  --bordure-forte: #d2c3bb; /* separateurs marques */
+  --bordure-champ: #8a7b75; /* contour des champs et des cases : contraste 4 sur 1 */
 
   /* Etats : versions assez sombres pour du texte sur le fond */
   --erreur: #c0392b;
@@ -45,10 +47,10 @@
   --rayon-lg: 16px;
   --rayon-xl: 22px;
 
-  /* Ombres douces */
-  --ombre-sm: 0 1px 3px rgb(0 0 0 / 0.05);
-  --ombre-md: 0 4px 10px rgb(0 0 0 / 0.08);
-  --ombre-lg: 0 8px 20px rgb(0 0 0 / 0.12);
+  /* Ombres douces (teintees de brun, plus chaudes que du noir pur) */
+  --ombre-sm: 0 1px 3px rgb(42 31 28 / 0.06);
+  --ombre-md: 0 4px 10px rgb(42 31 28 / 0.09);
+  --ombre-lg: 0 8px 20px rgb(42 31 28 / 0.13);
 }
 
 /* Noms utilisables dans les classes : bg-fond, text-texte, border-bordure, shadow-moyen... */

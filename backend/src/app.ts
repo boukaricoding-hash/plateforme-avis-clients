@@ -24,7 +24,17 @@ const originesAutorisees = (process.env["ORIGINES_AUTORISEES"] ?? "")
   .map((origine) => origine.trim())
   .filter((origine) => origine !== "");
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        // Autorise les logos d'organisations hébergés ailleurs (en HTTPS).
+        "img-src": ["'self'", "data:", "https:"],
+      },
+    },
+  }),
+);
 app.use(
   cors({
     origin: originesAutorisees,

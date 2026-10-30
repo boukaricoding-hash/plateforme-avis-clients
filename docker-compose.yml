@@ -16,5 +16,23 @@ services:
       timeout: 5s
       retries: 10
 
+  application:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      base-de-donnees:
+        condition: service_healthy
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@base-de-donnees:5432/${POSTGRES_DB}
+      PORT: "3000"
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      ORIGINES_AUTORISEES: ${PUBLIC_BASE_URL:-http://localhost:3000}
+    command: sh -c "npx prisma migrate deploy --config prisma7.config.ts && node dist/src/serveur.js"
+    ports:
+      - "3000:3000"
+
 volumes:
   donnees-postgres:

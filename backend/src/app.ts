@@ -3,6 +3,8 @@ import express, { type NextFunction, type Request, type Response } from "express
 import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import fs from "node:fs";
+import path from "node:path";
 import { routesAuthentification } from "./modules/authentification/routes/auth.routes";
 import { routesSites } from "./modules/sites/routes/sites.routes";
 import { routesPointsContact } from "./modules/points-de-contact/routes/points-contact.routes";
@@ -30,6 +32,20 @@ app.use(
 
 app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
+
+// Page d'avis (version finale) : servie par le serveur quand le dossier "page" existe (dans Docker).
+// Toute adresse hors /api renvoie la page, par exemple /q/ABC123 : c'est la page qui lit le code.
+const dossierPage = path.join(process.cwd(), "page");
+if (fs.existsSync(dossierPage)) {
+  app.use(express.static(dossierPage, { index: false }));
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.method !== "GET" || req.path.startsWith("/api/")) {
+      next();
+      return;
+    }
+    res.sendFile(path.join(dossierPage, "index.html"));
+  });
+}
 
 app.get("/", (_req, res) => {
   res.send("<h1>Plateforme d'avis clients</h1><p>Le serveur fonctionne.</p>");

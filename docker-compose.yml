@@ -30,6 +30,7 @@ services:
       PORT: "3000"
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
       ORIGINES_AUTORISEES: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      NOMBRE_PROXYS: ${NOMBRE_PROXYS:-1}
     command: sh -c "npx prisma migrate deploy --config prisma7.config.ts && node dist/src/serveur.js"
     ports:
       - "3000:3000"

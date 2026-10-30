@@ -16,7 +16,9 @@ import { routesNotifications } from "./modules/notifications/routes/notification
 import { routesDashboard } from "./modules/tableaux-de-bord/routes/dashboard.routes";
 
 export const app = express();
-
+// Nombre d'intermediaires (tunnel, Nginx) entre le client et le serveur.
+// 0 = aucun (en local). 1 = un intermediaire.
+app.set("trust proxy", Number(process.env["NOMBRE_PROXYS"]) || 0);
 const originesAutorisees = (process.env["ORIGINES_AUTORISEES"] ?? "")
   .split(",")
   .map((origine) => origine.trim())

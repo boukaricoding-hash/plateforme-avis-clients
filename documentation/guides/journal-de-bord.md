@@ -49,3 +49,26 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - Chaque nouvelle route est ajoutee le jour meme a `isolation.test.ts`.
 - Les tests de perimetre par site (Gestionnaire) sont prevus au jour 18.
 - Les vraies routes reservees a l'administrateur DTS arrivent au jour 22.
+
+
+
+## Jour 12 - jeudi 30 octobre 2026 : mise en ligne de l'environnement de test
+
+**Fait**
+- `Dockerfile` : fabrique la page d'avis (version finale, legere) puis le serveur, et range la page dans le serveur.
+- `docker-compose.yml` : base PostgreSQL et application. L'application applique les migrations au demarrage puis lance le serveur.
+- `app.ts` : le serveur sert la page d'avis quand le dossier `page` existe (dans Docker). `trust proxy` est regle par la variable `NOMBRE_PROXYS` (1 avec le tunnel ou Nginx, 0 en local).
+- CSP (helmet) : les images en HTTPS sont autorisees. A resserrer au jour 26.
+- Mise en ligne de test avec un tunnel Cloudflare temporaire (`cloudflared`), HTTPS fourni par Cloudflare.
+- QR code de la table 12 genere avec l'adresse du tunnel, scanne depuis un telephone en 4G : parcours complet reussi, l'avis est dans la base.
+
+**Decisions**
+- Le tunnel est temporaire : son adresse change a chaque lancement. Aucun chevalet n'est imprime avant l'adresse definitive (jour 25).
+- `PUBLIC_BASE_URL` doit etre l'adresse du tunnel pour que les QR codes pointent au bon endroit.
+
+**A faire ensuite**
+- Tester sur iPhone si possible.
+- Jour 13 : tableau de bord (cadre, connexion, mot de passe oublie).
+
+**Point d'attention**
+- La CSP autorise toutes les images HTTPS. A restreindre quand les logos seront stockes sur le serveur (jour 16).

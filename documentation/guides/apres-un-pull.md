@@ -15,3 +15,6 @@ Ce guide dit quoi lancer apres avoir recupere le code. Il est mis a jour chaque 
 - Jour 2 : quatre nouvelles variables dans backend/.env : SEED_ADMIN_EMAIL, SEED_ADMIN_MOT_DE_PASSE, SEED_RESPONSABLE_EMAIL, SEED_RESPONSABLE_MOT_DE_PASSE (chacun choisit ses propres mots de passe).
 
 - Jour 3 : aucune nouvelle commande ni variable. `npm test` demande que la base de donnees soit demarree (Docker Desktop ouvert).
+
+
+- Jour 12 : nouvelle variable `NOMBRE_PROXYS` dans le `.env` de la racine (0 en local avec `npm run dev`, 1 avec Docker et le tunnel ou Nginx). Pour lancer toute l'application dans Docker : `docker compose up -d --build`. Le tunnel Cloudflare se lance à part, et `PUBLIC_BASE_URL` doit être l'adresse du tunnel.

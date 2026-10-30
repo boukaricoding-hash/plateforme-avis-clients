@@ -126,6 +126,16 @@ function choisirHumeur(
   if (question.type === 'TEXTE_LIBRE') {
     return 'ecoute'
   }
+  // Oui / Non : la reponse est un booleen. Oui = contente, Non = triste.
+  if (question.type === 'OUI_NON') {
+    if (reponse === true) {
+      return 'content'
+    }
+    if (reponse === false) {
+      return 'triste'
+    }
+    return 'attentif'
+  }
   if (typeof reponse !== 'number') {
     return 'attentif'
   }

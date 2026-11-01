@@ -1,4 +1,5 @@
-// Textes du tableau de bord en francais (jour 13 : cadre, connexion, mot de passe oublie).
+// Textes du tableau de bord en francais (jour 13 : cadre, connexion, mot de passe oublie ;
+// jour 14 : ecran E7, indicateurs et graphiques).
 // Les textes entre accolades, comme {minutes}, sont remplaces par le code.
 export const fr = {
   commun: {
@@ -10,6 +11,7 @@ export const fr = {
     erreurReseau: 'Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.',
     retourConnexion: 'Retour à la connexion',
     enConstruction: 'Cet écran sera disponible prochainement.',
+    reessayer: 'Réessayer',
   },
   marque: {
     produit: 'Avis clients',
@@ -81,5 +83,165 @@ export const fr = {
   accueil: {
     titre: 'Tableau de bord',
     bonjour: 'Bonjour {nom}',
+  },
+  tableau: {
+    // Etats de l'ecran
+    chargement: 'Chargement des indicateurs…',
+    erreur: 'Impossible de charger les indicateurs.',
+    erreurActualisation:
+      'L’actualisation a échoué. Les chiffres affichés peuvent ne pas être à jour.',
+    misAJour: 'Mis à jour à {heure}',
+    actualisationAuto: 'Actualisation automatique toutes les 10 secondes',
+    actualiser: 'Actualiser',
+    actualisationEnCours: 'Actualisation…',
+    aucunAvis: 'Aucun avis sur cette période. Essayez une période plus large.',
+    perimetreGestionnaire: 'Vous voyez uniquement les sites de votre périmètre.',
+    aucuneDonnee: 'Pas de données',
+    periodeAffichee: 'Du {debut} au {fin}',
+    periodePrecedente: 'Comparé à la période précédente (du {debut} au {fin})',
+
+    filtres: {
+      titre: 'Filtres',
+      periode: 'Période',
+      periodes: {
+        aujourdhui: 'Aujourd’hui',
+        '7jours': '7 jours',
+        '30jours': '30 jours',
+        mois: 'Ce mois-ci',
+        personnalisee: 'Personnalisée',
+      },
+      du: 'Du',
+      au: 'Au',
+      site: 'Site',
+      tousLesSites: 'Tous les sites',
+      point: 'Point de contact',
+      tousLesPoints: 'Tous les points de contact',
+      questionnaire: 'Questionnaire',
+      tousLesQuestionnaires: 'Tous les questionnaires',
+      reinitialiser: 'Réinitialiser les filtres',
+      erreurListes: 'Impossible de charger les listes de filtres.',
+      datesRequises: 'Choisissez une date de début et une date de fin.',
+      datesInversees: 'La date de début doit être avant la date de fin.',
+      periodeTropLongue: 'La période ne peut pas dépasser 366 jours.',
+    },
+
+    cartes: {
+      noteMoyenne: 'Note moyenne',
+      noteSur5: '{note} sur 5',
+      legendeNote: 'Vert à partir de 4,2 · orange de 3,5 à 4,2 · rouge en dessous de 3,5',
+      niveauxNote: {
+        bonne: 'Bonne',
+        moyenne: 'Moyenne',
+        mauvaise: 'À améliorer',
+      },
+      csat: 'Satisfaction (CSAT)',
+      csatAide: 'Avis notés 4 ou 5 sur 5',
+      nps: 'NPS',
+      npsAide: '{promoteurs} promoteurs · {detracteurs} détracteurs',
+      nbAvis: 'Nombre d’avis',
+      nbAvisAide: '{scans} scans',
+      tauxReponse: 'Taux de réponse',
+      tauxReponseAide: 'Avis envoyés divisés par scans',
+      alertes: 'Alertes ouvertes',
+      alertesAucune: 'Aucune alerte à traiter',
+      alertesPlusAncienne: 'La plus ancienne : {duree}',
+      dureeHeures: '{nombre} h',
+      dureeJours: '{nombre} j',
+      voirAvis: 'Voir les avis concernés',
+      evolution: {
+        vsPrecedente: 'par rapport à la période précédente',
+        hausse: 'En hausse de {valeur}',
+        baisse: 'En baisse de {valeur}',
+        stable: 'Stable',
+        aucune: 'Pas de comparaison possible',
+        points: 'pts',
+      },
+    },
+
+    repartition: {
+      titre: 'Répartition des notes',
+      description: 'Cliquez sur une barre pour voir les avis de cette note.',
+      note: '{note} ★',
+      avis: '{nombre} avis',
+      aria: 'Note {note} sur 5 : {nombre} avis. Voir ces avis.',
+      aucun: 'Aucun avis noté sur cette période.',
+    },
+
+    themes: {
+      titre: 'Score par thème',
+      description: 'Les points faibles apparaissent en premier.',
+      score: 'Score sur 5',
+      reponses: '{nombre} réponses',
+      aucun: 'Aucun thème noté sur cette période.',
+    },
+
+    courbe: {
+      titre: 'Avis par jour',
+      description: 'Nombre d’avis reçus chaque jour.',
+      avis: 'Avis',
+      noteMoyenne: 'Note moyenne',
+      aucun: 'Aucun avis sur cette période.',
+    },
+
+    classement: {
+      titre: 'Classement des points de contact',
+      description: 'Cliquez sur un titre de colonne pour trier.',
+      rang: '#',
+      pointContact: 'Point de contact',
+      site: 'Site',
+      avis: 'Avis',
+      note: 'Note',
+      csat: 'CSAT',
+      nps: 'NPS',
+      trierPar: 'Trier par {colonne}',
+      ordreCroissant: 'ordre croissant',
+      ordreDecroissant: 'ordre décroissant',
+      voirAvis: 'Voir les avis de {nom}',
+      aucun: 'Aucun point de contact n’a reçu d’avis sur cette période.',
+    },
+
+    questions: {
+      titre: 'Détail par question',
+      description: 'Les résultats de chaque question du questionnaire.',
+      reponses: '{nombre} réponses',
+      moyenne: 'Moyenne : {valeur}',
+      moyenneSur: 'Moyenne : {valeur} sur {max}',
+      nps: 'NPS : {valeur}',
+      pourcentageOui: '{valeur} % de oui',
+      oui: 'Oui',
+      non: 'Non',
+      texteLibre: 'Question à texte libre : les réponses se lisent dans la fiche de chaque avis.',
+      aucune: 'Aucune réponse à une question sur cette période.',
+      types: {
+        ETOILES: 'Étoiles',
+        EMOJIS: 'Émojis',
+        NPS: 'NPS',
+        CHOIX_UNIQUE: 'Choix unique',
+        CHOIX_MULTIPLE: 'Choix multiples',
+        OUI_NON: 'Oui / non',
+        ECHELLE: 'Échelle',
+        TEXTE_LIBRE: 'Texte libre',
+      },
+    },
+
+    avisRecents: {
+      titre: 'Avis récents',
+      voirTous: 'Voir tous les avis',
+      aucun: 'Aucun avis sur cette période.',
+      sansCommentaire: 'Sans commentaire',
+      sansNote: 'Sans note',
+      noteSur5: '{note}/5',
+      npsValeur: 'NPS {valeur}',
+      lieu: '{point} · {site}',
+      alerte: 'Alerte',
+      prioritaire: 'Prioritaire',
+      ouvrir: 'Ouvrir l’avis du {date}',
+      statuts: {
+        NOUVEAU: 'Nouveau',
+        EN_COURS: 'En cours',
+        TRAITE: 'Traité',
+        IGNORE: 'Ignoré',
+      },
+    },
   },
 }

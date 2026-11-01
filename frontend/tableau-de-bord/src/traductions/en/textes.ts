@@ -251,6 +251,10 @@ export const en = {
       groupeSuivant: 'Show the next indicators',
       groupeAller: 'Show group {numero}',
       groupeSur: 'Group {numero} of {total}',
+      pagePrecedente: 'Previous page',
+      pageSuivante: 'Next page',
+      pageAller: 'Go to page {numero}',
+      pageSur: 'Page {numero} of {total}',
       fermerDetail: 'Close the detail',
       descriptions: {
         noteMoyenne: 'Average of the ratings given by your customers in the period.',

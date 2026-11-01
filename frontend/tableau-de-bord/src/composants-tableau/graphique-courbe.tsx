@@ -10,6 +10,8 @@ import { formaterJour, formaterJourCourt, formaterNombre } from '../utilitaires/
 // Un clic sur un jour ouvre la liste des avis de ce jour, avec les autres filtres du tableau de bord.
 // Le dessin se manipule a la souris ou au doigt ; au clavier, les cartes et les autres liens de la page
 // menent a la meme liste d'avis.
+// Refonte de l'accueil : la courbe prend toute la hauteur du panneau (classes accueil-remplir et
+// accueil-zone-graphique de styles/accueil.css), au lieu d'une hauteur fixe.
 
 // Au-dela de ce nombre de jours, on ne dessine plus un point par jour (trop serre).
 const JOURS_AVEC_POINTS = 31
@@ -30,7 +32,7 @@ export function GraphiqueCourbe({ points, filtres }: Proprietes) {
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg bg-surface/50 p-4"
+      className="accueil-remplir rounded-lg bg-surface/50 p-4"
     >
       <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
         {t('tableau.courbe.titre')}
@@ -45,8 +47,8 @@ export function GraphiqueCourbe({ points, filtres }: Proprietes) {
             {t('tableau.cartes.nbAvis')} : {total}
           </p>
 
-          <div aria-hidden="true" className="mt-3 cursor-pointer">
-            <ResponsiveContainer width="100%" height={240}>
+          <div aria-hidden="true" className="accueil-zone-graphique cursor-pointer">
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={points}
                 margin={{ top: 12, right: 12, bottom: 0, left: 0 }}

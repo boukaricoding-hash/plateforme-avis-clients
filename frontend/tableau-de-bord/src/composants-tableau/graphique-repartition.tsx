@@ -12,6 +12,8 @@ import {
 
 // Repartition des notes de 1 a 5 (ecran E7, jour 14).
 // Un clic sur une barre (ou sur le lien du dessous) ouvre la liste des avis de cette note.
+// Refonte de l'accueil : le dessin prend toute la hauteur du panneau (classes accueil-remplir et
+// accueil-zone-graphique de styles/accueil.css), la rangee de liens garde sa hauteur.
 
 type Proprietes = {
   repartition: RepartitionNote[]
@@ -48,7 +50,7 @@ export function GraphiqueRepartition({ repartition, filtres }: Proprietes) {
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg bg-surface/50 p-4"
+      className="accueil-remplir rounded-lg bg-surface/50 p-4"
     >
       <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
         {t('tableau.repartition.titre')}
@@ -61,8 +63,8 @@ export function GraphiqueRepartition({ repartition, filtres }: Proprietes) {
           <p className="mt-1 text-sm text-texte-secondaire">{t('tableau.repartition.description')}</p>
 
           {/* Le dessin est masque aux lecteurs d'ecran : la rangee de liens en dessous dit la meme chose. */}
-          <div aria-hidden="true" className="mt-3">
-            <ResponsiveContainer width="100%" height={220}>
+          <div aria-hidden="true" className="accueil-zone-graphique">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={donnees}
                 margin={{ top: 20, right: 8, bottom: 0, left: 0 }}

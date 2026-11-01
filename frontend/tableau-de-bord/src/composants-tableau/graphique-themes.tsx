@@ -8,9 +8,8 @@ import { formaterNombre } from '../utilitaires/periodes'
 // Score par theme, sur 5, points faibles en premier (ecran E7, jour 14).
 // L'API envoie deja les themes tries du plus faible au meilleur.
 // Pas de clic ici : la liste des avis n'a pas de filtre par theme.
-
-const HAUTEUR_PAR_THEME = 44
-const HAUTEUR_MINIMUM = 120
+// Refonte de l'accueil : le dessin prend toute la hauteur du panneau (classes accueil-remplir et
+// accueil-zone-graphique de styles/accueil.css) ; les barres s'amincissent s'il y a beaucoup de themes.
 
 type Proprietes = {
   themes: ScoreTheme[]
@@ -32,7 +31,7 @@ export function GraphiqueThemes({ themes }: Proprietes) {
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg bg-surface/50 p-4"
+      className="accueil-remplir rounded-lg bg-surface/50 p-4"
     >
       <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
         {t('tableau.themes.titre')}
@@ -45,11 +44,8 @@ export function GraphiqueThemes({ themes }: Proprietes) {
           <p className="mt-1 text-sm text-texte-secondaire">{t('tableau.themes.description')}</p>
 
           {/* Le dessin est masque aux lecteurs d'ecran : la liste cachee ci-dessous dit la meme chose. */}
-          <div aria-hidden="true" className="mt-3">
-            <ResponsiveContainer
-              width="100%"
-              height={Math.max(HAUTEUR_MINIMUM, donnees.length * HAUTEUR_PAR_THEME + 24)}
-            >
+          <div aria-hidden="true" className="accueil-zone-graphique">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={donnees}
                 layout="vertical"
@@ -73,7 +69,7 @@ export function GraphiqueThemes({ themes }: Proprietes) {
                   axisLine={false}
                   tick={{ fill: 'var(--texte)', fontSize: 12 }}
                 />
-                <Bar dataKey="score" barSize={18} radius={[0, 4, 4, 0]}>
+                <Bar dataKey="score" maxBarSize={18} radius={[0, 4, 4, 0]}>
                   {donnees.map((ligne) => (
                     <Cell key={ligne.id} fill={couleurGraphiqueNote(niveauDeLaNote(ligne.score))} />
                   ))}

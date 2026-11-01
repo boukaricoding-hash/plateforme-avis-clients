@@ -252,6 +252,10 @@ export const fr = {
       groupeSuivant: 'Afficher les indicateurs suivants',
       groupeAller: 'Afficher le groupe {numero}',
       groupeSur: 'Groupe {numero} sur {total}',
+      pagePrecedente: 'Page précédente',
+      pageSuivante: 'Page suivante',
+      pageAller: 'Aller à la page {numero}',
+      pageSur: 'Page {numero} sur {total}',
       fermerDetail: 'Fermer le détail',
       descriptions: {
         noteMoyenne: 'Moyenne des notes données par vos clients sur la période.',

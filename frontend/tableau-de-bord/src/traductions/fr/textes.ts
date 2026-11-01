@@ -1,5 +1,5 @@
 // Textes du tableau de bord en francais (jour 13 : cadre, connexion, mot de passe oublie ;
-// jour 14 : ecran E7, indicateurs et graphiques).
+// jour 14 : ecran E7, indicateurs et graphiques ; refonte de l'accueil : raccourcis et groupes de cartes).
 // Les textes entre accolades, comme {minutes}, sont remplaces par le code.
 export const fr = {
   commun: {
@@ -241,6 +241,26 @@ export const fr = {
         EN_COURS: 'En cours',
         TRAITE: 'Traité',
         IGNORE: 'Ignoré',
+      },
+    },
+
+    // Page d'accueil : raccourcis en coin, groupes de cartes, panneau de detail
+    accueil: {
+      raccourcis: 'Raccourcis',
+      groupes: 'Groupes d’indicateurs',
+      groupePrecedent: 'Afficher les indicateurs précédents',
+      groupeSuivant: 'Afficher les indicateurs suivants',
+      groupeAller: 'Afficher le groupe {numero}',
+      groupeSur: 'Groupe {numero} sur {total}',
+      fermerDetail: 'Fermer le détail',
+      descriptions: {
+        noteMoyenne: 'Moyenne des notes données par vos clients sur la période.',
+        csat: 'Part des clients qui ont donné 4 ou 5 sur 5.',
+        nps: 'Promoteurs moins détracteurs : mesure l’envie de vous recommander.',
+        nbAvis: 'Avis reçus sur la période, comparés à la période précédente.',
+        tauxReponse: 'Part des personnes qui ont scanné un QR code et envoyé leur avis.',
+        alertes:
+          'Avis négatifs encore à traiter (nouveaux ou en cours), quelle que soit la période.',
       },
     },
   },

@@ -1,5 +1,5 @@
 // Dashboard texts in English (day 13: layout, sign in, forgotten password;
-// day 14: screen E7, indicators and charts).
+// day 14: screen E7, indicators and charts; home page redesign: shortcuts and card groups).
 // Texts in braces, like {minutes}, are replaced by the code.
 export const en = {
   commun: {
@@ -240,6 +240,25 @@ export const en = {
         EN_COURS: 'In progress',
         TRAITE: 'Handled',
         IGNORE: 'Ignored',
+      },
+    },
+
+    // Home page: corner shortcuts, card groups, detail panel
+    accueil: {
+      raccourcis: 'Shortcuts',
+      groupes: 'Indicator groups',
+      groupePrecedent: 'Show the previous indicators',
+      groupeSuivant: 'Show the next indicators',
+      groupeAller: 'Show group {numero}',
+      groupeSur: 'Group {numero} of {total}',
+      fermerDetail: 'Close the detail',
+      descriptions: {
+        noteMoyenne: 'Average of the ratings given by your customers in the period.',
+        csat: 'Share of customers who gave 4 or 5 out of 5.',
+        nps: 'Promoters minus detractors: shows how likely customers are to recommend you.',
+        nbAvis: 'Reviews received in the period, compared with the previous period.',
+        tauxReponse: 'Share of people who scanned a QR code and sent a review.',
+        alertes: 'Negative reviews still to handle (new or in progress), whatever the period.',
       },
     },
   },

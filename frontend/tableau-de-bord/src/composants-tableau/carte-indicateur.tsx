@@ -33,7 +33,7 @@ type Proprietes = {
 
 const CLASSES_CARTE = 'block rounded-lg border border-bordure bg-surface p-4 shadow-doux'
 
-function Variation({ variation }: { variation: VariationCarte }) {
+export function Variation({ variation }: { variation: VariationCarte }) {
   const { t, langue } = utiliserLangue()
   const { valeur, unite, decimales } = variation
 

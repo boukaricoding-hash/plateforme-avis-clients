@@ -131,3 +131,26 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - Tant que la route `/avis/:id` n'existe pas (jour 15), un clic sur un avis recent renvoie a l'accueil.
 - L'actualisation toutes les 10 secondes garde la session active tant que l'onglet est visible : une page laissee ouverte n'expire pas. A decider au jour 26.
 - `Cell` de recharts est declare obsolete (retrait prevu en recharts 4) : a revoir si on change de version.
+
+## Hors planning - dimanche 1er novembre 2026 : refonte de l'accueil du tableau de bord
+
+**Fait**
+- Disposition reprise du tableau de bord de Gestion Scolaire, avec la palette beige rose et terracotta du jour 13 (pas de noir et or).
+- En-tête centré : « Bonjour {nom} », la date du jour, la période affichée en grand, puis « Mis à jour à… », l'actualisation automatique et le bouton Actualiser.
+- Six cartes en deux groupes de trois, avec flèches, points et « Groupe 1 sur 2 » : note moyenne, CSAT, NPS, puis nombre d'avis, taux de réponse, alertes ouvertes (pastille rouge). Les chiffres sont ceux de l'API et montent en animation.
+- Un clic sur une carte ouvre un panneau dessous : description, variation, aide et « Voir les avis concernés » (mêmes liens qu'avant). Un second clic ou le « × » le referme.
+- Sept icônes en coin : Filtres, Répartition, Thèmes, Courbe, Classement, Avis récents, Questions. Un clic ouvre la section dans le panneau (une seule à la fois) avec les composants du jour 14, donc liens, erreurs et actualisation toutes les 10 secondes sont inchangés.
+- Petit écran : les icônes passent en rangée au-dessus de l'en-tête.
+- Fichiers : `styles/accueil.css`, `composants-tableau/carte-accueil.tsx`, `composants-tableau/panneau-detail.tsx`, `pages/tableau-de-bord/page-accueil.tsx` (réécrit). Textes et icônes étaient déjà dans le commit précédent.
+- Backend non modifié, aucune dépendance ajoutée. `tsc -b` et `vite build` sans erreur. Vérifié dans Chrome (ordinateur et 390 px) avec de fausses données : ouverture et fermeture du panneau, passage d'un groupe à l'autre, chiffres animés, filtres, courbe, français et anglais.
+
+**Décisions**
+- Les filtres ne sont plus visibles en permanence : ils s'ouvrent avec la première icône. Ils s'appliquent toujours à tous les blocs.
+- Le panneau d'une carte se ferme quand on change de groupe (la carte n'est plus à l'écran). Celui d'une section reste ouvert.
+- Le chiffre repart de sa valeur précédente à chaque actualisation, pas de zéro. Avec « mouvement réduit » activé dans le système, il saute directement à la valeur.
+- Le `overflow: hidden` du `reset.css` de Gestion Scolaire n'est pas repris : il bloquerait le défilement du cadre.
+- `carte-indicateur.tsx` n'est plus utilisé par l'accueil, mais son composant `Variation` l'est (dans le panneau). Le fichier reste.
+
+**Point d'attention**
+- `npx eslint .` signale 2 erreurs dans `tableau-classement.tsx` (mémoïsation du tri, React Compiler). Elles existaient avant cette branche.
+- Jour 15 (écrans E8 et E9) pas encore commencé : à reprendre après la fusion de cette branche.

@@ -1,0 +1,692 @@
+/* ------------------------------------------------------------
+   Page d'accueil du tableau de bord (ecran E7).
+   Disposition reprise du tableau de bord de Gestion Scolaire :
+   icones de raccourci en coin, en-tete centre, cartes en groupes
+   avec fleches et points, panneau de detail qui s'ouvre au clic.
+   Les couleurs viennent des variables de styles/index.css
+   (beige rose et terracotta) : aucune couleur n'est ecrite ici.
+   ------------------------------------------------------------ */
+
+.accueil {
+  /* Correspondance avec la palette du tableau de bord */
+  --a-accent: var(--couleur-principale);
+  --a-accent-fond: var(--fond-alt);
+  --a-survol: var(--fond-alt);
+  --a-texte-doux: var(--texte-secondaire);
+  --a-police-titre: var(--font-titre, Georgia, 'Iowan Old Style', 'Palatino Linotype', Charter, serif);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  padding-top: clamp(8px, 5vh, 56px);
+}
+
+.accueil-scene {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Icones de raccourci en coin ---------- */
+
+.accueil-raccourcis {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.accueil-raccourcis-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accueil-icone-coin {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--rayon-sm);
+  background: transparent;
+  color: var(--a-texte-doux);
+  cursor: pointer;
+  opacity: 0.8;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.accueil-icone-coin svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.accueil-icone-coin:hover {
+  background: var(--surface-douce);
+  color: var(--a-accent);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.accueil-icone-coin:hover svg {
+  transform: scale(1.12) rotate(-8deg);
+}
+
+/* Raccourci dont la section est ouverte */
+.accueil-icone-coin[aria-pressed='true'] {
+  background: var(--surface-douce);
+  color: var(--a-accent);
+  opacity: 1;
+}
+
+.accueil-infobulle {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  padding: 5px 9px;
+  border-radius: var(--rayon-sm);
+  background: var(--texte);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.accueil-icone-coin:hover .accueil-infobulle,
+.accueil-icone-coin:focus-visible .accueil-infobulle {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- En-tete ---------- */
+
+.accueil-titre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.accueil-salutation {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 14px;
+}
+
+.accueil-date {
+  margin: 2px 0 4px;
+  color: var(--a-texte-doux);
+  font-size: 12px;
+}
+
+/* Seule la premiere lettre prend une majuscule : "Dimanche 1 novembre 2026" */
+.accueil-date::first-letter {
+  text-transform: uppercase;
+}
+
+.accueil-sous-titre {
+  max-width: 100%;
+  margin: 0;
+  color: var(--texte);
+  font-family: var(--a-police-titre);
+  font-size: clamp(20px, 2.6vw, 32px);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.accueil-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 16px;
+  margin-top: 12px;
+  color: var(--a-texte-doux);
+  font-size: 13px;
+}
+
+.accueil-meta p {
+  margin: 0;
+}
+
+.accueil-bouton-actualiser {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-md);
+  background: transparent;
+  color: var(--texte);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.accueil-bouton-actualiser:hover:not(:disabled) {
+  background: var(--a-survol);
+}
+
+.accueil-bouton-actualiser:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.accueil-message {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  background: var(--surface);
+  color: var(--a-texte-doux);
+  font-size: 14px;
+  text-align: center;
+}
+
+.accueil-message--erreur {
+  border-color: var(--erreur);
+  color: var(--erreur);
+}
+
+/* ---------- Cartes en groupes ---------- */
+
+.accueil-cartes {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.accueil-groupe {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  max-width: 980px;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 230ms ease,
+    transform 230ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.accueil-groupe--sortie {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.accueil-groupe--entree {
+  opacity: 0;
+  transform: translateX(12px);
+}
+
+@keyframes accueil-apparition {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.accueil-carte {
+  width: 230px;
+  min-height: 136px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--bordure);
+  border-top: 3px solid var(--couleur-carte, var(--a-accent));
+  border-radius: var(--rayon-lg);
+  background: var(--surface);
+  color: var(--texte);
+  cursor: pointer;
+  text-align: left;
+  animation: accueil-apparition 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.accueil-carte:hover,
+.accueil-carte[aria-expanded='true'] {
+  border-right-color: var(--a-accent);
+  border-bottom-color: var(--a-accent);
+  border-left-color: var(--a-accent);
+  background: var(--a-survol);
+  box-shadow: var(--ombre-sm);
+}
+
+.accueil-carte:hover {
+  transform: translateY(-3px);
+}
+
+.accueil-carte-en-tete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accueil-carte-icone {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--couleur-carte, var(--a-accent));
+  transition: transform 0.15s ease;
+}
+
+.accueil-carte-icone svg {
+  width: 100%;
+  height: 100%;
+}
+
+.accueil-carte:hover .accueil-carte-icone {
+  transform: translateX(2px) scale(1.1);
+}
+
+.accueil-carte-titre {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.accueil-pastille {
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--erreur);
+  color: var(--texte-sur-principale);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.accueil-carte-donnees {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.accueil-carte-valeur {
+  color: var(--couleur-carte, var(--texte));
+  font-family: var(--a-police-titre);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.accueil-carte-unite {
+  margin-left: 4px;
+  color: var(--a-texte-doux);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.accueil-carte-vide {
+  color: var(--a-texte-doux);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.accueil-carte-sous-titre {
+  color: var(--a-texte-doux);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.accueil-hausse {
+  color: var(--succes);
+  font-weight: 600;
+}
+
+.accueil-baisse {
+  color: var(--erreur);
+  font-weight: 600;
+}
+
+/* ---------- Fleches, points et compteur ---------- */
+
+.accueil-controles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.accueil-fleche {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--bordure);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--a-texte-doux);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.accueil-fleche:hover {
+  border-color: var(--a-accent);
+  background: var(--a-accent-fond);
+  color: var(--a-accent);
+}
+
+.accueil-points {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Zone de clic confortable autour du petit point */
+.accueil-point {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.accueil-point::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bordure-forte);
+  transition:
+    width 0.15s ease,
+    background 0.15s ease;
+}
+
+.accueil-point:hover::before {
+  background: var(--texte-secondaire);
+}
+
+.accueil-point--actif::before {
+  width: 20px;
+  background: var(--a-accent);
+}
+
+.accueil-compteur {
+  margin: 4px 0 0;
+  color: var(--a-texte-doux);
+  font-size: 12px;
+}
+
+/* ---------- Panneau de detail ---------- */
+
+/* La hauteur passe de 0 a la hauteur du contenu (grille 0fr vers 1fr) :
+   marche pour un petit texte comme pour un graphique. */
+.accueil-panneau {
+  width: 100%;
+  max-width: 640px;
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    grid-template-rows 0.4s ease,
+    opacity 0.25s ease,
+    margin-top 0.4s ease,
+    transform 0.25s ease,
+    visibility 0s linear 0.4s;
+}
+
+.accueil-panneau--large {
+  max-width: 980px;
+}
+
+.accueil-panneau--ouvert {
+  grid-template-rows: 1fr;
+  margin-top: 32px;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    grid-template-rows 0.4s ease,
+    opacity 0.25s ease,
+    margin-top 0.4s ease,
+    transform 0.25s ease,
+    visibility 0s;
+}
+
+.accueil-panneau-interieur {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.accueil-panneau-contenu {
+  position: relative;
+  animation: accueil-apparition 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Petit panneau d'une carte */
+.accueil-detail {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  background: var(--surface);
+  box-shadow: var(--ombre-sm);
+}
+
+.accueil-detail-texte {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accueil-detail-titre {
+  margin: 0;
+  color: var(--texte);
+  font-family: var(--a-police-titre);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.accueil-detail-description {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 14px;
+}
+
+.accueil-detail-variation {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 13px;
+}
+
+.accueil-detail-aide {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 13px;
+}
+
+.accueil-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.accueil-detail-bouton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: var(--rayon-md);
+  background: var(--couleur-principale);
+  color: var(--texte-sur-principale);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.accueil-detail-bouton:hover {
+  background: var(--couleur-principale-fonce);
+}
+
+.accueil-fermer {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--rayon-md);
+  background: transparent;
+  color: var(--a-texte-doux);
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.accueil-fermer:hover {
+  background: var(--surface-douce);
+  color: var(--texte);
+}
+
+/* Panneau d'une section : le bouton de fermeture flotte au-dessus du composant */
+.accueil-section-fermer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+/* ---------- Clavier ---------- */
+
+.accueil-icone-coin:focus-visible,
+.accueil-carte:focus-visible,
+.accueil-fleche:focus-visible,
+.accueil-point:focus-visible,
+.accueil-detail-bouton:focus-visible,
+.accueil-fermer:focus-visible,
+.accueil-bouton-actualiser:focus-visible {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Tablette et telephone ---------- */
+
+@media (max-width: 1280px) {
+  .accueil-raccourcis {
+    position: static;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .accueil-raccourcis-colonne {
+    flex-direction: row;
+  }
+
+  .accueil-infobulle {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%) translateY(-3px);
+  }
+
+  .accueil-icone-coin:hover .accueil-infobulle,
+  .accueil-icone-coin:focus-visible .accueil-infobulle {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .accueil-groupe {
+    max-width: 720px;
+  }
+}
+
+@media (max-width: 768px) {
+  .accueil {
+    padding-top: 0;
+  }
+
+  .accueil-titre {
+    margin-bottom: 24px;
+  }
+
+  .accueil-carte {
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .accueil-detail {
+    flex-direction: column;
+  }
+
+  .accueil-detail-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ---------- Mouvement reduit ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .accueil *,
+  .accueil *::before,
+  .accueil *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

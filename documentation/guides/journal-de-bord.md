@@ -154,3 +154,19 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 **Point d'attention**
 - `npx eslint .` signale 2 erreurs dans `tableau-classement.tsx` (mémoïsation du tri, React Compiler). Elles existaient avant cette branche.
 - Jour 15 (écrans E8 et E9) pas encore commencé : à reprendre après la fusion de cette branche.
+
+## Hors planning - dimanche 1er novembre 2026 : palette claire creme et or
+
+**Fait**
+- La palette beige rose et terracotta du tableau de bord est remplacee par celle de Gestion Scolaire en theme clair : fond creme, cartes blanches, accent or. Un seul theme, pas de theme sombre.
+- Tout est dans `styles/index.css` (bloc `:root`) : les noms de variables ne changent pas, donc l'accueil, la barre laterale, la connexion et les graphiques suivent sans modification de leur code.
+- Nouvelle variable `--accent-fond` (#f3e8d3) pour le survol des icones. Dans `styles/accueil.css`, une seule ligne change : `--a-accent-fond`.
+- Les couleurs des notes (vert, orange, rouge) et les etats (succes, erreur) sont gardes : ils servent aux seuils 4,2 et 3,5.
+
+**Decisions**
+- Boutons en #8f6c31 (contraste 4,8 avec du texte blanc) et non #a8813f (environ 3,6, trop bas). L'or #a8813f reste reserve aux decors : barres et graphiques.
+- La page d'avis du client (autre projet) garde sa palette beige rose et terracotta.
+- Pas de nouvelle police : Playfair Display et Cormorant Garamond de Gestion Scolaire ne sont pas repris (aucune police a telecharger).
+
+**Point d'attention**
+- Le commentaire en tete de `index.css` ne parle plus de la page d'avis du client : les deux palettes sont maintenant differentes.

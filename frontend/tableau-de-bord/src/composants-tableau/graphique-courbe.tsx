@@ -30,7 +30,7 @@ export function GraphiqueCourbe({ points, filtres }: Proprietes) {
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-4 shadow-doux"
+      className="rounded-lg bg-surface/50 p-4"
     >
       <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
         {t('tableau.courbe.titre')}

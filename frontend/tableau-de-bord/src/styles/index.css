@@ -2,35 +2,43 @@
 
 /* ------------------------------------------------------------
    Variables globales du tableau de bord.
-   Meme palette que la page d'avis du client (beige rose et terracotta).
+   Palette de Gestion Scolaire en theme clair uniquement (creme et or).
+   Un seul theme : pas de theme sombre.
    La couleur de l'organisation (jour 16) pourra remplacer --couleur-principale
    sans toucher au reste.
    ------------------------------------------------------------ */
 :root {
   /* Fonds */
-  --fond: #efe6e1;
-  --fond-alt: #f7f1ed;
-  --surface: #fffdfc;
-  --surface-douce: #e6dbd5;
+  --fond: #faf8f4;
+  --fond-alt: #f0ece2;
+  --surface: #ffffff;
+  --surface-douce: #ebe5d8;
+  /* Fond teinte d'or : survol des icones et des boutons discrets */
+  --accent-fond: #f3e8d3;
 
-  /* Couleur principale : boutons (texte blanc dessus : contraste 4,6 sur 1) */
-  --couleur-principale: #af6046;
-  --couleur-principale-fonce: #9a5038;
+  /* Couleur principale : boutons (texte blanc dessus : contraste 4,8 sur 1) */
+  --couleur-principale: #8f6c31;
+  --couleur-principale-fonce: #7a5b28;
   /* Decors seulement (barres, graphiques, fonds clairs). Jamais comme fond d'un bouton avec du texte blanc. */
-  --couleur-decor: #d97757;
-  --couleur-decor-clair: #f0c4b0;
+  --couleur-decor: #a8813f;
+  --couleur-decor-clair: #e8d5ab;
+
+  /* Couleurs des cartes de l'accueil sans sens bon ou mauvais (contraste d'au moins 5 sur 1 sur fond blanc) */
+  --carte-bleu: #2f6a9b;
+  --carte-violet: #7a4fa3;
+  --carte-sarcelle: #1f7a7a;
 
   /* Textes */
-  --texte: #2a1f1c;
-  --texte-secondaire: #6d5d57;
+  --texte: #201c14;
+  --texte-secondaire: #6b6252;
   /* Decor seulement : contraste faible, a ne jamais utiliser pour du texte a lire. */
-  --texte-discret: #a39792;
+  --texte-discret: #948a76;
   --texte-sur-principale: #ffffff;
 
   /* Bordures */
-  --bordure: #e2d6cf;
-  --bordure-forte: #d2c3bb;
-  --bordure-champ: #8a7b75; /* contour des champs : contraste 4 sur 1 */
+  --bordure: #e5ddcb;
+  --bordure-forte: #d6cbb0;
+  --bordure-champ: #857a64; /* contour des champs : contraste 4 sur 1 */
 
   /* Etats */
   --erreur: #c0392b;
@@ -50,10 +58,10 @@
   --rayon-lg: 16px;
   --rayon-xl: 22px;
 
-  /* Ombres douces teintees de brun */
-  --ombre-sm: 0 1px 3px rgb(42 31 28 / 0.06);
-  --ombre-md: 0 4px 10px rgb(42 31 28 / 0.09);
-  --ombre-lg: 0 8px 20px rgb(42 31 28 / 0.13);
+  /* Ombres douces teintees de brun (memes valeurs que le theme clair de Gestion Scolaire) */
+  --ombre-sm: 0 4px 12px rgb(20 18 14 / 0.08);
+  --ombre-md: 0 8px 24px rgb(20 18 14 / 0.1);
+  --ombre-lg: 0 20px 50px rgb(20 18 14 / 0.14);
 }
 
 /* Noms utilisables dans les classes : bg-fond, text-texte, border-bordure, shadow-moyen... */
@@ -62,6 +70,7 @@
   --color-fond-alt: var(--fond-alt);
   --color-surface: var(--surface);
   --color-surface-douce: var(--surface-douce);
+  --color-accent-fond: var(--accent-fond);
 
   --color-principale: var(--couleur-principale);
   --color-principale-fonce: var(--couleur-principale-fonce);

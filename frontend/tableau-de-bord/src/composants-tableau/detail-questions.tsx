@@ -168,7 +168,7 @@ export function DetailQuestions({ questions, questionnaires }: Proprietes) {
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-4 shadow-doux"
+      className="rounded-lg bg-surface/50 p-4"
     >
       <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
         {t('tableau.questions.titre')}
@@ -189,7 +189,7 @@ export function DetailQuestions({ questions, questionnaires }: Proprietes) {
             return (
               <li
                 key={`${question.questionnaire_id}|${question.type}|${question.libelle.fr}`}
-                className="rounded-md border border-bordure bg-fond p-3"
+                className="rounded-md bg-fond-alt/50 p-3"
               >
                 {titreQuestionnaire ? (
                   <p className="text-xs text-texte-discret">{titreQuestionnaire}</p>

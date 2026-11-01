@@ -126,7 +126,7 @@ export function TableauClassement({ lignes, filtres }: Proprietes) {
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-4 shadow-doux"
+      className="rounded-lg bg-surface/50 p-4"
     >
       <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
         {t('tableau.classement.titre')}
@@ -138,7 +138,7 @@ export function TableauClassement({ lignes, filtres }: Proprietes) {
         <>
           <p className="mt-1 text-sm text-texte-secondaire">{t('tableau.classement.description')}</p>
 
-          <div className="mt-3 max-h-[28rem] overflow-auto rounded-md border border-bordure">
+          <div className="mt-3 max-h-[28rem] overflow-auto rounded-md">
             <table className="w-full min-w-[36rem] border-collapse text-sm">
               <caption className="sr-only">{t('tableau.classement.titre')}</caption>
               <thead className="sticky top-0 bg-fond-alt">

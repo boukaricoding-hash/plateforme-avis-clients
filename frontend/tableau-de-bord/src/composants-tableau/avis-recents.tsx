@@ -33,7 +33,7 @@ export function AvisRecents({ avis, filtres }: Proprietes) {
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-4 shadow-doux"
+      className="rounded-lg bg-surface/50 p-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
@@ -61,7 +61,7 @@ export function AvisRecents({ avis, filtres }: Proprietes) {
                 <Link
                   to={`/avis/${unAvis.id}`}
                   aria-label={t('tableau.avisRecents.ouvrir', { date: dateTexte })}
-                  className="block rounded-md border border-bordure bg-fond p-3 transition-colors hover:bg-fond-alt"
+                  className="block rounded-md bg-fond-alt/50 p-3 transition-colors hover:bg-fond-alt"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs text-texte-secondaire">{dateTexte}</span>

@@ -50,6 +50,7 @@ const DELAI_DEFILEMENT_MS = 420
 // A partir de cette anciennete (en heures), on ecrit la duree en jours
 const SEUIL_JOURS_HEURES = 48
 const ID_PANNEAU = 'accueil-panneau'
+const ID_PANNEAU_FILTRES = 'accueil-panneau-filtres'
 
 type Traduire = (cle: string, valeurs?: ValeursTexte) => string
 
@@ -143,7 +144,7 @@ function construireCartes(
       cle: 'csat',
       titre: t('tableau.cartes.csat'),
       Icone: IconeSatisfaction,
-      couleur: COULEUR_DEFAUT,
+      couleur: 'var(--carte-bleu)',
       valeur: indicateurs.csat,
       decimales: 1,
       fixe: false,
@@ -157,7 +158,7 @@ function construireCartes(
       cle: 'nps',
       titre: t('tableau.cartes.nps'),
       Icone: IconeRecommandation,
-      couleur: COULEUR_DEFAUT,
+      couleur: 'var(--carte-violet)',
       valeur: indicateurs.nps,
       decimales: 1,
       fixe: false,
@@ -186,7 +187,7 @@ function construireCartes(
       cle: 'tauxReponse',
       titre: t('tableau.cartes.tauxReponse'),
       Icone: IconeTauxReponse,
-      couleur: COULEUR_DEFAUT,
+      couleur: 'var(--carte-sarcelle)',
       valeur: indicateurs.taux_reponse,
       decimales: 1,
       fixe: false,
@@ -215,11 +216,10 @@ function construireCartes(
 }
 
 // ------------------------------------------------------------
-// Les sept icones de raccourci
+// Les six icones de raccourci
 // ------------------------------------------------------------
 
 type CleSection =
-  | 'filtres'
   | 'repartition'
   | 'themes'
   | 'courbe'
@@ -235,7 +235,6 @@ type Raccourci = {
 }
 
 const RACCOURCIS_HAUT: Raccourci[] = [
-  { cle: 'filtres', Icone: IconeFiltres, cleTitre: 'tableau.filtres.titre' },
   { cle: 'repartition', Icone: IconeRepartition, cleTitre: 'tableau.repartition.titre' },
   { cle: 'themes', Icone: IconeThemes, cleTitre: 'tableau.themes.titre' },
   { cle: 'courbe', Icone: IconeCourbe, cleTitre: 'tableau.courbe.titre' },
@@ -296,6 +295,15 @@ export function PageAccueil() {
   const [selection, setSelection] = useState<Selection | null>(null)
   const [ouvert, setOuvert] = useState(false)
 
+  // Panneau des filtres, place sous son bouton, au-dessus des cartes
+  const [filtresOuverts, setFiltresOuverts] = useState(false)
+  // Au moins un filtre est different de ceux par defaut (les memes que dans BarreFiltres)
+  const filtresModifies =
+    filtres.periode !== '30jours' ||
+    filtres.site !== '' ||
+    filtres.point !== '' ||
+    filtres.questionnaire !== ''
+
   useEffect(
     () => () => {
       if (minuterie.current !== null) {
@@ -305,7 +313,7 @@ export function PageAccueil() {
     [],
   )
 
-  // A l'ouverture ou au changement de contenu, on fait defiler jusqu'au panneau s'il est hors de l'ecran
+  // A l'ouverture ou au changement de contenu, on fait defiler jusqu'au panneau, place en haut de l'ecran
   const cleSelection = selection === null ? '' : `${selection.type}-${selection.cle}`
   useEffect(() => {
     if (!ouvert) {
@@ -315,7 +323,7 @@ export function PageAccueil() {
     const minuteur = setTimeout(() => {
       document
         .getElementById(ID_PANNEAU)
-        ?.scrollIntoView({ block: 'nearest', behavior: reduire ? 'auto' : 'smooth' })
+        ?.scrollIntoView({ block: 'start', behavior: reduire ? 'auto' : 'smooth' })
     }, DELAI_DEFILEMENT_MS)
     return () => clearTimeout(minuteur)
   }, [ouvert, cleSelection])
@@ -378,20 +386,6 @@ export function PageAccueil() {
 
   // Contenu d'une section : les composants deja ecrits, avec leurs liens, leurs erreurs et leur actualisation
   function contenuSection(cle: CleSection): ReactNode {
-    if (cle === 'filtres') {
-      return (
-        <BarreFiltres
-          filtres={filtres}
-          onChanger={changerFiltres}
-          onReinitialiser={reinitialiserFiltres}
-          erreurPeriode={erreurPeriode}
-          sites={sites}
-          pointsContact={pointsContact}
-          questionnaires={questionnaires}
-          erreurListes={erreurListes}
-        />
-      )
-    }
     if (donnees === null) {
       return <p className="accueil-message">{t('tableau.chargement')}</p>
     }
@@ -525,6 +519,35 @@ export function PageAccueil() {
             {t('tableau.erreurActualisation')}
           </p>
         )}
+
+        <div className="accueil-zone-filtres">
+          <button
+            type="button"
+            className="accueil-filtres-bouton"
+            aria-expanded={filtresOuverts}
+            aria-controls={ID_PANNEAU_FILTRES}
+            onClick={() => setFiltresOuverts((valeur) => !valeur)}
+          >
+            <IconeFiltres aria-hidden="true" />
+            {t('tableau.filtres.titre')}
+            {filtresModifies && <span className="accueil-filtres-point" aria-hidden="true" />}
+          </button>
+          <PanneauDetail id={ID_PANNEAU_FILTRES} ouvert={filtresOuverts} large cleContenu="filtres">
+            <div className="accueil-section-fermer">
+              <BoutonFermer onFermer={() => setFiltresOuverts(false)} />
+            </div>
+            <BarreFiltres
+              filtres={filtres}
+              onChanger={changerFiltres}
+              onReinitialiser={reinitialiserFiltres}
+              erreurPeriode={erreurPeriode}
+              sites={sites}
+              pointsContact={pointsContact}
+              questionnaires={questionnaires}
+              erreurListes={erreurListes}
+            />
+          </PanneauDetail>
+        </div>
 
         {cartes !== null && donnees !== null && (
           <>

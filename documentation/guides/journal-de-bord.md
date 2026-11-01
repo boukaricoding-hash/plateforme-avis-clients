@@ -102,3 +102,32 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 **Point d'attention**
 - Les fichiers `documentation/mise-en-ligne-test.md` et `qr.png` restent non suivis, volontairement.
 - `npm audit` est prevu au jour 26 : ne jamais lancer `npm audit fix --force`.
+
+
+## Jour 14 - dimanche 1er novembre 2026 : tableau de bord (indicateurs et graphiques)
+
+**Fait**
+- Ecran E7 (page d'accueil du tableau de bord) : barre de filtres (periode, site, point de contact, questionnaire) qui s'appliquent a tous les blocs en meme temps.
+- Six cartes : note moyenne (vert, orange, rouge), CSAT, NPS, nombre d'avis, taux de reponse, alertes ouvertes, avec la variation par rapport a la periode precedente.
+- Graphiques : repartition des notes, score par theme, courbe du nombre d'avis, classement des points de contact (triable), avis recents, detail par question.
+- Un clic sur une carte, une barre, un jour de la courbe ou une ligne du classement ouvre `/avis?...` avec les bons filtres.
+- Actualisation automatique toutes les 10 secondes (en pause si l'onglet est cache, rechargement au retour). Erreur de reseau : les chiffres deja affiches restent a l'ecran avec un avertissement. Un 401 renvoie a la connexion.
+- Tout est dans `frontend/tableau-de-bord/src` (types, service, hook `utiliser-donnees-tableau`, utilitaires periodes et couleurs, composants-tableau, `page-accueil`). Textes fr et en dans `src/traductions`.
+- Backend non modifie, aucune dependance ajoutee. `tsc -b` sans erreur, `npm test` : 159 tests passent sur 11 fichiers.
+- Verifications du soir faites a la main : chiffres compares a l'API, filtres, periode invalide, erreurs, clics, anglais, petite largeur.
+
+**Decisions**
+- Les dates du tableau de bord sont en UTC, comme le backend.
+- Le lien de la carte « Alertes ouvertes » n'envoie pas de periode (les alertes n'en dependent pas) : `negatifs=true` avec site, point et questionnaire.
+- Clic sur une barre de repartition : `note_min = k - 0,5` et `note_max = k + 0,4999`, car le backend range un avis dans la barre `Math.round(note_globale)`.
+- Couleur de la note d'un avis recent : par note entiere (4 et 5 vert, 3 orange, 1 et 2 rouge) ; les seuils 4,2 et 3,5 ne servent que pour les moyennes.
+- Pas de clic sur le detail par question ni sur les themes : la liste des avis n'a pas de filtre correspondant.
+
+**A faire ensuite**
+- Jour 15 : ecrans E8 (liste des avis) et E9 (fiche d'un avis). La liste doit lire les parametres d'adresse `from`, `to`, `site`, `point`, `questionnaire`, `statut`, `q`, `negatifs`, `avec_commentaire`, `note_min`, `note_max`, `tri`, `ordre`, `page`, `limite`, et il faut ajouter la route `/avis/:id`.
+- Jour 16 : cloche de notifications, alertes par e-mail, ecran E14.
+
+**Point d'attention**
+- Tant que la route `/avis/:id` n'existe pas (jour 15), un clic sur un avis recent renvoie a l'accueil.
+- L'actualisation toutes les 10 secondes garde la session active tant que l'onglet est visible : une page laissee ouverte n'expire pas. A decider au jour 26.
+- `Cell` de recharts est declare obsolete (retrait prevu en recharts 4) : a revoir si on change de version.

@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------
+   Variables globales du tableau de bord.
+   Meme palette que la page d'avis du client (beige rose et terracotta).
+   La couleur de l'organisation (jour 16) pourra remplacer --couleur-principale
+   sans toucher au reste.
+   ------------------------------------------------------------ */
+:root {
+  /* Fonds */
+  --fond: #efe6e1;
+  --fond-alt: #f7f1ed;
+  --surface: #fffdfc;
+  --surface-douce: #e6dbd5;
+
+  /* Couleur principale : boutons (texte blanc dessus : contraste 4,6 sur 1) */
+  --couleur-principale: #af6046;
+  --couleur-principale-fonce: #9a5038;
+  /* Decors seulement (barres, graphiques, fonds clairs). Jamais comme fond d'un bouton avec du texte blanc. */
+  --couleur-decor: #d97757;
+  --couleur-decor-clair: #f0c4b0;
+
+  /* Textes */
+  --texte: #2a1f1c;
+  --texte-secondaire: #6d5d57;
+  /* Decor seulement : contraste faible, a ne jamais utiliser pour du texte a lire. */
+  --texte-discret: #a39792;
+  --texte-sur-principale: #ffffff;
+
+  /* Bordures */
+  --bordure: #e2d6cf;
+  --bordure-forte: #d2c3bb;
+  --bordure-champ: #8a7b75; /* contour des champs : contraste 4 sur 1 */
+
+  /* Etats */
+  --erreur: #c0392b;
+  --succes: #2f7a33;
+  --alerte: #d9a33d; /* decor seulement */
+  --info: #2f6a9b;
+
+  /* Couleurs des notes (jour 14) : vert a partir de 4,2 ; orange entre 3,5 et 4,2 ; rouge en dessous de 3,5.
+     Versions assez sombres pour du texte sur fond clair. */
+  --note-bonne: #2f7a33;
+  --note-moyenne: #b45f06;
+  --note-mauvaise: #c0392b;
+
+  /* Rayons */
+  --rayon-sm: 6px;
+  --rayon-md: 10px;
+  --rayon-lg: 16px;
+  --rayon-xl: 22px;
+
+  /* Ombres douces teintees de brun */
+  --ombre-sm: 0 1px 3px rgb(42 31 28 / 0.06);
+  --ombre-md: 0 4px 10px rgb(42 31 28 / 0.09);
+  --ombre-lg: 0 8px 20px rgb(42 31 28 / 0.13);
+}
+
+/* Noms utilisables dans les classes : bg-fond, text-texte, border-bordure, shadow-moyen... */
+@theme inline {
+  --color-fond: var(--fond);
+  --color-fond-alt: var(--fond-alt);
+  --color-surface: var(--surface);
+  --color-surface-douce: var(--surface-douce);
+
+  --color-principale: var(--couleur-principale);
+  --color-principale-fonce: var(--couleur-principale-fonce);
+  --color-decor: var(--couleur-decor);
+  --color-decor-clair: var(--couleur-decor-clair);
+
+  --color-texte: var(--texte);
+  --color-texte-secondaire: var(--texte-secondaire);
+  --color-texte-discret: var(--texte-discret);
+  --color-texte-sur-principale: var(--texte-sur-principale);
+
+  --color-bordure: var(--bordure);
+  --color-bordure-forte: var(--bordure-forte);
+  --color-bordure-champ: var(--bordure-champ);
+
+  --color-erreur: var(--erreur);
+  --color-succes: var(--succes);
+  --color-alerte: var(--alerte);
+  --color-info: var(--info);
+
+  --color-note-bonne: var(--note-bonne);
+  --color-note-moyenne: var(--note-moyenne);
+  --color-note-mauvaise: var(--note-mauvaise);
+
+  --shadow-doux: var(--ombre-sm);
+  --shadow-moyen: var(--ombre-md);
+  --shadow-fort: var(--ombre-lg);
+}
+
+/* Polices : aucune police a telecharger. */
+@theme {
+  --font-titre: Georgia, "Iowan Old Style", "Palatino Linotype", Charter, serif;
+
+  /* Un element apparait en montant doucement. A utiliser avec motion-reduce:animate-none. */
+  --animate-monte: monte 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  @keyframes monte {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--fond);
+  color: var(--texte);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Zone tactile confortable sur tablette et telephone */
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/* Contour visible au clavier */
+:focus-visible {
+  outline: 2px solid var(--couleur-principale);
+  outline-offset: 2px;
+}

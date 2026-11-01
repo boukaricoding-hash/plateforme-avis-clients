@@ -16,6 +16,18 @@ services:
       timeout: 5s
       retries: 10
 
+  # Fausse boite mail pour le developpement : recoit les e-mails du backend sans rien envoyer.
+  # Interface : http://localhost:8025 - serveur SMTP : localhost:1025.
+  # Demarrage : docker compose --profile dev up -d mailpit
+  # Profil "dev" : ne demarre jamais sur le serveur de test ni en production.
+  mailpit:
+    image: axllent/mailpit:latest
+    profiles: ["dev"]
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   application:
     build: .
     restart: unless-stopped

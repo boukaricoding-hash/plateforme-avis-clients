@@ -18,3 +18,11 @@ Ce guide dit quoi lancer apres avoir recupere le code. Il est mis a jour chaque 
 
 
 - Jour 12 : nouvelle variable `NOMBRE_PROXYS` dans le `.env` de la racine (0 en local avec `npm run dev`, 1 avec Docker et le tunnel ou Nginx). Pour lancer toute l'application dans Docker : `docker compose up -d --build`. Le tunnel Cloudflare se lance à part, et `PUBLIC_BASE_URL` doit être l'adresse du tunnel.
+
+
+
+- Jour 13 : nouveau projet `frontend/tableau-de-bord` (port 5174). Apres un pull, lancer `npm ci` (ou `npm install` la premiere fois) dans `frontend/tableau-de-bord`, en plus de `backend` (nouvelle dependance nodemailer).
+  - Mailpit (fausse boite mail, pour voir les e-mails de reinitialisation) : depuis la racine du projet, `docker compose --profile dev up -d mailpit`. Boite de reception : http://localhost:8025. Docker Desktop doit etre ouvert.
+  - Sept nouvelles variables dans `backend/.env` (copier depuis `backend/.env.example`) : `TABLEAU_DE_BORD_URL` (http://localhost:5174), `SMTP_HOTE` (localhost), `SMTP_PORT` (1025), `SMTP_SECURISE` (false), `SMTP_UTILISATEUR` et `SMTP_MOT_DE_PASSE` (vides avec Mailpit), `EMAIL_EXPEDITEUR`.
+  - Demarrage du tableau de bord : terminal 1 = `cd backend` puis `npm run dev` ; terminal 2 = `cd frontend\tableau-de-bord` puis `npm run dev`.
+  - Variables facultatives, utiles seulement pour les tests : `LIMITE_REINITIALISATION_DEMANDE_MAX` et `LIMITE_REINITIALISATION_MAX` (le fichier de tests les regle lui-meme).

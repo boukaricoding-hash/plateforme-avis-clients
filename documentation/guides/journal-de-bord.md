@@ -72,3 +72,33 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 
 **Point d'attention**
 - La CSP autorise toutes les images HTTPS. A restreindre quand les logos seront stockes sur le serveur (jour 16).
+
+
+## Jour 13 - dimanche 1er novembre 2026 : tableau de bord (cadre, connexion, mot de passe oublie)
+
+**Fait**
+- `frontend/tableau-de-bord` : Vite, React 19, TypeScript, Tailwind 4, react-router, recharts. Port 5174, proxy `/api` vers le backend.
+- Cadre commun : menu lateral, barre du haut (langue FR/EN, nom, role, deconnexion), routes protegees, contexte utilisateur (session verifiee au demarrage avec `GET /auth/me`).
+- Ecran E6 (connexion), page « mot de passe oublie » et page de reinitialisation (`/reinitialiser-mot-de-passe?jeton=...`). Textes dans `src/traductions` (fr et en).
+- Backend : `POST /api/v1/auth/forgot-password` et `POST /api/v1/auth/reset-password`.
+  - Lien a usage unique, valable 30 minutes. Seule l'empreinte sha256 du jeton est gardee en base.
+  - Reponse identique que l'adresse existe ou non, avec un temps de reponse minimum de 300 ms. L'e-mail part en arriere-plan.
+  - Apres une reinitialisation : autres jetons invalides, toutes les sessions supprimees, verrouillage remis a zero, ligne dans le journal d'audit.
+  - Limites par IP : 5 demandes et 10 essais par periode de 15 minutes (429 `TROP_DE_REQUETES`).
+- Envoi d'e-mails avec nodemailer. Mailpit (fausse boite mail) dans `docker-compose.yml`, profil `dev`.
+- 11 nouveaux tests (`tests/integration/reinitialisation-mdp.test.ts`) : 159 tests passent sur 11 fichiers, le test d'isolation aussi. `tsc` sans erreur dans backend et tableau de bord.
+- Verifie a la main : e-mail recu dans Mailpit, lien utilisable une seule fois, jeton expire refuse.
+
+**Decisions**
+- Le tableau de bord reprend la palette de la page d'avis (beige rose et terracotta), pas le bleu marine du planning.
+- Les deux nouvelles routes sont publiques et ne lisent aucune donnee d'organisation : pas d'ajout au test d'isolation.
+- Les tests interceptent l'envoi d'e-mails (pas besoin de Mailpit pour `npm test`).
+
+**A faire ensuite**
+- Jour 14 : ecran E7, indicateurs et graphiques (recharts), actualisation toutes les 10 secondes.
+- Jour 16 : brancher le vrai service d'e-mails a la place de Mailpit (decision a valider avec DTS).
+- Tester la page d'avis sur iPhone si possible.
+
+**Point d'attention**
+- Les fichiers `documentation/mise-en-ligne-test.md` et `qr.png` restent non suivis, volontairement.
+- `npm audit` est prevu au jour 26 : ne jamais lancer `npm audit fix --force`.

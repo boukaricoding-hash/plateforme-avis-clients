@@ -227,3 +227,27 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 
 **Point d'attention**
 - Le point d'attention du jour 14 sur la route `/avis/:id` est regle : un clic sur un avis recent ouvre la fiche.
+
+## Jour 15 (design) - lundi 2 novembre 2026 : page des avis en une seule page, sans defilement
+
+**Fait**
+- La page `/avis` reunit les ecrans E8 et E9 : barre de filtres en pastilles en haut, avis en cartes sur 2 colonnes a gauche (pagination en bulles numerotees), detail de l'avis choisi a droite. Un clic sur une carte affiche l'avis a droite, sans changer de page.
+- `/avis/:id` affiche la meme page avec l'avis deja choisi : un clic sur un avis recent de l'accueil fonctionne toujours.
+- Les pages `tableau-avis.tsx` et `page-fiche-avis.tsx` sont supprimees (remplacees par `liste-cartes-avis.tsx` et `detail-avis.tsx`).
+- Fichiers dans `frontend/tableau-de-bord/src` : `styles/avis.css`, `hooks/utiliser-cartes-par-page.ts`, `composants-avis/` (`barre-filtres-avis`, `liste-cartes-avis`, `reponses-avis`, `historique-avis`, `panneau-suivi`, `detail-avis`, `icones-avis`), `pages/liste-avis/page-liste-avis.tsx`, `App.tsx`, et 7 nouveaux textes (fr et en) pour les filtres de date et de note, le detail et le bouton Enregistrer.
+- Backend non modifie, aucune route nouvelle, aucune dependance ajoutee. `tsc -b` sans erreur.
+
+**Decisions**
+- Aucun defilement sur grand ecran (au moins 1100 px de large et 640 px de haut, le meme seuil que l'accueil). Le nombre de cartes par page se calcule d'apres la hauteur disponible et part dans `limite` vers l'API. En dessous de ce seuil, la liste puis le detail sont empiles et la page defile.
+- Ce qui ne rentre pas est raccourci : commentaire limite a 3 lignes, historique limite aux 3 dernieres lignes avec un petit +N.
+- Le filtre Langue de la maquette est remplace par Statut (avec les cases Negatifs et Avec commentaire) : l'API n'a pas de parametre langue, et l'ajouter demanderait du backend et des tests, donc un jour de plus.
+- Le vert de la maquette reste limite a cette page (`avis.css`), la palette globale ne change pas.
+- Un clic sur un statut change le statut et joint le texte tape comme commentaire. Enregistrer ajoute le texte comme note interne.
+- Tant qu'aucune carte n'est cliquee, la zone de droite invite a choisir un avis.
+
+**A faire ensuite**
+- Controle a l'ecran, a la main : ordinateur (grand ecran sans defilement), tablette et 390 px (liste puis detail), themes sombre et clair, changement de statut, note interne, filtres venant de l'accueil.
+- Jour 16 : cloche de notifications, alertes par e-mail, ecran E14.
+
+**Point d'attention**
+- `eslint` lance sur tout `src` signale 56 erreurs dans des fichiers non modifies ce jour (hooks nommes `utiliser...` que la regle des hooks ne reconnait pas, et `tableau-classement.tsx`). A traiter plus tard, pas de lien avec le jour 15.

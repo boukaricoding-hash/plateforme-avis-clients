@@ -135,6 +135,9 @@ export const en = {
       noteUnique: 'Rating {note} out of 5',
       trancheNotes: 'Ratings from {min} to {max}',
       retirerNotes: 'Remove the rating filter',
+      note: 'Rating',
+      toutesLesDates: 'All dates',
+      toutesLesNotes: 'All ratings',
     },
 
     tableau: {
@@ -153,6 +156,13 @@ export const en = {
       pageSuivante: 'Next page',
       pageSur: 'Page {page} of {pages}',
       affichage: 'Reviews {debut} to {fin} of {total}',
+    },
+
+    detail: {
+      choisir: 'Choose a review in the list to see its details.',
+      autresReponses: 'Additional answers not shown: {nombre}',
+      autresHistorique: 'Additional history entries: {nombre}',
+      enregistrer: 'Save',
     },
 
     fiche: {

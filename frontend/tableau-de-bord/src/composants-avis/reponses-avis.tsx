@@ -7,11 +7,17 @@ import type {
   TexteMultilingue,
 } from '../types/avis'
 import { formaterNombre } from '../utilitaires/periodes'
+import { IconeCommentaire, IconeReponses } from './icones-avis'
 
-// Bloc "Commentaire du client" et bloc "Reponses au questionnaire" de la fiche d'un avis (E9).
+// Bloc "Commentaire du client" et bloc "Reponses au questionnaire" du detail d'un avis
+// (page unique, jour 15 design).
 // Ce composant n'appelle pas l'API : il affiche la fiche deja chargee.
 // Les reponses sont dans l'ordre des questions. Une question sans valeur affiche "Pas de reponse".
 // La valeur est toujours ecrite en texte (jamais seulement une couleur ou une icone).
+//
+// Rien n'est coupe : le commentaire et toutes les reponses sont montres en entier.
+// Quand le contenu depasse la hauteur du panneau, c'est le panneau qui defile
+// (regles .avis-panneau de styles/avis.css, en ecran fixe).
 
 type Proprietes = {
   fiche: FicheAvis
@@ -86,17 +92,22 @@ type PropsValeurReponse = {
 }
 
 // La valeur d'une reponse, ecrite selon le type de la question.
+// Un texte long passe a la ligne (rien n'est coupe).
 function ValeurReponse({ reponse }: PropsValeurReponse) {
   const { t, langue } = utiliserLangue()
   const { question } = reponse
-  const sansReponse = <span className="text-texte-discret">{t('avis.fiche.reponses.sansReponse')}</span>
+  const sansReponse = (
+    <span className="block break-words text-sm text-texte-discret">
+      {t('avis.fiche.reponses.sansReponse')}
+    </span>
+  )
 
   if (question.type === 'TEXTE_LIBRE') {
     const texte = reponse.valeur_texte?.trim() ?? ''
     return texte === '' ? (
       sansReponse
     ) : (
-      <p className="whitespace-pre-wrap break-words text-texte">{texte}</p>
+      <span className="block break-words text-sm text-texte">{texte}</span>
     )
   }
 
@@ -106,18 +117,8 @@ function ValeurReponse({ reponse }: PropsValeurReponse) {
     if (valeurs.length === 0) {
       return sansReponse
     }
-    return (
-      <ul className="flex flex-wrap gap-1.5">
-        {valeurs.map((valeur) => (
-          <li
-            key={valeur}
-            className="rounded-full border border-bordure-champ bg-surface px-2.5 py-0.5 text-sm text-texte"
-          >
-            {texteChoix(valeur, question, langue)}
-          </li>
-        ))}
-      </ul>
-    )
+    const texte = valeurs.map((valeur) => texteChoix(valeur, question, langue)).join(', ')
+    return <span className="block break-words text-sm font-medium text-texte">{texte}</span>
   }
 
   if (reponse.valeur_numerique === null) {
@@ -126,7 +127,7 @@ function ValeurReponse({ reponse }: PropsValeurReponse) {
 
   if (question.type === 'OUI_NON') {
     return (
-      <span className="font-medium text-texte">
+      <span className="block break-words text-sm font-medium text-texte">
         {reponse.valeur_numerique === 1 ? t('avis.fiche.reponses.oui') : t('avis.fiche.reponses.non')}
       </span>
     )
@@ -135,7 +136,7 @@ function ValeurReponse({ reponse }: PropsValeurReponse) {
   const valeur = formaterNombre(reponse.valeur_numerique, langue)
   const maximum = maximumDeLaQuestion(question)
   return (
-    <span className="font-medium text-texte">
+    <span className="block break-words text-sm font-medium text-texte">
       {maximum === null
         ? valeur
         : t('avis.fiche.reponses.valeurSur', { valeur, max: formaterNombre(maximum, langue) })}
@@ -143,63 +144,63 @@ function ValeurReponse({ reponse }: PropsValeurReponse) {
   )
 }
 
-// Libelles des deux extremites d'une echelle (ex. "Pas du tout" et "Tout a fait"), s'ils existent.
-function extremitesEchelle(question: QuestionFiche, langue: string): string | null {
-  if (question.type !== 'ECHELLE' || question.libelles_extremites === null) {
-    return null
-  }
-  const min = texteLangue(question.libelles_extremites.min, langue).trim()
-  const max = texteLangue(question.libelles_extremites.max, langue).trim()
-  if (min === '' && max === '') {
-    return null
-  }
-  return `${min} – ${max}`
+type PropsPanneauReponses = {
+  // Deja dans l'ordre des questions
+  reponses: ReponseFiche[]
+}
+
+// Bloc des reponses : toutes les lignes, l'une sous l'autre. Le defilement est gere par le panneau.
+function PanneauReponses({ reponses }: PropsPanneauReponses) {
+  const { t, langue } = utiliserLangue()
+
+  return (
+    <section aria-labelledby="titre-reponses-avis" className="avis-panneau">
+      <h3 id="titre-reponses-avis" className="avis-panneau-titre">
+        <IconeReponses />
+        {t('avis.fiche.reponses.titre')}
+      </h3>
+      {reponses.length === 0 ? (
+        <p className="m-0 text-sm text-texte-discret">{t('avis.fiche.reponses.aucune')}</p>
+      ) : (
+        <ol className="m-0 list-none p-0">
+          {reponses.map((reponse) => (
+            <li
+              key={reponse.id}
+              className="flex flex-col justify-center border-t border-bordure py-1.5 first:border-t-0 first:pt-0"
+            >
+              <span className="block break-words text-xs text-texte-secondaire">
+                {texteLangue(reponse.question.libelle, langue)}
+              </span>
+              <ValeurReponse reponse={reponse} />
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  )
 }
 
 export function ReponsesAvis({ fiche }: Proprietes) {
-  const { t, langue } = utiliserLangue()
+  const { t } = utiliserLangue()
 
   const commentaire = fiche.commentaire?.trim() ?? ''
   const reponses = [...fiche.reponses].sort((a, b) => a.question.ordre - b.question.ordre)
 
   return (
     <>
-      <section aria-labelledby="titre-commentaire-avis" className="rounded-xl border border-bordure bg-surface p-4">
-        <h2 id="titre-commentaire-avis" className="font-titre text-lg font-bold text-texte">
+      <section aria-labelledby="titre-commentaire-avis" className="avis-panneau">
+        <h3 id="titre-commentaire-avis" className="avis-panneau-titre">
+          <IconeCommentaire />
           {t('avis.fiche.commentaire.titre')}
-        </h2>
+        </h3>
         {commentaire === '' ? (
-          <p className="mt-2 text-sm text-texte-discret">{t('avis.fiche.commentaire.aucun')}</p>
+          <p className="m-0 text-sm text-texte-discret">{t('avis.fiche.commentaire.aucun')}</p>
         ) : (
-          <p className="mt-2 whitespace-pre-wrap break-words text-texte">{commentaire}</p>
+          <p className="avis-commentaire">{commentaire}</p>
         )}
       </section>
 
-      <section aria-labelledby="titre-reponses-avis" className="rounded-xl border border-bordure bg-surface p-4">
-        <h2 id="titre-reponses-avis" className="font-titre text-lg font-bold text-texte">
-          {t('avis.fiche.reponses.titre')}
-        </h2>
-        {reponses.length === 0 ? (
-          <p className="mt-2 text-sm text-texte-discret">{t('avis.fiche.reponses.aucune')}</p>
-        ) : (
-          <ol className="mt-3 divide-y divide-bordure">
-            {reponses.map((reponse) => {
-              const extremites = extremitesEchelle(reponse.question, langue)
-              return (
-                <li key={reponse.id} className="py-3 first:pt-0 last:pb-0">
-                  <p className="text-sm font-medium text-texte-secondaire">
-                    {texteLangue(reponse.question.libelle, langue)}
-                  </p>
-                  {extremites !== null && <p className="text-xs text-texte-discret">{extremites}</p>}
-                  <div className="mt-1">
-                    <ValeurReponse reponse={reponse} />
-                  </div>
-                </li>
-              )
-            })}
-          </ol>
-        )}
-      </section>
+      <PanneauReponses reponses={reponses} />
     </>
   )
 }

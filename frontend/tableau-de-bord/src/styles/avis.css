@@ -1,0 +1,901 @@
+/* ------------------------------------------------------------
+   Page des avis (ecrans E8 et E9 reunis, jour 15 design).
+   Une seule page : barre de filtres en haut, liste des avis a gauche,
+   detail de l'avis choisi a droite.
+   Les couleurs viennent des variables de styles/index.css (theme sombre
+   et theme clair) : aucune couleur propre a cette page.
+   Les separations se font par des traits de 1 px tres discrets
+   (pas de cadres, pas de fonds differents par panneau) pour laisser
+   respirer le contenu.
+
+   Deux modes :
+   - Ecran fixe (ordinateur, au moins 1100 px de large et 640 px de haut) :
+     la page a exactement la hauteur de l'ecran. Le detail a un seul
+     defilement (celui des onglets) et la colonne de traitement defile
+     seulement si elle est trop longue.
+     Le bloc "Ecran fixe" est tout en bas du fichier.
+   - Page normale (tablette, telephone, ecran trop bas) :
+     la liste puis le detail sont l'un sous l'autre et la page defile.
+   ------------------------------------------------------------ */
+
+.avis-ecran {
+  /* Accent : celui du theme */
+  --v-accent: var(--couleur-principale);
+  --v-sur-accent: var(--texte-sur-principale);
+  --v-selection: var(--bordure-champ-focus);
+  /* Fonds : zone un cran au dessus de la page, et element en relief */
+  --v-panneau: var(--surface);
+  --v-panneau-fort: var(--surface-douce);
+  /* Trait fin de separation */
+  --v-trait: var(--bordure);
+  /* Hauteur d'une carte et epaisseur du trait qui la separe de la suivante.
+     Une rangee fait donc 72 px (71 + 1). Le hook utiliser-cartes-par-page.ts
+     lit ces deux valeurs : elles ne doivent pas changer sans lui. */
+  --v-hauteur-carte: 71px;
+  --v-ecart: 1px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100%;
+}
+
+:root[data-theme='clair'] .avis-ecran {
+  --v-panneau-fort: var(--fond-alt);
+}
+
+.avis-ecran :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Barre de filtres ---------- */
+
+.avis-barre {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--rayon-xl);
+  background: var(--v-panneau);
+}
+
+/* Recherche : aucun cadre, aucun contour, aucun effet quand on clique dedans */
+.avis-recherche {
+  flex: 1 1 220px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--texte-secondaire);
+}
+
+.avis-recherche input,
+.avis-recherche input:focus,
+.avis-recherche input:focus-visible {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.9rem;
+}
+
+.avis-recherche input::placeholder {
+  color: var(--texte-secondaire);
+}
+
+.avis-separateur {
+  width: 1px;
+  height: 24px;
+  background: var(--v-trait);
+}
+
+.avis-menu-zone {
+  position: relative;
+}
+
+.avis-pastille-filtre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--v-panneau-fort);
+  color: var(--texte);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.avis-pastille-filtre:hover,
+.avis-pastille-filtre--active {
+  background: var(--accent-fond);
+}
+
+.avis-pastille-filtre svg {
+  color: var(--texte-secondaire);
+}
+
+.avis-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  min-width: 220px;
+  max-height: min(60vh, 360px);
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--bordure-forte);
+  border-radius: var(--rayon-lg);
+  background: var(--surface);
+  box-shadow: var(--ombre-lg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--defilement-pouce) transparent;
+}
+
+.avis-menu-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--rayon-sm);
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.avis-menu-option:hover {
+  background: var(--accent-fond);
+}
+
+.avis-menu-option--choisie {
+  background: var(--accent-fond);
+  font-weight: 700;
+}
+
+.avis-menu-etiquette {
+  display: block;
+  margin: 8px 0 4px;
+  color: var(--texte-secondaire);
+  font-size: 0.75rem;
+}
+
+.avis-menu-champ {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-sm);
+  background: var(--fond);
+  color: var(--texte);
+  font-size: 0.875rem;
+}
+
+.avis-bouton-rond,
+.avis-bouton-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    background 0.15s ease;
+}
+
+.avis-bouton-rond {
+  background: var(--v-panneau-fort);
+  color: var(--texte);
+}
+
+.avis-bouton-rond:hover {
+  background: var(--accent-fond);
+}
+
+.avis-bouton-accent {
+  background: var(--v-accent);
+  color: var(--v-sur-accent);
+}
+
+.avis-bouton-accent:hover {
+  filter: brightness(0.9);
+}
+
+.avis-bouton-rond:disabled,
+.avis-bouton-accent:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ---------- Corps : liste et detail ---------- */
+
+.avis-corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.avis-liste,
+.avis-detail {
+  min-width: 0;
+}
+
+/* La liste n'a ni cadre ni fond : une grille de rangees separees par des traits fins */
+.avis-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.avis-liste-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px 10px;
+  border-bottom: 1px solid var(--v-trait);
+  color: var(--texte-secondaire);
+  font-size: 0.8rem;
+}
+
+.avis-liste-zone {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Grille de 2 colonnes : pas d'ecart, ce sont les traits des cellules qui separent.
+   Chaque rangee mesure --v-hauteur-carte + --v-ecart, trait du bas compris. */
+.avis-cartes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: calc(var(--v-hauteur-carte) + var(--v-ecart));
+  gap: 0;
+  align-content: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Trait horizontal sous chaque cellule */
+.avis-cartes > li {
+  min-width: 0;
+  border-bottom: var(--v-ecart) solid var(--v-trait);
+}
+
+/* Trait vertical au milieu : a droite de la premiere colonne */
+.avis-cartes > li:nth-child(odd) {
+  border-right: 1px solid var(--v-trait);
+}
+
+.avis-carte {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 8px 14px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--texte);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.avis-carte:hover {
+  background: var(--v-panneau-fort);
+}
+
+/* Carte choisie : fond doux et petite barre a gauche */
+.avis-carte--choisie,
+.avis-carte--choisie:hover {
+  background: var(--accent-fond);
+  box-shadow: inset 3px 0 0 var(--v-accent);
+}
+
+.avis-carte-ligne {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.75rem;
+}
+
+.avis-carte-date {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.avis-carte-lieu {
+  overflow: hidden;
+  color: var(--texte-secondaire);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avis-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 12px;
+}
+
+.avis-bulle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--v-panneau-fort);
+  color: var(--texte);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.avis-bulle:hover {
+  background: var(--accent-fond);
+}
+
+.avis-bulle--active,
+.avis-bulle--active:hover {
+  background: var(--v-accent);
+  color: var(--v-sur-accent);
+}
+
+.avis-bulle:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* Au doigt, les bulles ont la taille minimale d'une cible tactile */
+@media (pointer: coarse) {
+  .avis-bulle {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ---------- Detail de l'avis ---------- */
+
+/* Page normale : un trait au dessus du detail, qui est sous la liste */
+.avis-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--v-trait);
+}
+
+.avis-detail-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 14px;
+}
+
+.avis-detail-titre {
+  margin: 0;
+  color: var(--texte);
+  font-family: var(--font-titre);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* Resume : trois cases separees par des traits verticaux, entre deux traits horizontaux */
+.avis-resume {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--v-trait);
+  border-bottom: 1px solid var(--v-trait);
+}
+
+.avis-resume-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 16px;
+}
+
+.avis-resume-item:first-child {
+  padding-left: 0;
+}
+
+.avis-resume-item + .avis-resume-item {
+  border-left: 1px solid var(--v-trait);
+}
+
+.avis-resume-item svg {
+  flex-shrink: 0;
+  color: var(--texte-secondaire);
+}
+
+.avis-resume-valeur {
+  margin: 0;
+  color: var(--texte);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.avis-resume-etiquette {
+  margin: 0;
+  color: var(--texte-secondaire);
+  font-size: 0.75rem;
+}
+
+/* Deux colonnes : onglets a gauche (large), traitement a droite, separes par un trait vertical */
+.avis-detail-grille {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 0;
+}
+
+.avis-detail-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.avis-detail-col:first-child {
+  padding-right: 20px;
+}
+
+.avis-detail-col + .avis-detail-col {
+  padding-left: 20px;
+  border-left: 1px solid var(--v-trait);
+}
+
+/* Panneau : ni cadre ni fond, separe du suivant par un trait horizontal fin */
+.avis-panneau {
+  min-width: 0;
+  padding: 14px 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.avis-panneau + .avis-panneau {
+  border-top: 1px solid var(--v-trait);
+}
+
+.avis-panneau-titre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: var(--texte);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.avis-panneau-titre svg {
+  color: var(--texte-secondaire);
+}
+
+/* Le commentaire est affiche en entier */
+.avis-commentaire {
+  margin: 0;
+  color: var(--texte);
+  font-size: 0.92rem;
+  font-style: italic;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+/* Lignes "etiquette : valeur" des details et des coordonnees, separees par un trait fin */
+.avis-ligne-donnee {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 0.85rem;
+}
+
+.avis-ligne-donnee + .avis-ligne-donnee {
+  border-top: 1px solid var(--v-trait);
+}
+
+.avis-ligne-donnee:first-child {
+  padding-top: 0;
+}
+
+.avis-ligne-donnee dt {
+  color: var(--texte-secondaire);
+}
+
+.avis-ligne-donnee dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--texte);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Historique */
+.avis-chrono {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.avis-chrono-item {
+  position: relative;
+  padding: 0 0 12px 22px;
+  color: var(--texte);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.avis-chrono-item::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--texte-secondaire);
+}
+
+.avis-chrono-item::after {
+  content: '';
+  position: absolute;
+  top: 15px;
+  bottom: -2px;
+  left: 5px;
+  width: 1px;
+  background: var(--v-trait);
+}
+
+.avis-chrono-item:last-child {
+  padding-bottom: 0;
+}
+
+.avis-chrono-item:last-child::after {
+  display: none;
+}
+
+/* ---------- Onglets du detail (reponses, details, client, historique) ---------- */
+
+.avis-onglets {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.avis-onglets-liste {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--v-trait);
+  scrollbar-width: none;
+}
+
+.avis-onglet {
+  position: relative;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--texte-secondaire);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.avis-onglet:hover,
+.avis-onglet[aria-selected='true'] {
+  color: var(--texte);
+}
+
+/* Onglet actif : petit trait d'accent sous le texte, par dessus le trait fin de la liste */
+.avis-onglet[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  bottom: -1px;
+  left: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--v-accent);
+}
+
+.avis-onglets-contenu {
+  min-width: 0;
+}
+
+/* ---------- Traitement : statuts, note, bouton ---------- */
+
+.avis-statuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.avis-statut-bouton {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--v-trait);
+  border-radius: 999px;
+  background: var(--v-panneau-fort);
+  color: var(--texte);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.avis-statut-bouton:hover {
+  background: var(--accent-fond);
+}
+
+.avis-statut-bouton--actuel,
+.avis-statut-bouton--actuel:hover {
+  border-color: var(--v-accent);
+  background: var(--v-accent);
+  color: var(--v-sur-accent);
+}
+
+.avis-statut-bouton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Les champs de saisie gardent un contour visible (lisibilite) */
+.avis-champ {
+  width: 100%;
+  padding: 8px 10px;
+  resize: none;
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-sm);
+  background: var(--fond);
+  color: var(--texte);
+  font-size: 0.85rem;
+}
+
+.avis-champ:focus {
+  border-color: var(--v-selection);
+  outline: none;
+}
+
+.avis-bouton-principal {
+  width: 100%;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--rayon-sm);
+  background: var(--v-accent);
+  color: var(--v-sur-accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.avis-bouton-principal:hover {
+  filter: brightness(0.9);
+}
+
+.avis-bouton-principal:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.avis-vide {
+  padding: 24px;
+  color: var(--texte-secondaire);
+  text-align: center;
+}
+
+/* ---------- Petits ecrans : une seule colonne ---------- */
+
+@media (max-width: 767px) {
+  .avis-resume,
+  .avis-detail-grille {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .avis-resume-item,
+  .avis-resume-item:first-child {
+    padding-left: 0;
+  }
+
+  .avis-resume-item + .avis-resume-item {
+    border-top: 1px solid var(--v-trait);
+    border-left: 0;
+  }
+
+  .avis-detail-col:first-child {
+    padding-right: 0;
+  }
+
+  .avis-detail-col + .avis-detail-col {
+    padding-top: 14px;
+    padding-left: 0;
+    border-top: 1px solid var(--v-trait);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 479px) {
+  .avis-cartes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Une seule colonne : plus de trait vertical au milieu */
+  .avis-cartes > li:nth-child(odd) {
+    border-right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avis-ecran * {
+    transition: none !important;
+  }
+}
+
+/* ---------- Ecran fixe : la page ne defile pas ---------- */
+/* Meme seuil que l'accueil (styles/accueil.css et hooks/utiliser-pages.ts). */
+
+@media (min-width: 1100px) and (min-height: 640px) {
+  /* La page a exactement la hauteur de la zone principale du cadre */
+  .avis-ecran {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .avis-barre {
+    flex-shrink: 0;
+  }
+
+  /* Liste a gauche, detail a droite, separes par un trait vertical fin */
+  .avis-corps {
+    flex: 1 1 0;
+    min-height: 0;
+    gap: 0;
+    grid-template-columns: clamp(340px, 34%, 480px) minmax(0, 1fr);
+  }
+
+  .avis-liste,
+  .avis-detail {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .avis-liste {
+    padding-right: 16px;
+  }
+
+  .avis-detail {
+    padding-top: 0;
+    padding-left: 20px;
+    border-top: 0;
+    border-left: 1px solid var(--v-trait);
+  }
+
+  /* La zone des cartes prend la hauteur qui reste : on la mesure pour savoir combien de cartes tiennent */
+  .avis-liste-zone {
+    overflow: hidden;
+  }
+
+  .avis-detail-tete,
+  .avis-resume {
+    flex-shrink: 0;
+  }
+
+  .avis-detail-grille {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  /* Colonne de gauche du detail : elle defile si le contenu est trop long */
+  .avis-detail-col:first-child {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--defilement-pouce) transparent;
+  }
+
+  /* Colonne du traitement : filet de securite, elle defile seulement si elle est trop longue */
+  .avis-detail-col + .avis-detail-col {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--defilement-pouce) transparent;
+  }
+
+  .avis-onglets {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  /* Un seul defilement pour tout le contenu de l'onglet */
+  .avis-onglets-contenu {
+    flex: 1 1 0;
+    min-height: 0;
+    padding-right: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--defilement-pouce) transparent;
+  }
+}
+
+/* ---------- Menu de tri (select natif) ---------- */
+
+.avis-ecran select {
+  border: 1px solid var(--bordure-forte);
+  border-radius: 5px;
+  background-color: var(--surface);
+  color: var(--texte);
+}
+
+.avis-ecran select:hover {
+  border-color: var(--v-accent);
+}
+
+/* Remplace l'anneau blanc epais par un liseré vert fin, collé au champ */
+.avis-ecran select:focus-visible {
+  outline: 1px solid var(--v-accent);
+  outline-offset: 0;
+  border-color: var(--v-accent);
+}
+
+.avis-ecran select option {
+  background-color: var(--surface);
+  color: var(--texte);
+}
+
+/* ---------- Correction : l'historique long ne doit plus agrandir la page ---------- */
+/* Les lignes de grille sont verrouillees a la hauteur disponible (minmax(0, 1fr)) :
+   le contenu ne peut plus les etirer. Si une colonne depasse, elle defile en interne. */
+
+@media (min-width: 1100px) and (min-height: 640px) {
+  .avis-corps {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .avis-detail-grille {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .avis-detail-col {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}

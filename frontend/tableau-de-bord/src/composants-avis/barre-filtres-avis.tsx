@@ -1,7 +1,10 @@
-import { useEffect, useId, useState } from 'react'
-import type { FormEvent } from 'react'
-import { utiliserLangue } from '../hooks/utiliser-langue'
+import { useEffect, useId, useRef, useState } from 'react'
+import type { FormEvent, ReactNode } from 'react'
+import { IconeNoteMoyenne } from '../composants-tableau/icones-accueil'
+import type { ComposantIcone } from '../composants-tableau/icones-accueil'
 import type { ModificationsFiltresAvis } from '../hooks/utiliser-filtres-avis'
+import { utiliserLangue } from '../hooks/utiliser-langue'
+import { IconeChevron } from '../mise-en-page/icones-menu'
 import type { ParametresListeAvis } from '../services/avis'
 import { lirePointsContact, lireQuestionnaires, lireSites } from '../services/tableau-de-bord'
 import type {
@@ -9,95 +12,110 @@ import type {
   QuestionnaireFiltre,
   SiteFiltre,
 } from '../types/tableau-de-bord'
-import { formaterNombre } from '../utilitaires/periodes'
+import { formaterJourCourt, formaterNombre } from '../utilitaires/periodes'
 import { cleTexteStatut, STATUTS_AVIS } from '../utilitaires/statuts-avis'
+import {
+  IconeActualiser,
+  IconeCalendrier,
+  IconeCoche,
+  IconeDocument,
+  IconeEpingle,
+  IconeFiltresStatut,
+  IconeFlecheDroite,
+  IconeRecherche,
+  IconeTable,
+} from './icones-avis'
 
-// Filtres de l'ecran E8 (liste des avis) : recherche dans les commentaires, periode, statut,
-// site, point de contact, questionnaire, avis negatifs, avis avec commentaire.
+// Barre de filtres de la page des avis (jour 15 design) : une seule ligne avec la recherche dans
+// les commentaires, des pastilles qui ouvrent un petit menu (periode, note, site, point de
+// contact, questionnaire, statut), le bouton d'actualisation et le bouton de recherche.
 // Les filtres eux-memes vivent dans l'adresse de la page (hook utiliserFiltresAvis) :
 // cette barre les affiche et demande les changements. Elle charge seulement les listes
 // de sites, de points de contact et de questionnaires.
+// Un seul menu est ouvert a la fois. Il se ferme avec Echap, avec un clic ou un focus ailleurs.
+// Le style vient de styles/avis.css (classes avis-barre, avis-pastille-filtre, avis-menu...).
 
-const CLASSES_ETIQUETTE = 'mb-2 block text-sm font-medium text-texte-secondaire'
-const CLASSES_CHAMP =
-  'min-h-11 w-full rounded-md border border-bordure-champ bg-surface px-3 text-base text-texte'
 const LONGUEUR_MAX_RECHERCHE = 100
+// Tranches de notes proposees dans le menu Note, de la meilleure a la moins bonne
+const TRANCHES_NOTES: readonly (readonly [number, number])[] = [
+  [4, 5],
+  [3, 4],
+  [2, 3],
+  [1, 2],
+]
+
+type NomMenu = 'periode' | 'note' | 'site' | 'point' | 'questionnaire' | 'statut'
 
 type Option = { valeur: string; libelle: string }
 
-type PropsSelecteur = {
-  etiquette: string
-  valeur: string
+// ------------------------------------------------------------
+// Petits composants des menus
+// ------------------------------------------------------------
+
+type PropsOptionMenu = {
+  libelle: string
+  choisie: boolean
+  onChoisir: () => void
+}
+
+function OptionMenu({ libelle, choisie, onChoisir }: PropsOptionMenu) {
+  return (
+    <button
+      type="button"
+      aria-pressed={choisie}
+      onClick={onChoisir}
+      className={`avis-menu-option${choisie ? ' avis-menu-option--choisie' : ''}`}
+    >
+      <span className="truncate">{libelle}</span>
+      {choisie && <IconeCoche width={16} height={16} />}
+    </button>
+  )
+}
+
+type PropsMenuListe = {
+  // Premier choix, qui retire le filtre ("Tous les sites")
   toutes: string
+  valeurChoisie: string
   options: Option[]
-  onChanger: (valeur: string) => void
+  onChoisir: (valeur: string) => void
 }
 
-// Une liste deroulante avec son etiquette et un premier choix "tous".
-function Selecteur({ etiquette, valeur, toutes, options, onChanger }: PropsSelecteur) {
-  const id = useId()
+function MenuListe({ toutes, valeurChoisie, options, onChoisir }: PropsMenuListe) {
   return (
-    <div>
-      <label htmlFor={id} className={CLASSES_ETIQUETTE}>
-        {etiquette}
-      </label>
-      <select
-        id={id}
-        value={valeur}
-        onChange={(evenement) => onChanger(evenement.target.value)}
-        className={CLASSES_CHAMP}
-      >
-        <option value="">{toutes}</option>
-        {options.map((option) => (
-          <option key={option.valeur} value={option.valeur}>
-            {option.libelle}
-          </option>
-        ))}
-      </select>
-    </div>
+    <ul className="m-0 list-none p-0">
+      <li>
+        <OptionMenu libelle={toutes} choisie={valeurChoisie === ''} onChoisir={() => onChoisir('')} />
+      </li>
+      {options.map((option) => (
+        <li key={option.valeur}>
+          <OptionMenu
+            libelle={option.libelle}
+            choisie={valeurChoisie === option.valeur}
+            onChoisir={() => onChoisir(option.valeur)}
+          />
+        </li>
+      ))}
+    </ul>
   )
 }
 
-type PropsChampDate = {
-  etiquette: string
-  valeur: string
-  onChanger: (valeur: string) => void
-}
-
-function ChampDate({ etiquette, valeur, onChanger }: PropsChampDate) {
-  const id = useId()
-  return (
-    <div>
-      <label htmlFor={id} className={CLASSES_ETIQUETTE}>
-        {etiquette}
-      </label>
-      <input
-        id={id}
-        type="date"
-        value={valeur}
-        onChange={(evenement) => onChanger(evenement.target.value)}
-        className={CLASSES_CHAMP}
-      />
-    </div>
-  )
-}
-
-type PropsCase = {
+type PropsCaseMenu = {
   etiquette: string
   cochee: boolean
   onChanger: (cochee: boolean) => void
 }
 
-function CaseACocher({ etiquette, cochee, onChanger }: PropsCase) {
+function CaseMenu({ etiquette, cochee, onChanger }: PropsCaseMenu) {
   const id = useId()
   return (
-    <div className="flex min-h-11 items-center gap-2">
+    <div className="flex min-h-10 items-center gap-2 px-2">
       <input
         id={id}
         type="checkbox"
         checked={cochee}
         onChange={(evenement) => onChanger(evenement.target.checked)}
-        className="h-5 w-5 accent-principale"
+        className="h-4 w-4"
+        style={{ accentColor: 'var(--v-accent)' }}
       />
       <label htmlFor={id} className="text-sm text-texte">
         {etiquette}
@@ -106,11 +124,115 @@ function CaseACocher({ etiquette, cochee, onChanger }: PropsCase) {
   )
 }
 
+type PropsMenuPeriode = {
+  debut: string
+  fin: string
+  onChangerDebut: (valeur: string) => void
+  onChangerFin: (valeur: string) => void
+  onEffacer: () => void
+}
+
+function MenuPeriode({ debut, fin, onChangerDebut, onChangerFin, onEffacer }: PropsMenuPeriode) {
+  const { t } = utiliserLangue()
+  const idDebut = useId()
+  const idFin = useId()
+  const periodeChoisie = debut !== '' || fin !== ''
+
+  return (
+    <div>
+      <label htmlFor={idDebut} className="avis-menu-etiquette">
+        {t('tableau.filtres.du')}
+      </label>
+      <input
+        id={idDebut}
+        type="date"
+        value={debut}
+        onChange={(evenement) => onChangerDebut(evenement.target.value)}
+        className="avis-menu-champ"
+      />
+      <label htmlFor={idFin} className="avis-menu-etiquette">
+        {t('tableau.filtres.au')}
+      </label>
+      <input
+        id={idFin}
+        type="date"
+        value={fin}
+        onChange={(evenement) => onChangerFin(evenement.target.value)}
+        className="avis-menu-champ"
+      />
+      {periodeChoisie && (
+        <div className="mt-2">
+          <OptionMenu libelle={t('avis.filtres.toutesLesDates')} choisie={false} onChoisir={onEffacer} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+type PropsPastilleFiltre = {
+  nom: NomMenu
+  ouvert: boolean
+  Icone: ComposantIcone
+  // Texte de la pastille : le nom du filtre, ou le choix fait
+  libelle: string
+  // Vrai quand un filtre de ce menu est en place : la pastille prend la couleur d'accent
+  active: boolean
+  // Le menu s'ouvre vers la gauche (pastilles proches du bord droit)
+  aDroite?: boolean
+  onBasculer: (nom: NomMenu) => void
+  children: ReactNode
+}
+
+// Une pastille et son menu. L'attribut data-menu-avis sert a savoir si un clic est dans le menu.
+function PastilleFiltre({
+  nom,
+  ouvert,
+  Icone,
+  libelle,
+  active,
+  aDroite = false,
+  onBasculer,
+  children,
+}: PropsPastilleFiltre) {
+  const idMenu = useId()
+
+  return (
+    <div className="avis-menu-zone" data-menu-avis={nom}>
+      <button
+        type="button"
+        aria-expanded={ouvert}
+        aria-controls={ouvert ? idMenu : undefined}
+        onClick={() => onBasculer(nom)}
+        className={`avis-pastille-filtre${active ? ' avis-pastille-filtre--active' : ''}`}
+      >
+        <Icone width={18} height={18} />
+        <span className="max-w-36 truncate">{libelle}</span>
+        <IconeChevron width={14} height={14} />
+      </button>
+      {ouvert && (
+        <div
+          id={idMenu}
+          className="avis-menu"
+          style={aDroite ? { left: 'auto', right: 0 } : undefined}
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ------------------------------------------------------------
+// La barre
+// ------------------------------------------------------------
+
 type Proprietes = {
   filtres: ParametresListeAvis
   nombreFiltresActifs: number
   onChanger: (modifications: ModificationsFiltresAvis) => void
   onReinitialiser: () => void
+  onActualiser: () => void
+  actualisationEnCours: boolean
 }
 
 export function BarreFiltresAvis({
@@ -118,10 +240,60 @@ export function BarreFiltresAvis({
   nombreFiltresActifs,
   onChanger,
   onReinitialiser,
+  onActualiser,
+  actualisationEnCours,
 }: Proprietes) {
   const { t, langue } = utiliserLangue()
-  const idTitre = useId()
   const idRecherche = useId()
+  const refBarre = useRef<HTMLFormElement>(null)
+  const [menuOuvert, setMenuOuvert] = useState<NomMenu | null>(null)
+
+  // --- Ouverture et fermeture des menus ---------------------------------------
+
+  function basculerMenu(nom: NomMenu): void {
+    setMenuOuvert((actuel) => (actuel === nom ? null : nom))
+  }
+
+  function fermerMenu(): void {
+    setMenuOuvert(null)
+  }
+
+  // Menu ouvert : un clic ou un focus en dehors le ferme, Echap aussi (le focus revient a la pastille).
+  useEffect(() => {
+    if (menuOuvert === null) {
+      return
+    }
+    const selecteur = `[data-menu-avis="${menuOuvert}"]`
+
+    function dansLeMenu(cible: EventTarget | null): boolean {
+      return cible instanceof Element && cible.closest(selecteur) !== null
+    }
+    function surClic(evenement: PointerEvent): void {
+      if (!dansLeMenu(evenement.target)) {
+        setMenuOuvert(null)
+      }
+    }
+    function surFocus(evenement: FocusEvent): void {
+      if (!dansLeMenu(evenement.target)) {
+        setMenuOuvert(null)
+      }
+    }
+    function surTouche(evenement: KeyboardEvent): void {
+      if (evenement.key === 'Escape') {
+        setMenuOuvert(null)
+        refBarre.current?.querySelector<HTMLButtonElement>(`${selecteur} > button`)?.focus()
+      }
+    }
+
+    document.addEventListener('pointerdown', surClic)
+    document.addEventListener('focusin', surFocus)
+    document.addEventListener('keydown', surTouche)
+    return () => {
+      document.removeEventListener('pointerdown', surClic)
+      document.removeEventListener('focusin', surFocus)
+      document.removeEventListener('keydown', surTouche)
+    }
+  }, [menuOuvert])
 
   // --- Listes des choix --------------------------------------------------------
 
@@ -172,7 +344,7 @@ export function BarreFiltresAvis({
 
   // --- Recherche dans les commentaires ----------------------------------------
 
-  // Le texte tape n'est envoye qu'au clic sur Rechercher ou a la touche Entree.
+  // Le texte tape n'est envoye qu'au clic sur la fleche ou a la touche Entree.
   // Si le filtre change ailleurs (bouton Reinitialiser), le champ suit.
   const [texteRecherche, setTexteRecherche] = useState(filtres.q ?? '')
   const [rechercheAppliquee, setRechercheAppliquee] = useState(filtres.q)
@@ -209,6 +381,24 @@ export function BarreFiltresAvis({
     onChanger({ from: debut, to: valeur })
   }
 
+  const periodeActive = filtres.from !== undefined || filtres.to !== undefined
+  const libellePeriode = periodeActive
+    ? `${filtres.from === undefined ? '…' : formaterJourCourt(filtres.from, langue)} – ${filtres.to === undefined ? '…' : formaterJourCourt(filtres.to, langue)}`
+    : t('tableau.filtres.periode')
+
+  // --- Notes (tranche choisie ici, ou venue d'un clic sur un graphique de l'accueil) ----
+
+  const notesFiltrees = filtres.note_min !== undefined || filtres.note_max !== undefined
+  const noteMin = filtres.note_min ?? 1
+  const noteMax = filtres.note_max ?? 5
+  const texteNotes =
+    noteMin === noteMax
+      ? t('avis.filtres.noteUnique', { note: formaterNombre(noteMin, langue) })
+      : t('avis.filtres.trancheNotes', {
+          min: formaterNombre(noteMin, langue),
+          max: formaterNombre(noteMax, langue),
+        })
+
   // --- Listes deroulantes -----------------------------------------------------
 
   const nomsSites = new Map(sites.map((site) => [site.id, site.nom]))
@@ -228,143 +418,236 @@ export function BarreFiltresAvis({
     return { valeur: point.id, libelle }
   })
 
+  function titreQuestionnaire(questionnaire: QuestionnaireFiltre): string {
+    return langue === 'en' ? (questionnaire.titre.en ?? questionnaire.titre.fr) : questionnaire.titre.fr
+  }
+
   const optionsQuestionnaires: Option[] = questionnaires.map((questionnaire) => ({
     valeur: questionnaire.id,
-    libelle:
-      langue === 'en' ? (questionnaire.titre.en ?? questionnaire.titre.fr) : questionnaire.titre.fr,
+    libelle: titreQuestionnaire(questionnaire),
   }))
 
-  // --- Filtre sur les notes (vient d'un clic sur un graphique de l'accueil) ----
-
-  const notesFiltrees = filtres.note_min !== undefined || filtres.note_max !== undefined
-  const noteMin = filtres.note_min ?? 1
-  const noteMax = filtres.note_max ?? 5
-  const texteNotes =
-    noteMin === noteMax
-      ? t('avis.filtres.noteUnique', { note: formaterNombre(noteMin, langue) })
-      : t('avis.filtres.trancheNotes', {
-          min: formaterNombre(noteMin, langue),
-          max: formaterNombre(noteMax, langue),
-        })
+  // Texte de chaque pastille : le choix fait, sinon le nom du filtre.
+  const libelleSite =
+    filtres.site === undefined
+      ? t('tableau.filtres.site')
+      : (nomsSites.get(filtres.site) ?? t('tableau.filtres.site'))
+  const libellePoint =
+    pointsContact.find((point) => point.id === filtres.point)?.nom ?? t('tableau.filtres.point')
+  const questionnaireChoisi = questionnaires.find(
+    (questionnaire) => questionnaire.id === filtres.questionnaire,
+  )
+  const libelleQuestionnaire =
+    questionnaireChoisi === undefined
+      ? t('tableau.filtres.questionnaire')
+      : titreQuestionnaire(questionnaireChoisi)
+  const libelleStatut =
+    filtres.statut === undefined ? t('avis.filtres.statut') : t(cleTexteStatut(filtres.statut))
+  const statutActif =
+    filtres.statut !== undefined || filtres.negatifs === true || filtres.avec_commentaire === true
 
   return (
-    <section aria-labelledby={idTitre} className="rounded-lg bg-surface/50 p-5 sm:p-6">
-      <h2 id={idTitre} className="sr-only">
-        {t('tableau.filtres.titre')}
-      </h2>
-
+    <form
+      ref={refBarre}
+      role="search"
+      aria-label={t('tableau.filtres.titre')}
+      onSubmit={envoyerRecherche}
+      className="avis-barre"
+    >
       {/* Recherche dans les commentaires */}
-      <form onSubmit={envoyerRecherche} role="search">
-        <label htmlFor={idRecherche} className={CLASSES_ETIQUETTE}>
+      <div className="avis-recherche">
+        <IconeRecherche width={20} height={20} />
+        <label htmlFor={idRecherche} className="sr-only">
           {t('avis.filtres.recherche')}
         </label>
-        <div className="flex flex-wrap gap-2">
-          <input
-            id={idRecherche}
-            type="search"
-            value={texteRecherche}
-            maxLength={LONGUEUR_MAX_RECHERCHE}
-            placeholder={t('avis.filtres.recherchePlaceholder')}
-            onChange={(evenement) => setTexteRecherche(evenement.target.value)}
-            className={`${CLASSES_CHAMP} min-w-0 flex-1 placeholder:text-texte-discret`}
-          />
-          <button
-            type="submit"
-            className="min-h-11 rounded-md bg-principale px-4 text-sm font-medium text-texte-sur-principale transition-colors hover:opacity-90"
-          >
-            {t('avis.filtres.rechercher')}
-          </button>
-        </div>
-      </form>
-
-      {/* Periode, statut, site, point de contact, questionnaire */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <ChampDate
-          etiquette={t('tableau.filtres.du')}
-          valeur={filtres.from ?? ''}
-          onChanger={changerDebut}
-        />
-        <ChampDate
-          etiquette={t('tableau.filtres.au')}
-          valeur={filtres.to ?? ''}
-          onChanger={changerFin}
-        />
-        <Selecteur
-          etiquette={t('avis.filtres.statut')}
-          valeur={filtres.statut ?? ''}
-          toutes={t('avis.filtres.tousLesStatuts')}
-          options={optionsStatuts}
-          onChanger={(statut) => {
-            onChanger({ statut: STATUTS_AVIS.find((possible) => possible === statut) })
-          }}
-        />
-        <Selecteur
-          etiquette={t('tableau.filtres.site')}
-          valeur={filtres.site ?? ''}
-          toutes={t('tableau.filtres.tousLesSites')}
-          options={optionsSites}
-          onChanger={(site) => onChanger({ site: site === '' ? undefined : site })}
-        />
-        <Selecteur
-          etiquette={t('tableau.filtres.point')}
-          valeur={filtres.point ?? ''}
-          toutes={t('tableau.filtres.tousLesPoints')}
-          options={optionsPoints}
-          onChanger={(point) => onChanger({ point: point === '' ? undefined : point })}
-        />
-        <Selecteur
-          etiquette={t('tableau.filtres.questionnaire')}
-          valeur={filtres.questionnaire ?? ''}
-          toutes={t('tableau.filtres.tousLesQuestionnaires')}
-          options={optionsQuestionnaires}
-          onChanger={(questionnaire) => {
-            onChanger({ questionnaire: questionnaire === '' ? undefined : questionnaire })
-          }}
+        <input
+          id={idRecherche}
+          type="search"
+          value={texteRecherche}
+          maxLength={LONGUEUR_MAX_RECHERCHE}
+          placeholder={t('avis.filtres.recherchePlaceholder')}
+          onChange={(evenement) => setTexteRecherche(evenement.target.value)}
         />
       </div>
 
-      {/* Avis negatifs, avis avec commentaire, tranche de notes */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1">
-        <CaseACocher
+      <div className="avis-separateur hidden lg:block" aria-hidden="true" />
+
+      <PastilleFiltre
+        nom="periode"
+        ouvert={menuOuvert === 'periode'}
+        Icone={IconeCalendrier}
+        libelle={libellePeriode}
+        active={periodeActive}
+        onBasculer={basculerMenu}
+      >
+        <MenuPeriode
+          debut={filtres.from ?? ''}
+          fin={filtres.to ?? ''}
+          onChangerDebut={changerDebut}
+          onChangerFin={changerFin}
+          onEffacer={() => {
+            onChanger({ from: undefined, to: undefined })
+            fermerMenu()
+          }}
+        />
+      </PastilleFiltre>
+
+      <PastilleFiltre
+        nom="note"
+        ouvert={menuOuvert === 'note'}
+        Icone={IconeNoteMoyenne}
+        libelle={notesFiltrees ? texteNotes : t('avis.filtres.note')}
+        active={notesFiltrees}
+        onBasculer={basculerMenu}
+      >
+        <ul className="m-0 list-none p-0">
+          <li>
+            <OptionMenu
+              libelle={t('avis.filtres.toutesLesNotes')}
+              choisie={!notesFiltrees}
+              onChoisir={() => {
+                onChanger({ note_min: undefined, note_max: undefined })
+                fermerMenu()
+              }}
+            />
+          </li>
+          {TRANCHES_NOTES.map(([min, max]) => (
+            <li key={`${min}-${max}`}>
+              <OptionMenu
+                libelle={t('avis.filtres.trancheNotes', {
+                  min: formaterNombre(min, langue),
+                  max: formaterNombre(max, langue),
+                })}
+                choisie={filtres.note_min === min && filtres.note_max === max}
+                onChoisir={() => {
+                  onChanger({ note_min: min, note_max: max })
+                  fermerMenu()
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      </PastilleFiltre>
+
+      <PastilleFiltre
+        nom="site"
+        ouvert={menuOuvert === 'site'}
+        Icone={IconeEpingle}
+        libelle={libelleSite}
+        active={filtres.site !== undefined}
+        onBasculer={basculerMenu}
+      >
+        <MenuListe
+          toutes={t('tableau.filtres.tousLesSites')}
+          valeurChoisie={filtres.site ?? ''}
+          options={optionsSites}
+          onChoisir={(site) => {
+            onChanger({ site: site === '' ? undefined : site })
+            fermerMenu()
+          }}
+        />
+      </PastilleFiltre>
+
+      <PastilleFiltre
+        nom="point"
+        ouvert={menuOuvert === 'point'}
+        Icone={IconeTable}
+        libelle={libellePoint}
+        active={filtres.point !== undefined}
+        onBasculer={basculerMenu}
+      >
+        <MenuListe
+          toutes={t('tableau.filtres.tousLesPoints')}
+          valeurChoisie={filtres.point ?? ''}
+          options={optionsPoints}
+          onChoisir={(point) => {
+            onChanger({ point: point === '' ? undefined : point })
+            fermerMenu()
+          }}
+        />
+      </PastilleFiltre>
+
+      <PastilleFiltre
+        nom="questionnaire"
+        ouvert={menuOuvert === 'questionnaire'}
+        Icone={IconeDocument}
+        libelle={libelleQuestionnaire}
+        active={filtres.questionnaire !== undefined}
+        aDroite
+        onBasculer={basculerMenu}
+      >
+        <MenuListe
+          toutes={t('tableau.filtres.tousLesQuestionnaires')}
+          valeurChoisie={filtres.questionnaire ?? ''}
+          options={optionsQuestionnaires}
+          onChoisir={(questionnaire) => {
+            onChanger({ questionnaire: questionnaire === '' ? undefined : questionnaire })
+            fermerMenu()
+          }}
+        />
+      </PastilleFiltre>
+
+      <PastilleFiltre
+        nom="statut"
+        ouvert={menuOuvert === 'statut'}
+        Icone={IconeFiltresStatut}
+        libelle={libelleStatut}
+        active={statutActif}
+        aDroite
+        onBasculer={basculerMenu}
+      >
+        <MenuListe
+          toutes={t('avis.filtres.tousLesStatuts')}
+          valeurChoisie={filtres.statut ?? ''}
+          options={optionsStatuts}
+          onChoisir={(statut) => {
+            onChanger({ statut: STATUTS_AVIS.find((possible) => possible === statut) })
+            fermerMenu()
+          }}
+        />
+        <div className="my-2 border-t border-bordure" />
+        <CaseMenu
           etiquette={t('avis.filtres.negatifs')}
           cochee={filtres.negatifs === true}
           onChanger={(cochee) => onChanger({ negatifs: cochee ? true : undefined })}
         />
-        <CaseACocher
+        <CaseMenu
           etiquette={t('avis.filtres.avecCommentaire')}
           cochee={filtres.avec_commentaire === true}
           onChanger={(cochee) => onChanger({ avec_commentaire: cochee ? true : undefined })}
         />
-        {notesFiltrees && (
-          <div className="inline-flex min-h-11 items-center gap-1 rounded-full border border-bordure-champ bg-surface pl-3 text-sm text-texte">
-            <span>{texteNotes}</span>
-            <button
-              type="button"
-              aria-label={t('avis.filtres.retirerNotes')}
-              onClick={() => onChanger({ note_min: undefined, note_max: undefined })}
-              className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-base hover:bg-fond-alt"
-            >
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-        )}
-      </div>
+      </PastilleFiltre>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3">
+      {nombreFiltresActifs > 0 && (
         <button
           type="button"
           onClick={onReinitialiser}
-          disabled={nombreFiltresActifs === 0}
-          className="min-h-11 rounded-md px-3 text-sm font-medium text-principale-fonce underline underline-offset-4 transition-colors hover:bg-fond-alt disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50"
+          className="min-h-11 rounded-full px-3 text-sm font-medium text-texte-secondaire underline underline-offset-4 hover:text-texte"
         >
           {t('tableau.filtres.reinitialiser')}
         </button>
-        {erreurListes && (
-          <p role="alert" className="text-sm text-erreur">
-            {t('tableau.filtres.erreurListes')}
-          </p>
-        )}
-      </div>
-    </section>
+      )}
+
+      <button
+        type="button"
+        onClick={onActualiser}
+        disabled={actualisationEnCours}
+        aria-label={actualisationEnCours ? t('tableau.actualisationEnCours') : t('tableau.actualiser')}
+        title={t('tableau.actualiser')}
+        className="avis-bouton-rond ml-auto"
+      >
+        <IconeActualiser className={actualisationEnCours ? 'motion-safe:animate-spin' : undefined} />
+      </button>
+
+      <button type="submit" aria-label={t('avis.filtres.rechercher')} className="avis-bouton-accent">
+        <IconeFlecheDroite width={20} height={20} />
+      </button>
+
+      {erreurListes && (
+        <p role="alert" className="basis-full px-2 text-sm text-erreur">
+          {t('tableau.filtres.erreurListes')}
+        </p>
+      )}
+    </form>
   )
 }

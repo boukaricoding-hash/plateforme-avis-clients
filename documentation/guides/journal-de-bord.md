@@ -192,3 +192,13 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - Les hauteurs de ligne sont des estimations, a ajuster si la derniere ligne est coupee ou s'il reste trop de vide en bas : HAUTEUR_LIGNE = 54 et HAUTEUR_EN_TETE = 46 (`tableau-classement.tsx`), HAUTEUR_AVIS = 94 (`avis-recents.tsx`), HAUTEUR_CARTE = 232 (`detail-questions.tsx`).
 - Themes en page normale : la zone du graphique garde 280 px fixes, donc avec beaucoup de themes les barres s'amincissent (`maxBarSize` 18).
 - `npx eslint` : les hooks nommes `utiliser...` (utiliserLangue, utiliserDonneesTableau, utiliserPages) declenchent la regle react-hooks/rules-of-hooks. C'est la convention de nommage du projet, pas un probleme bloquant.
+
+## Hors planning - lundi 2 novembre 2026 : titre de la periode sur un seul jour
+
+**Fait**
+- Quand la periode affichee tient en un seul jour, le titre de l'accueil n'ecrit plus "Du 2 nov. 2026 au 2 nov. 2026" : il dit "Aujourd'hui, 2 nov. 2026" avec le filtre Aujourd'hui, et "Le 2 nov. 2026" pour tout autre jour unique (periode personnalisee, ou "Ce mois" le 1er du mois). Sur plusieurs jours, "Du ... au ..." comme avant.
+- Textes `periodeAujourdhui` et `periodeUnJour` (fr et en) et fonction `cleTitrePeriode` dans `pages/tableau-de-bord/page-accueil.tsx`.
+- Verifications finales de la refonte : `npm run build` sans erreur, controle a l'ecran fait sur ordinateur et a 390 px.
+
+**Point d'attention**
+- Les periodes sont des jours UTC (Africa/Lome = UTC+0), comme le backend : apres minuit, le titre et les chiffres changent a la prochaine actualisation (10 secondes).

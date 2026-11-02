@@ -63,7 +63,7 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
                   src={URL_LOGO}
                   alt={NOM_ENTREPRISE}
                   onError={() => setLogoDisponible(false)}
-                  className="mb-3 h-[clamp(2.5rem,12vh,8rem)] w-auto max-w-full object-contain"
+                  className="mb-3 h-[clamp(3rem,15vh,9rem)] w-auto max-w-full object-contain"
                 />
               )}
               <p className="font-titre text-3xl font-bold tracking-wide text-texte">{NOM_ENTREPRISE}</p>

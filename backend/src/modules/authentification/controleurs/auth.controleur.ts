@@ -4,6 +4,7 @@ import { schemaConnexion } from "../validations/connexion";
 import { hacherMotDePasse, verifierMotDePasse } from "../services/mots-de-passe";
 import { enregistrerEchec, estVerrouille } from "../services/verrouillage";
 import { enregistrerAudit } from "../../journal-audit/services/journal";
+import { construireProfilUtilisateur } from "../services/profil-utilisateur";
 import {
   NOM_COOKIE_SESSION,
   creerSession,
@@ -92,16 +93,7 @@ export async function connexion(req: Request, res: Response): Promise<void> {
   }
   res.cookie(NOM_COOKIE_SESSION, session.jeton, optionsCookie);
 
-  res.status(200).json({
-    utilisateur: {
-      id: utilisateur.id,
-      email: utilisateur.email,
-      nom: utilisateur.nom,
-      role: utilisateur.role,
-      organisation_id: utilisateur.organisation_id,
-      langue: utilisateur.langue,
-    },
-  });
+  res.status(200).json({ utilisateur: await construireProfilUtilisateur(utilisateur) });
 }
 export async function deconnexion(req: Request, res: Response): Promise<void> {
   const jeton: unknown = req.cookies?.[NOM_COOKIE_SESSION];
@@ -150,14 +142,5 @@ export async function moi(req: Request, res: Response): Promise<void> {
 
   await prolongerSession(session);
 
-  res.status(200).json({
-    utilisateur: {
-      id: utilisateur.id,
-      email: utilisateur.email,
-      nom: utilisateur.nom,
-      role: utilisateur.role,
-      organisation_id: utilisateur.organisation_id,
-      langue: utilisateur.langue,
-    },
-  });
+  res.status(200).json({ utilisateur: await construireProfilUtilisateur(utilisateur) });
 }

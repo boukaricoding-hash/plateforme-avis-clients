@@ -1,4 +1,6 @@
-/* Barre laterale du tableau de bord : menu groupe, indicateur qui glisse, mode replie.
+/* Barre laterale du tableau de bord, construite comme celle de l'application Claude :
+   en-tete fixe (logo et nom de l'organisation, bouton replier), zone du milieu qui defile
+   seule, bas fixe (utilisateur et deconnexion).
    Sous 1024 px (tablette et telephone) : tiroir. A partir de 1024 px : colonne fixe,
    depliee (256 px) ou repliee (76 px, icones seules avec infobulles). */
 
@@ -34,31 +36,44 @@
     width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ---------- En-tete ---------- */
+/* ---------- En-tete fixe : logo, nom de l'organisation, bouton replier ---------- */
 
 .barre-laterale-entete {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   height: 64px;
-  padding: 0 16px;
+  padding: 0 12px 0 16px;
   border-bottom: 1px solid var(--bordure);
   overflow: hidden;
 }
 
+/* Logo de l'organisation (lien https enregistre dans logo_url) */
+.barre-laterale-logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+  background: var(--fond-alt);
+  object-fit: cover;
+}
+
+/* Sans logo ou image en erreur : initiale du nom dans une pastille doree */
 .barre-laterale-pastille {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--rayon-md);
   background: var(--couleur-principale);
   color: var(--texte-sur-principale);
   font-family: var(--font-titre);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1;
 }
@@ -66,6 +81,7 @@
 .barre-laterale-marque {
   display: flex;
   min-width: 0;
+  flex: 1;
   flex-direction: column;
   line-height: 1.2;
 }
@@ -88,15 +104,43 @@
   white-space: nowrap;
 }
 
-/* ---------- Navigation ---------- */
+/* Bouton replier : en haut a droite de l'en-tete (ordinateur seulement) */
+.barre-laterale-bouton-replier {
+  position: relative;
+  display: none;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  border: 0;
+  border-radius: var(--rayon-md);
+  background: transparent;
+  color: var(--texte-secondaire);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.barre-laterale-bouton-replier:hover {
+  background: var(--fond-alt);
+  color: var(--texte);
+}
+
+/* ---------- Zone du milieu : defile seule, barre de defilement fine ---------- */
 
 .barre-laterale-nav {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 8px 12px;
+  padding: 8px;
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bordure-forte) transparent;
 }
 
 .barre-laterale-liste {
@@ -109,23 +153,26 @@
 }
 
 .barre-laterale-groupe + .barre-laterale-groupe {
-  margin-top: 4px;
+  margin-top: 12px;
 }
 
+/* Titre de groupe : en minuscules, chevron colle au texte */
 .barre-laterale-groupe-entete {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 4px;
   width: 100%;
-  padding: 8px 12px 6px 20px;
+  min-height: 44px;
+  padding: 0 12px;
   border: 0;
+  border-radius: var(--rayon-md);
   background: transparent;
   color: var(--texte-secondaire);
   cursor: pointer;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
   transition: color 0.15s ease;
 }
 
@@ -134,8 +181,8 @@
 }
 
 .barre-laterale-chevron {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   transform: rotate(-90deg);
   transition: transform 0.2s ease;
@@ -168,22 +215,30 @@
   overflow: hidden;
 }
 
-/* ---------- Indicateur de page active (barre verticale qui glisse) ---------- */
+/* ---------- Indicateur de page active (barre doree qui glisse) ----------
+   Le script lui donne la position et la hauteur de l'onglet actif ; le trait visible
+   est plus court que l'onglet (il en occupe la moitie centrale). */
 
 .barre-laterale-indicateur {
   position: absolute;
-  left: 12px;
+  left: 8px;
   z-index: 1;
   width: 3px;
-  border-radius: 3px;
-  background: var(--couleur-principale);
   pointer-events: none;
   transition:
     top 0.32s cubic-bezier(0.4, 0, 0.2, 1),
     height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ---------- Onglets ---------- */
+.barre-laterale-indicateur::before {
+  content: '';
+  position: absolute;
+  inset: 25% 0;
+  border-radius: 3px;
+  background: var(--couleur-principale);
+}
+
+/* ---------- Rangees ---------- */
 
 .barre-laterale-lien {
   position: relative;
@@ -191,7 +246,7 @@
   align-items: center;
   gap: 12px;
   min-height: 44px;
-  padding: 0 12px 0 20px;
+  padding: 0 12px;
   border-radius: var(--rayon-md);
   color: var(--texte-secondaire);
   font-size: 14px;
@@ -231,63 +286,28 @@
   text-overflow: ellipsis;
 }
 
-/* ---------- Bouton replier / deplier (ordinateur seulement) ---------- */
-
-.barre-laterale-replier {
-  display: none;
-  flex-shrink: 0;
-  padding: 8px 12px;
-}
-
-.barre-laterale-bouton-replier {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 44px;
-  padding: 0 12px 0 20px;
-  border: 0;
-  border-radius: var(--rayon-md);
-  background: transparent;
-  color: var(--texte-secondaire);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: left;
-  white-space: nowrap;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.barre-laterale-bouton-replier:hover {
-  background: var(--fond-alt);
-  color: var(--texte);
-}
-
-/* ---------- Bloc utilisateur ---------- */
+/* ---------- Bas fixe : utilisateur et deconnexion ---------- */
 
 .barre-laterale-utilisateur {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 12px;
   border-top: 1px solid var(--bordure);
 }
 
 .barre-laterale-avatar {
   display: flex;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: var(--accent-fond);
   color: var(--couleur-principale-fonce);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -319,8 +339,8 @@
 .barre-laterale-bouton-deconnexion {
   position: relative;
   display: flex;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
@@ -377,8 +397,8 @@
     width: 76px;
   }
 
-  .barre-laterale-replier {
-    display: block;
+  .barre-laterale-bouton-replier {
+    display: flex;
   }
 
   /* Mode replie : textes lisibles seulement par les lecteurs d'ecran */
@@ -394,16 +414,24 @@
     white-space: nowrap;
   }
 
+  /* Mode replie : le logo en haut, le bouton deplier juste en dessous (sans trait de separation) */
   .barre-laterale--repliee .barre-laterale-entete {
+    flex-direction: column;
     justify-content: center;
-    padding: 0;
+    gap: 8px;
+    height: auto;
+    padding: 12px 0 8px;
+    border-bottom: 0;
     overflow: visible;
+  }
+
+  .barre-laterale--repliee .barre-laterale-bouton-replier {
+    margin-left: 0;
   }
 
   /* Les groupes restent tous ouverts, separes par un trait, et les infobulles
      doivent pouvoir deborder : on coupe le defilement de la liste (8 entrees seulement). */
   .barre-laterale--repliee .barre-laterale-nav {
-    padding: 8px;
     overflow: visible;
   }
 
@@ -430,14 +458,9 @@
     display: none;
   }
 
-  .barre-laterale--repliee .barre-laterale-lien,
-  .barre-laterale--repliee .barre-laterale-bouton-replier {
+  .barre-laterale--repliee .barre-laterale-lien {
     justify-content: center;
     padding: 0;
-  }
-
-  .barre-laterale--repliee .barre-laterale-replier {
-    padding: 8px;
   }
 
   .barre-laterale--repliee .barre-laterale-utilisateur {
@@ -473,6 +496,19 @@
   }
 }
 
+/* Souris : rangees compactes de 36 px comme dans Claude (les ecrans tactiles gardent 44 px) */
+@media (min-width: 64rem) and (pointer: fine) {
+  .barre-laterale-lien,
+  .barre-laterale-groupe-entete {
+    min-height: 36px;
+  }
+
+  .barre-laterale-bouton-deconnexion {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 @keyframes barre-laterale-apparition {
   from {
     opacity: 0;
@@ -489,7 +525,8 @@
 @media (prefers-reduced-motion: reduce) {
   .barre-laterale,
   .barre-laterale *,
-  .barre-laterale *::after {
+  .barre-laterale *::after,
+  .barre-laterale *::before {
     animation: none !important;
     transition: none !important;
   }

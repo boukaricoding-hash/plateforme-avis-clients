@@ -29,7 +29,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        // Autorise les logos d'organisations hébergés ailleurs (en HTTPS).
+        // Autorise les logos d'organisations heberges ailleurs (en HTTPS).
         "img-src": ["'self'", "data:", "https:"],
       },
     },
@@ -44,6 +44,26 @@ app.use(
 
 app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
+
+// Tableau de bord des responsables : servi sous /tableau-de-bord quand le dossier existe (dans Docker).
+// Toute adresse sous /tableau-de-bord renvoie sa page, par exemple /tableau-de-bord/avis/12 : c'est la page qui choisit l'ecran.
+// Ce bloc doit rester avant celui de la page d'avis, qui repond a toutes les autres adresses.
+const dossierTableau = path.join(process.cwd(), "tableau-de-bord");
+if (fs.existsSync(dossierTableau)) {
+  app.use("/tableau-de-bord", express.static(dossierTableau, { index: false }));
+  app.use("/tableau-de-bord", (req: Request, res: Response, next: NextFunction) => {
+    if (req.method !== "GET") {
+      next();
+      return;
+    }
+    // Un fichier absent (adresse avec extension) ne doit pas renvoyer la page : 404 simple.
+    if (path.extname(req.path) !== "") {
+      res.status(404).end();
+      return;
+    }
+    res.sendFile(path.join(dossierTableau, "index.html"));
+  });
+}
 
 // Page d'avis (version finale) : servie par le serveur quand le dossier "page" existe (dans Docker).
 // Toute adresse hors /api renvoie la page, par exemple /q/ABC123 : c'est la page qui lit le code.

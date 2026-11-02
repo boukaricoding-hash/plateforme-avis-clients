@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { utiliserLangue } from '../hooks/utiliser-langue'
 import type { Langue } from '../types/langue'
@@ -9,9 +10,16 @@ type Proprietes = {
   children: ReactNode
 }
 
+const NOM_ENTREPRISE = 'Data Trace Africa'
+// Le fichier se trouve dans frontend/tableau-de-bord/public/data.png
+const URL_LOGO = `${import.meta.env.BASE_URL}data.png`
+
 // Presentation commune des ecrans accessibles sans etre connecte.
+// Le contenu est pose directement sur le fond de la page : ni carte, ni bordure, ni ombre.
 export function CadreAuthentification({ titre, sousTitre, children }: Proprietes) {
   const { t, langue, changerLangue } = utiliserLangue()
+  // Si data.png est absent, on cache l'image au lieu d'afficher une icone cassee.
+  const [logoDisponible, setLogoDisponible] = useState(true)
 
   function boutonLangue(code: Langue, libelle: string, nom: string) {
     const actif = langue === code
@@ -42,10 +50,20 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
         </div>
       </div>
 
-      <div className="w-full max-w-md animate-monte rounded-xl border border-bordure bg-surface p-6 shadow-moyen motion-reduce:animate-none sm:p-8">
-        <div className="mb-6 text-center">
-          <p className="font-titre text-2xl font-bold text-texte">{t('marque.produit')}</p>
-          <p className="text-xs text-texte-secondaire">{t('marque.fournisseur')}</p>
+      <div className="w-full max-w-md animate-monte px-2 motion-reduce:animate-none sm:px-4">
+        <div className="mb-10 flex flex-col items-center text-center">
+          {logoDisponible && (
+            <img
+              src={URL_LOGO}
+              alt={NOM_ENTREPRISE}
+              onError={() => setLogoDisponible(false)}
+              className="mb-4 h-28 w-auto max-w-full object-contain sm:h-36"
+            />
+          )}
+          <p className="font-titre text-3xl font-bold tracking-wide text-texte">{NOM_ENTREPRISE}</p>
+          <p className="mt-1 text-xs uppercase tracking-widest text-texte-secondaire">
+            {t('marque.produit')}
+          </p>
         </div>
 
         <h1 className="font-titre text-xl font-bold text-texte">{titre}</h1>
@@ -53,7 +71,7 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
           <p className="mt-1 text-sm text-texte-secondaire">{sousTitre}</p>
         )}
 
-        <div className="mt-6">{children}</div>
+        <div className="mt-8">{children}</div>
       </div>
     </div>
   )

@@ -301,6 +301,14 @@ textarea:focus {
   border-color: var(--bordure-champ-focus);
 }
 
+/* Champs "ligne fine" : le remplissage automatique du navigateur ne doit pas recolorer le fond */
+.champ-ligne:-webkit-autofill,
+.champ-ligne:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--texte);
+  caret-color: var(--texte);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 /* =========================================
    TRANSITIONS
 ========================================= */

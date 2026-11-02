@@ -43,6 +43,9 @@ services:
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
       ORIGINES_AUTORISEES: ${PUBLIC_BASE_URL:-http://localhost:3000}
       NOMBRE_PROXYS: ${NOMBRE_PROXYS:-1}
+      # Adresse du tableau de bord : les liens des e-mails (mot de passe oublie) pointent ici.
+      # Par defaut : PUBLIC_BASE_URL + /tableau-de-bord. Cette valeur remplace celle de backend/.env.
+      TABLEAU_DE_BORD_URL: ${TABLEAU_DE_BORD_URL:-${PUBLIC_BASE_URL:-http://localhost:3000}/tableau-de-bord}
     command: sh -c "npx prisma migrate deploy --config prisma7.config.ts && node dist/src/serveur.js"
     ports:
       - "3000:3000"

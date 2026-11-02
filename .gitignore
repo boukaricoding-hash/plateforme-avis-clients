@@ -23,3 +23,5 @@ Thumbs.db
 # Editeurs
 .vscode/
 .idea/
+# QR de test genere par la procedure du tunnel
+qr.png

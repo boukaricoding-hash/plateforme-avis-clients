@@ -1,0 +1,692 @@
+/* ------------------------------------------------------------
+   Page des avis (ecrans E8 et E9 reunis, jour 15 design).
+   Une seule page : barre de filtres en haut, liste des avis a gauche,
+   detail de l'avis choisi a droite.
+   Les couleurs viennent des variables de styles/index.css (theme sombre
+   et theme clair). Le vert est celui des etats "succes" du theme :
+   var(--succes), donc plus fonce en theme clair. Il reste limite a cette page.
+
+   Deux modes :
+   - Ecran fixe (ordinateur, au moins 1100 px de large et 640 px de haut) :
+     la page a exactement la hauteur de l'ecran, rien ne defile.
+     Le bloc "Ecran fixe" est tout en bas du fichier.
+   - Page normale (tablette, telephone, ecran trop bas) :
+     la liste puis le detail sont l'un sous l'autre et la page defile.
+   ------------------------------------------------------------ */
+
+.avis-ecran {
+  --v-accent: var(--succes);
+  --v-sur-accent: #04210f;
+  --v-verre: color-mix(in srgb, var(--surface) 72%, transparent);
+  --v-verre-fort: color-mix(in srgb, var(--surface-douce) 80%, transparent);
+  --v-bord: color-mix(in srgb, var(--v-accent) 16%, var(--bordure));
+  --v-halo: color-mix(in srgb, var(--v-accent) 45%, transparent);
+  /* Hauteur d'une carte et ecart entre cartes : le hook utiliser-cartes-par-page.ts
+     reprend ces deux valeurs, elles doivent rester identiques. */
+  --v-hauteur-carte: 72px;
+  --v-ecart: 8px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100%;
+}
+
+:root[data-theme='clair'] .avis-ecran {
+  --v-sur-accent: #ffffff;
+  --v-verre: color-mix(in srgb, var(--surface) 88%, transparent);
+  --v-verre-fort: var(--fond-alt);
+  --v-halo: color-mix(in srgb, var(--v-accent) 30%, transparent);
+}
+
+.avis-ecran :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Barre de filtres ---------- */
+
+.avis-barre {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--v-bord);
+  border-radius: var(--rayon-xl);
+  background: var(--v-verre);
+}
+
+.avis-recherche {
+  flex: 1 1 220px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--texte-secondaire);
+}
+
+.avis-recherche:focus-within {
+  border-color: var(--v-accent);
+}
+
+.avis-recherche input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.9rem;
+}
+
+.avis-recherche input::placeholder {
+  color: var(--texte-secondaire);
+}
+
+.avis-separateur {
+  width: 1px;
+  height: 28px;
+  background: var(--bordure-forte);
+}
+
+.avis-menu-zone {
+  position: relative;
+}
+
+.avis-pastille-filtre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--bordure-forte);
+  border-radius: 999px;
+  background: var(--v-verre-fort);
+  color: var(--texte);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.avis-pastille-filtre:hover,
+.avis-pastille-filtre--active {
+  border-color: var(--v-accent);
+}
+
+.avis-pastille-filtre svg {
+  color: var(--v-accent);
+}
+
+.avis-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  min-width: 220px;
+  max-height: min(60vh, 360px);
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--v-bord);
+  border-radius: var(--rayon-lg);
+  background: var(--surface);
+  box-shadow: var(--ombre-lg);
+}
+
+.avis-menu-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--rayon-sm);
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.avis-menu-option:hover {
+  background: var(--fond-alt);
+}
+
+.avis-menu-option--choisie {
+  color: var(--v-accent);
+  font-weight: 700;
+}
+
+.avis-menu-etiquette {
+  display: block;
+  margin: 8px 0 4px;
+  color: var(--texte-secondaire);
+  font-size: 0.75rem;
+}
+
+.avis-menu-champ {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-sm);
+  background: var(--fond);
+  color: var(--texte);
+  font-size: 0.875rem;
+}
+
+.avis-bouton-rond,
+.avis-bouton-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.avis-bouton-rond {
+  border: 1px solid var(--bordure-forte);
+  background: var(--v-verre-fort);
+  color: var(--texte);
+}
+
+.avis-bouton-rond:hover {
+  border-color: var(--v-accent);
+}
+
+.avis-bouton-accent {
+  border: 0;
+  background: var(--v-accent);
+  color: var(--v-sur-accent);
+  box-shadow: 0 0 16px var(--v-halo);
+}
+
+.avis-bouton-accent:hover {
+  filter: brightness(1.1);
+}
+
+.avis-bouton-rond:disabled,
+.avis-bouton-accent:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ---------- Corps : liste et detail ---------- */
+
+.avis-corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.avis-liste,
+.avis-detail {
+  min-width: 0;
+}
+
+.avis-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--v-bord);
+  border-radius: var(--rayon-lg);
+  background: var(--v-verre);
+}
+
+.avis-liste-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--texte-secondaire);
+  font-size: 0.8rem;
+}
+
+.avis-liste-zone {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.avis-cartes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: var(--v-hauteur-carte);
+  gap: var(--v-ecart);
+  align-content: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.avis-carte {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 8px 10px;
+  overflow: hidden;
+  border: 1px solid var(--bordure-forte);
+  border-radius: var(--rayon-md);
+  background: var(--v-verre-fort);
+  color: var(--texte);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.avis-carte:hover {
+  border-color: var(--v-accent);
+}
+
+.avis-carte--choisie {
+  border-color: var(--v-accent);
+  box-shadow:
+    0 0 0 1px var(--v-accent),
+    0 0 18px var(--v-halo);
+}
+
+.avis-carte-ligne {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.75rem;
+}
+
+.avis-carte-date {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.avis-carte-lieu {
+  overflow: hidden;
+  color: var(--texte-secondaire);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avis-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.avis-bulle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--bordure-forte);
+  border-radius: 50%;
+  background: var(--v-verre-fort);
+  color: var(--texte);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.avis-bulle:hover {
+  border-color: var(--v-accent);
+}
+
+.avis-bulle--active {
+  border-color: var(--v-accent);
+  background: var(--v-accent);
+  color: var(--v-sur-accent);
+}
+
+.avis-bulle:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* Au doigt, les bulles ont la taille minimale d'une cible tactile */
+@media (pointer: coarse) {
+  .avis-bulle {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ---------- Detail de l'avis ---------- */
+
+.avis-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.avis-detail-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.avis-detail-titre {
+  margin: 0;
+  color: var(--texte);
+  font-family: var(--font-titre);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.avis-resume {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.avis-resume-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--v-bord);
+  border-radius: var(--rayon-md);
+  background: var(--v-verre);
+}
+
+.avis-resume-item svg {
+  flex-shrink: 0;
+  color: var(--v-accent);
+}
+
+.avis-resume-valeur {
+  margin: 0;
+  color: var(--texte);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.avis-resume-etiquette {
+  margin: 0;
+  color: var(--texte-secondaire);
+  font-size: 0.75rem;
+}
+
+.avis-detail-grille {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.avis-detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avis-panneau {
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--v-bord);
+  border-radius: var(--rayon-md);
+  background: var(--v-verre);
+}
+
+.avis-panneau-titre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--texte);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.avis-panneau-titre svg {
+  color: var(--v-accent);
+}
+
+.avis-commentaire {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--texte);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.avis-ligne-donnee {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: 0.82rem;
+}
+
+.avis-ligne-donnee dt {
+  color: var(--texte-secondaire);
+}
+
+.avis-ligne-donnee dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--texte);
+  font-weight: 600;
+  text-align: right;
+}
+
+.avis-chrono {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.avis-chrono-item {
+  position: relative;
+  padding: 0 0 8px 22px;
+  color: var(--texte);
+  font-size: 0.8rem;
+}
+
+.avis-chrono-item::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--v-accent);
+}
+
+.avis-chrono-item::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: -2px;
+  left: 6px;
+  width: 2px;
+  background: var(--v-bord);
+}
+
+.avis-chrono-item:last-child {
+  padding-bottom: 0;
+}
+
+.avis-chrono-item:last-child::after {
+  display: none;
+}
+
+/* ---------- Traitement : statuts, note, bouton ---------- */
+
+.avis-statuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.avis-statut-bouton {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--bordure-forte);
+  border-radius: 999px;
+  background: var(--v-verre-fort);
+  color: var(--texte);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.avis-statut-bouton:hover {
+  border-color: var(--v-accent);
+}
+
+.avis-statut-bouton--actuel {
+  border-color: var(--v-accent);
+  background: var(--v-accent);
+  color: var(--v-sur-accent);
+}
+
+.avis-statut-bouton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.avis-champ {
+  width: 100%;
+  padding: 8px 10px;
+  resize: none;
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-sm);
+  background: var(--fond);
+  color: var(--texte);
+  font-size: 0.85rem;
+}
+
+.avis-champ:focus {
+  border-color: var(--v-accent);
+  outline: none;
+}
+
+.avis-bouton-principal {
+  width: 100%;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--rayon-sm);
+  background: var(--v-accent);
+  color: var(--v-sur-accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.avis-bouton-principal:hover {
+  filter: brightness(1.1);
+}
+
+.avis-bouton-principal:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.avis-vide {
+  padding: 24px;
+  color: var(--texte-secondaire);
+  text-align: center;
+}
+
+/* ---------- Petits ecrans : une seule colonne ---------- */
+
+@media (max-width: 767px) {
+  .avis-resume,
+  .avis-detail-grille {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 479px) {
+  .avis-cartes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avis-ecran * {
+    transition: none !important;
+  }
+}
+
+/* ---------- Ecran fixe : aucune barre de defilement ---------- */
+/* Meme seuil que l'accueil (styles/accueil.css et hooks/utiliser-pages.ts). */
+
+@media (min-width: 1100px) and (min-height: 640px) {
+  /* La page a exactement la hauteur de la zone principale du cadre */
+  .avis-ecran {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .avis-barre {
+    flex-shrink: 0;
+  }
+
+  .avis-corps {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-columns: clamp(340px, 34%, 480px) minmax(0, 1fr);
+  }
+
+  .avis-liste,
+  .avis-detail {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* La zone des cartes prend la hauteur qui reste : on la mesure pour savoir combien de cartes tiennent */
+  .avis-liste-zone {
+    overflow: hidden;
+  }
+
+  .avis-detail-grille {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .avis-detail-col {
+    min-height: 0;
+  }
+
+  .avis-panneau {
+    flex-shrink: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+}

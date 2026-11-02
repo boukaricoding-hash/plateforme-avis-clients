@@ -35,7 +35,9 @@ function versErreurService(erreur: unknown): ErreurService {
 }
 
 // Les filtres viennent de utiliserFiltresAvis : l'objet ne change que si l'adresse change.
-export function utiliserListeAvis(filtres: ParametresListeAvis): ResultatListeAvis {
+// Si l'ecran y ajoute la limite, il doit garder le meme objet tant que rien ne change (useMemo).
+// Tant que actif est faux (zone des cartes pas encore mesuree), rien n'est charge : la liste attend.
+export function utiliserListeAvis(filtres: ParametresListeAvis, actif = true): ResultatListeAvis {
   const { seDeconnecter } = utiliserUtilisateur()
 
   const [reponse, setReponse] = useState<ReponseListeAvis | null>(null)
@@ -79,13 +81,15 @@ export function utiliserListeAvis(filtres: ParametresListeAvis): ResultatListeAv
       }
     }
 
-    void charger()
+    if (actif) {
+      void charger()
+    }
 
     // Si les filtres changent avant la reponse, l'ancienne reponse est ignoree.
     return () => {
       annule = true
     }
-  }, [filtres, relance, seDeconnecter])
+  }, [actif, filtres, relance, seDeconnecter])
 
   return {
     reponse,

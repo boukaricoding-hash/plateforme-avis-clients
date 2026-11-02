@@ -61,6 +61,13 @@ export const en = {
     navigation: 'Main navigation',
     ouvrir: 'Open the menu',
     fermer: 'Close the menu',
+    replier: 'Collapse the menu',
+    deplier: 'Expand the menu',
+    groupes: {
+      retours: 'Customer feedback',
+      organisation: 'Organization',
+      systeme: 'System',
+    },
     tableauDeBord: 'Dashboard',
     avis: 'Reviews',
     questionnaires: 'Questionnaires',

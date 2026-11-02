@@ -1,0 +1,496 @@
+/* Barre laterale du tableau de bord : menu groupe, indicateur qui glisse, mode replie.
+   Sous 1024 px (tablette et telephone) : tiroir. A partir de 1024 px : colonne fixe,
+   depliee (256 px) ou repliee (76 px, icones seules avec infobulles). */
+
+/* ---------- Cadre ---------- */
+
+.barre-laterale {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: 256px;
+  min-height: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--bordure);
+  /* Tiroir ferme : hors ecran et retire de la navigation au clavier */
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition:
+    transform 0.2s ease,
+    visibility 0s linear 0.2s,
+    width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.barre-laterale--ouverte {
+  transform: translateX(0);
+  visibility: visible;
+  transition:
+    transform 0.2s ease,
+    visibility 0s linear 0s,
+    width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- En-tete ---------- */
+
+.barre-laterale-entete {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  height: 64px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--bordure);
+  overflow: hidden;
+}
+
+.barre-laterale-pastille {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--rayon-md);
+  background: var(--couleur-principale);
+  color: var(--texte-sur-principale);
+  font-family: var(--font-titre);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.barre-laterale-marque {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.barre-laterale-produit {
+  overflow: hidden;
+  color: var(--texte);
+  font-family: var(--font-titre);
+  font-size: 17px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barre-laterale-fournisseur {
+  overflow: hidden;
+  color: var(--texte-secondaire);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Navigation ---------- */
+
+.barre-laterale-nav {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 8px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.barre-laterale-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barre-laterale-groupe + .barre-laterale-groupe {
+  margin-top: 4px;
+}
+
+.barre-laterale-groupe-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px 6px 20px;
+  border: 0;
+  background: transparent;
+  color: var(--texte-secondaire);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.15s ease;
+}
+
+.barre-laterale-groupe-entete:hover {
+  color: var(--texte);
+}
+
+.barre-laterale-chevron {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transform: rotate(-90deg);
+  transition: transform 0.2s ease;
+}
+
+.barre-laterale-chevron--ouvert {
+  transform: rotate(0deg);
+}
+
+/* Ouverture d'un groupe : la hauteur passe de 0 a sa taille naturelle */
+.barre-laterale-groupe-contenu {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.22s ease,
+    visibility 0s linear 0.22s;
+}
+
+.barre-laterale-groupe-contenu--ouvert {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 0.22s ease,
+    visibility 0s linear 0s;
+}
+
+.barre-laterale-groupe-interieur {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Indicateur de page active (barre verticale qui glisse) ---------- */
+
+.barre-laterale-indicateur {
+  position: absolute;
+  left: 12px;
+  z-index: 1;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--couleur-principale);
+  pointer-events: none;
+  transition:
+    top 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- Onglets ---------- */
+
+.barre-laterale-lien {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 12px 0 20px;
+  border-radius: var(--rayon-md);
+  color: var(--texte-secondaire);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.barre-laterale-lien:hover {
+  background: var(--fond-alt);
+  color: var(--texte);
+}
+
+.barre-laterale-lien--actif,
+.barre-laterale-lien--actif:hover {
+  background: var(--accent-fond);
+  color: var(--couleur-principale-fonce);
+}
+
+.barre-laterale-icone {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.barre-laterale-lien:hover .barre-laterale-icone {
+  transform: translateX(2px);
+}
+
+.barre-laterale-libelle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Bouton replier / deplier (ordinateur seulement) ---------- */
+
+.barre-laterale-replier {
+  display: none;
+  flex-shrink: 0;
+  padding: 8px 12px;
+}
+
+.barre-laterale-bouton-replier {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px 0 20px;
+  border: 0;
+  border-radius: var(--rayon-md);
+  background: transparent;
+  color: var(--texte-secondaire);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.barre-laterale-bouton-replier:hover {
+  background: var(--fond-alt);
+  color: var(--texte);
+}
+
+/* ---------- Bloc utilisateur ---------- */
+
+.barre-laterale-utilisateur {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--bordure);
+}
+
+.barre-laterale-avatar {
+  display: flex;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-fond);
+  color: var(--couleur-principale-fonce);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.barre-laterale-infos {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.barre-laterale-nom {
+  overflow: hidden;
+  color: var(--texte);
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barre-laterale-role {
+  overflow: hidden;
+  color: var(--texte-secondaire);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barre-laterale-bouton-deconnexion {
+  position: relative;
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--rayon-md);
+  background: transparent;
+  color: var(--texte-secondaire);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.barre-laterale-bouton-deconnexion svg {
+  width: 20px;
+  height: 20px;
+}
+
+.barre-laterale-bouton-deconnexion:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--erreur) 12%, transparent);
+  color: var(--erreur);
+}
+
+.barre-laterale-bouton-deconnexion:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* ---------- Clavier ---------- */
+
+.barre-laterale-lien:focus-visible,
+.barre-laterale-bouton-replier:focus-visible,
+.barre-laterale-bouton-deconnexion:focus-visible,
+.barre-laterale-groupe-entete:focus-visible {
+  outline: 2px solid var(--couleur-principale);
+  outline-offset: -2px;
+}
+
+/* ---------- Ordinateur : colonne fixe, depliee ou repliee ---------- */
+
+@media (min-width: 64rem) {
+  .barre-laterale {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    flex-shrink: 0;
+    transform: none;
+    visibility: visible;
+    transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .barre-laterale--repliee {
+    width: 76px;
+  }
+
+  .barre-laterale-replier {
+    display: block;
+  }
+
+  /* Mode replie : textes lisibles seulement par les lecteurs d'ecran */
+  .barre-laterale--repliee .barre-laterale-masquable {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .barre-laterale--repliee .barre-laterale-entete {
+    justify-content: center;
+    padding: 0;
+    overflow: visible;
+  }
+
+  /* Les groupes restent tous ouverts, separes par un trait, et les infobulles
+     doivent pouvoir deborder : on coupe le defilement de la liste (8 entrees seulement). */
+  .barre-laterale--repliee .barre-laterale-nav {
+    padding: 8px;
+    overflow: visible;
+  }
+
+  .barre-laterale--repliee .barre-laterale-groupe-entete {
+    display: none;
+  }
+
+  .barre-laterale--repliee .barre-laterale-groupe-contenu {
+    grid-template-rows: 1fr;
+    visibility: visible;
+  }
+
+  .barre-laterale--repliee .barre-laterale-groupe-interieur {
+    overflow: visible;
+  }
+
+  .barre-laterale--repliee .barre-laterale-groupe + .barre-laterale-groupe {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--bordure);
+  }
+
+  .barre-laterale--repliee .barre-laterale-indicateur {
+    display: none;
+  }
+
+  .barre-laterale--repliee .barre-laterale-lien,
+  .barre-laterale--repliee .barre-laterale-bouton-replier {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .barre-laterale--repliee .barre-laterale-replier {
+    padding: 8px;
+  }
+
+  .barre-laterale--repliee .barre-laterale-utilisateur {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 8px;
+  }
+
+  /* Infobulles du mode replie */
+  .barre-laterale--repliee [data-tooltip] {
+    position: relative;
+  }
+
+  .barre-laterale--repliee [data-tooltip]:hover::after,
+  .barre-laterale--repliee [data-tooltip]:focus-visible::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 12px);
+    z-index: 50;
+    padding: 6px 10px;
+    border: 1px solid var(--bordure-forte);
+    border-radius: var(--rayon-sm);
+    background: var(--surface);
+    box-shadow: var(--ombre-sm);
+    color: var(--texte);
+    font-size: 13px;
+    font-weight: 500;
+    pointer-events: none;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    animation: barre-laterale-apparition 0.15s ease;
+  }
+}
+
+@keyframes barre-laterale-apparition {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* ---------- Accessibilite : pas d'animation si l'utilisateur la refuse ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .barre-laterale,
+  .barre-laterale *,
+  .barre-laterale *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

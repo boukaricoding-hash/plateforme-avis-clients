@@ -81,7 +81,7 @@ export function PageConnexion() {
 
   return (
     <CadreAuthentification titre={t('connexion.titre')} sousTitre={t('connexion.sousTitre')}>
-      <form onSubmit={(evenement) => void surEnvoi(evenement)} noValidate className="flex flex-col gap-6">
+      <form onSubmit={(evenement) => void surEnvoi(evenement)} noValidate className="flex flex-col gap-[2vh]">
         {erreurGenerale !== '' && (
           <p role="alert" className="text-sm font-medium text-erreur">
             {erreurGenerale}

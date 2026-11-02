@@ -41,37 +41,44 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-fond px-4 py-8">
-      <div className="mb-4 flex w-full max-w-md items-center justify-end gap-1">
-        <BoutonTheme />
-        <div className="flex items-center gap-1" role="group" aria-label={t('commun.langue')}>
-          {boutonLangue('fr', 'FR', t('commun.francais'))}
-          {boutonLangue('en', 'EN', t('commun.anglais'))}
-        </div>
-      </div>
-
-      <div className="w-full max-w-md animate-monte px-2 motion-reduce:animate-none sm:px-4">
-        <div className="mb-10 flex flex-col items-center text-center">
-          {logoDisponible && (
-            <img
-              src={URL_LOGO}
-              alt={NOM_ENTREPRISE}
-              onError={() => setLogoDisponible(false)}
-              className="mb-4 h-28 w-auto max-w-full object-contain sm:h-36"
-            />
-          )}
-          <p className="font-titre text-3xl font-bold tracking-wide text-texte">{NOM_ENTREPRISE}</p>
-          <p className="mt-1 text-xs uppercase tracking-widest text-texte-secondaire">
-            {t('marque.produit')}
-          </p>
+    // Page fixe : jamais de defilement. Tout tient dans 90 % de la hauteur de l'ecran
+    // et les tailles (logo, espaces) se reduisent avec la hauteur disponible.
+    <div className="flex h-dvh items-center justify-center overflow-hidden bg-fond px-4">
+      <div className="flex h-[90dvh] w-full max-w-md animate-monte flex-col motion-reduce:animate-none">
+        <div className="flex shrink-0 items-center justify-end gap-1">
+          <BoutonTheme />
+          <div className="flex items-center gap-1" role="group" aria-label={t('commun.langue')}>
+            {boutonLangue('fr', 'FR', t('commun.francais'))}
+            {boutonLangue('en', 'EN', t('commun.anglais'))}
+          </div>
         </div>
 
-        <h1 className="font-titre text-xl font-bold text-texte">{titre}</h1>
-        {sousTitre !== undefined && (
-          <p className="mt-1 text-sm text-texte-secondaire">{sousTitre}</p>
-        )}
+        <div className="flex min-h-0 flex-1 flex-col px-2 sm:px-4">
+          {/* my-auto : centre le bloc, et s'il est trop haut il deborde vers le bas (jamais vers le haut) */}
+          <div className="my-auto">
+            <div className="mb-[3vh] flex flex-col items-center text-center">
+              {logoDisponible && (
+                <img
+                  src={URL_LOGO}
+                  alt={NOM_ENTREPRISE}
+                  onError={() => setLogoDisponible(false)}
+                  className="mb-3 h-[clamp(2.5rem,12vh,8rem)] w-auto max-w-full object-contain"
+                />
+              )}
+              <p className="font-titre text-3xl font-bold tracking-wide text-texte">{NOM_ENTREPRISE}</p>
+              <p className="mt-1 text-xs uppercase tracking-widest text-texte-secondaire">
+                {t('marque.produit')}
+              </p>
+            </div>
 
-        <div className="mt-8">{children}</div>
+            <h1 className="font-titre text-xl font-bold text-texte">{titre}</h1>
+            {sousTitre !== undefined && (
+              <p className="mt-1 text-sm text-texte-secondaire">{sousTitre}</p>
+            )}
+
+            <div className="mt-[2.5vh]">{children}</div>
+          </div>
+        </div>
       </div>
     </div>
   )

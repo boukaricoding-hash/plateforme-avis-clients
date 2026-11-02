@@ -98,6 +98,8 @@ export const fr = {
     perimetreGestionnaire: 'Vous voyez uniquement les sites de votre périmètre.',
     aucuneDonnee: 'Pas de données',
     periodeAffichee: 'Du {debut} au {fin}',
+    periodeAujourdhui: 'Aujourd’hui, {debut}',
+    periodeUnJour: 'Le {debut}',
     periodePrecedente: 'Comparé à la période précédente (du {debut} au {fin})',
 
     filtres: {

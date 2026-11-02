@@ -97,6 +97,8 @@ export const en = {
     perimetreGestionnaire: 'You only see the sites in your scope.',
     aucuneDonnee: 'No data',
     periodeAffichee: 'From {debut} to {fin}',
+    periodeAujourdhui: 'Today, {debut}',
+    periodeUnJour: 'On {debut}',
     periodePrecedente: 'Compared with the previous period (from {debut} to {fin})',
 
     filtres: {

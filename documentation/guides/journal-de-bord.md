@@ -170,3 +170,25 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 
 **Point d'attention**
 - Le commentaire en tete de `index.css` ne parle plus de la page d'avis du client : les deux palettes sont maintenant differentes.
+
+## Hors planning - dimanche 1er novembre 2026 : refonte de l'accueil, plus de defilement
+
+**Fait**
+- Sur grand ecran (au moins 1100 px de large ET 640 px de haut), l'accueil a exactement la hauteur de l'ecran : ni defilement de la page, ni defilement dans le panneau. En dessous (tablette, telephone, fenetre basse), la page reste normale : elle defile et le panneau s'ouvre sous les cartes. Le seuil est ecrit a deux endroits qui doivent rester identiques : la requete CSS en bas de `styles/accueil.css` et la constante `REQUETE_ECRAN_FIXE` de `hooks/utiliser-pages.ts`.
+- Deux etats. Repos : en-tete complet (Bonjour, date, periode en grand, mise a jour, actualisation automatique, Actualiser), bouton Filtres, trois cartes, fleches, points et "Groupe 1 sur 2". Ouvert (classe `accueil--ouvert` sur la racine) : l'en-tete tient sur une ligne, les cartes deviennent basses (sans la ligne du bas), les fleches rapetissent, le compteur disparait et le panneau prend toute la hauteur restante, avec une transition.
+- Un seul panneau a la fois : detail d'une carte, Filtres, Repartition, Themes, Courbe, Classement, Avis recents ou Questions. Ouvrir autre chose remplace le contenu. Les filtres s'ouvrent dans ce meme panneau ; le bouton Filtres reste au-dessus des cartes, avec son point quand un filtre est modifie.
+- Classement, avis recents et questions sont decoupes en pages (fleches, points, "Page 1 sur 3", points jusqu'a 7 pages). Le nombre de lignes par page vient de la hauteur mesuree de la zone (`utiliserPages`, avec ResizeObserver) ; en page normale : 8 lignes (3 lignes de cartes pour les questions). Les graphiques remplissent la hauteur du panneau.
+- Fichiers : `styles/accueil.css` (reecrit), `hooks/utiliser-pages.ts`, `composants-tableau/pagination.tsx`, les 3 graphiques, classement, avis recents, questions, textes fr et en (4 cles de pagination), `pages/tableau-de-bord/page-accueil.tsx`. `panneau-detail.tsx` n'a pas change : le CSS vise sa structure actuelle.
+- Backend non modifie, aucune dependance ajoutee.
+
+**Decisions**
+- Plus de defilement automatique vers le panneau (inutile en ecran fixe).
+- Un nouveau tri du classement revient a la page 1 ; le rang # reste la position donnee par l'API.
+- Avis recents : 10 maximum, commentaire sur une seule ligne. Questions : cartes de 232 px, deux par ligne, pages de lignes entieres (au moins une ligne).
+- Le detail d'une carte se ferme toujours quand on change de groupe de cartes ; celui d'une section reste ouvert.
+- Les filtres restent utilisables avant le premier chargement des donnees.
+
+**Point d'attention**
+- Les hauteurs de ligne sont des estimations, a ajuster si la derniere ligne est coupee ou s'il reste trop de vide en bas : HAUTEUR_LIGNE = 54 et HAUTEUR_EN_TETE = 46 (`tableau-classement.tsx`), HAUTEUR_AVIS = 94 (`avis-recents.tsx`), HAUTEUR_CARTE = 232 (`detail-questions.tsx`).
+- Themes en page normale : la zone du graphique garde 280 px fixes, donc avec beaucoup de themes les barres s'amincissent (`maxBarSize` 18).
+- `npx eslint` : les hooks nommes `utiliser...` (utiliserLangue, utiliserDonneesTableau, utiliserPages) declenchent la regle react-hooks/rules-of-hooks. C'est la convention de nommage du projet, pas un probleme bloquant.

@@ -32,25 +32,26 @@ import { utiliserUtilisateur } from '../../hooks/utiliser-utilisateur'
 import { construireLienAvis } from '../../services/tableau-de-bord'
 import '../../styles/accueil.css'
 import type { Langue } from '../../types/langue'
-import type { FiltresApi, ReponseKpis } from '../../types/tableau-de-bord'
+import type { ChoixPeriode, FiltresApi, ReponseKpis } from '../../types/tableau-de-bord'
 import type { ValeursTexte } from '../../traductions/contexte-langue'
 import { cleTexteNiveau, niveauDeLaNote } from '../../utilitaires/couleurs-notes'
 import type { NiveauNote } from '../../utilitaires/couleurs-notes'
 import { formaterHeure, formaterJour } from '../../utilitaires/periodes'
 
 // Ecran E7 : page d'accueil du tableau de bord.
-// Disposition du tableau de bord de Gestion Scolaire : on ne voit d'abord que l'en-tete et trois cartes.
-// Le reste (detail d'une carte, filtres, graphiques, classement...) s'ouvre au clic dans un panneau.
+// Disposition du tableau de bord de Gestion Scolaire : on ne voit d'abord que l'en-tete, le bouton
+// Filtres et trois cartes. Le reste (detail d'une carte, filtres, graphiques, classement...) s'ouvre
+// au clic dans UN SEUL panneau : ouvrir autre chose remplace ce qui est ouvert.
+// Sur grand ecran (voir styles/accueil.css), la page a la hauteur de l'ecran et ne defile pas :
+// quand le panneau est ouvert, la racine prend la classe accueil--ouvert, l'en-tete et les cartes se
+// compactent et le panneau prend toute la hauteur qui reste.
 // Les donnees, les filtres et l'actualisation toutes les 10 secondes viennent de utiliserDonneesTableau.
 
 // Duree de la sortie d'un groupe de cartes (doit rester egale a celle du CSS)
 const DUREE_SORTIE_MS = 230
-// Delai avant de faire defiler jusqu'au panneau : le temps qu'il finisse de s'ouvrir
-const DELAI_DEFILEMENT_MS = 420
 // A partir de cette anciennete (en heures), on ecrit la duree en jours
 const SEUIL_JOURS_HEURES = 48
 const ID_PANNEAU = 'accueil-panneau'
-const ID_PANNEAU_FILTRES = 'accueil-panneau-filtres'
 
 type Traduire = (cle: string, valeurs?: ValeursTexte) => string
 
@@ -216,10 +217,11 @@ function construireCartes(
 }
 
 // ------------------------------------------------------------
-// Les six icones de raccourci
+// Les six icones de raccourci (et le bouton Filtres, qui ouvre le meme panneau)
 // ------------------------------------------------------------
 
 type CleSection =
+  | 'filtres'
   | 'repartition'
   | 'themes'
   | 'courbe'
@@ -246,11 +248,19 @@ const RACCOURCIS_DROITE: Raccourci[] = [
   { cle: 'questions', Icone: IconeQuestions, cleTitre: 'tableau.questions.titre' },
 ]
 
-// Ce que le panneau montre : le detail d'une carte, ou une section
+// Ce que le panneau montre : le detail d'une carte, ou une section (filtres compris)
 type Selection = { type: 'carte'; cle: CleCarte } | { type: 'section'; cle: CleSection }
 
 function memeSelection(a: Selection | null, b: Selection): boolean {
   return a !== null && a.type === b.type && a.cle === b.cle
+}
+
+// Cle du texte du titre de la periode : "Du ... au ...", ou "Aujourd'hui, ..." / "Le ..." quand elle tient en un seul jour
+function cleTitrePeriode(periode: { from: string; to: string }, choix: ChoixPeriode): string {
+  if (periode.from !== periode.to) {
+    return 'tableau.periodeAffichee'
+  }
+  return choix === 'aujourdhui' ? 'tableau.periodeAujourdhui' : 'tableau.periodeUnJour'
 }
 
 // Date du jour ecrite en toutes lettres : "dimanche 1 novembre 2026"
@@ -295,8 +305,6 @@ export function PageAccueil() {
   const [selection, setSelection] = useState<Selection | null>(null)
   const [ouvert, setOuvert] = useState(false)
 
-  // Panneau des filtres, place sous son bouton, au-dessus des cartes
-  const [filtresOuverts, setFiltresOuverts] = useState(false)
   // Au moins un filtre est different de ceux par defaut (les memes que dans BarreFiltres)
   const filtresModifies =
     filtres.periode !== '30jours' ||
@@ -313,20 +321,7 @@ export function PageAccueil() {
     [],
   )
 
-  // A l'ouverture ou au changement de contenu, on fait defiler jusqu'au panneau, place en haut de l'ecran
   const cleSelection = selection === null ? '' : `${selection.type}-${selection.cle}`
-  useEffect(() => {
-    if (!ouvert) {
-      return
-    }
-    const reduire = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const minuteur = setTimeout(() => {
-      document
-        .getElementById(ID_PANNEAU)
-        ?.scrollIntoView({ block: 'start', behavior: reduire ? 'auto' : 'smooth' })
-    }, DELAI_DEFILEMENT_MS)
-    return () => clearTimeout(minuteur)
-  }, [ouvert, cleSelection])
 
   function afficherGroupe(index: number) {
     if (index === indexGroupe || phase !== 'repos') {
@@ -348,7 +343,8 @@ export function PageAccueil() {
     afficherGroupe((indexGroupe + direction + GROUPES.length) % GROUPES.length)
   }
 
-  // Un clic ouvre le panneau ; un second clic sur le meme element le referme
+  // Un clic ouvre le panneau ; un second clic sur le meme element le referme.
+  // Un seul panneau a la fois : ouvrir autre chose remplace le contenu.
   function choisir(nouvelle: Selection) {
     if (ouvert && memeSelection(selection, nouvelle)) {
       setOuvert(false)
@@ -362,17 +358,20 @@ export function PageAccueil() {
     setOuvert(false)
   }
 
+  function sectionOuverte(cle: CleSection): boolean {
+    return ouvert && selection?.type === 'section' && selection.cle === cle
+  }
+
   function boutonRaccourci(raccourci: Raccourci) {
     const { cle, Icone, cleTitre } = raccourci
     const titre = t(cleTitre)
-    const actif = ouvert && selection?.type === 'section' && selection.cle === cle
     return (
       <button
         key={cle}
         type="button"
         className="accueil-icone-coin"
         aria-label={titre}
-        aria-pressed={actif}
+        aria-pressed={sectionOuverte(cle)}
         aria-controls={ID_PANNEAU}
         onClick={() => choisir({ type: 'section', cle })}
       >
@@ -386,6 +385,21 @@ export function PageAccueil() {
 
   // Contenu d'une section : les composants deja ecrits, avec leurs liens, leurs erreurs et leur actualisation
   function contenuSection(cle: CleSection): ReactNode {
+    // Les filtres ne dependent pas des donnees : on peut les changer meme avant le premier chargement
+    if (cle === 'filtres') {
+      return (
+        <BarreFiltres
+          filtres={filtres}
+          onChanger={changerFiltres}
+          onReinitialiser={reinitialiserFiltres}
+          erreurPeriode={erreurPeriode}
+          sites={sites}
+          pointsContact={pointsContact}
+          questionnaires={questionnaires}
+          erreurListes={erreurListes}
+        />
+      )
+    }
     if (donnees === null) {
       return <p className="accueil-message">{t('tableau.chargement')}</p>
     }
@@ -456,7 +470,7 @@ export function PageAccueil() {
     .join(' ')
 
   return (
-    <div className="accueil">
+    <div className={ouvert ? 'accueil accueil--ouvert' : 'accueil'}>
       <nav className="accueil-raccourcis" aria-label={t('tableau.accueil.raccourcis')}>
         {RACCOURCIS_HAUT.map(boutonRaccourci)}
         <div className="accueil-raccourcis-colonne">{RACCOURCIS_DROITE.map(boutonRaccourci)}</div>
@@ -471,7 +485,7 @@ export function PageAccueil() {
           <h1 className="accueil-sous-titre">
             {donnees === null
               ? t('accueil.titre')
-              : t('tableau.periodeAffichee', {
+              : t(cleTitrePeriode(donnees.kpis.periode, filtres.periode), {
                   debut: formaterJour(donnees.kpis.periode.from, langue),
                   fin: formaterJour(donnees.kpis.periode.to, langue),
                 })}
@@ -482,7 +496,7 @@ export function PageAccueil() {
               {derniereMiseAJour !== null && (
                 <p>{t('tableau.misAJour', { heure: formaterHeure(derniereMiseAJour, langue) })}</p>
               )}
-              <p>{t('tableau.actualisationAuto')}</p>
+              <p className="accueil-meta-auto">{t('tableau.actualisationAuto')}</p>
               <button
                 type="button"
                 className="accueil-bouton-actualiser"
@@ -495,7 +509,7 @@ export function PageAccueil() {
           )}
 
           {utilisateur !== null && utilisateur.role === 'GESTIONNAIRE' && (
-            <p className="accueil-meta">{t('tableau.perimetreGestionnaire')}</p>
+            <p className="accueil-meta accueil-meta--perimetre">{t('tableau.perimetreGestionnaire')}</p>
           )}
         </header>
 
@@ -520,33 +534,19 @@ export function PageAccueil() {
           </p>
         )}
 
+        {/* Le bouton Filtres ouvre le panneau unique, comme les icones en coin */}
         <div className="accueil-zone-filtres">
           <button
             type="button"
             className="accueil-filtres-bouton"
-            aria-expanded={filtresOuverts}
-            aria-controls={ID_PANNEAU_FILTRES}
-            onClick={() => setFiltresOuverts((valeur) => !valeur)}
+            aria-pressed={sectionOuverte('filtres')}
+            aria-controls={ID_PANNEAU}
+            onClick={() => choisir({ type: 'section', cle: 'filtres' })}
           >
             <IconeFiltres aria-hidden="true" />
             {t('tableau.filtres.titre')}
             {filtresModifies && <span className="accueil-filtres-point" aria-hidden="true" />}
           </button>
-          <PanneauDetail id={ID_PANNEAU_FILTRES} ouvert={filtresOuverts} large cleContenu="filtres">
-            <div className="accueil-section-fermer">
-              <BoutonFermer onFermer={() => setFiltresOuverts(false)} />
-            </div>
-            <BarreFiltres
-              filtres={filtres}
-              onChanger={changerFiltres}
-              onReinitialiser={reinitialiserFiltres}
-              erreurPeriode={erreurPeriode}
-              sites={sites}
-              pointsContact={pointsContact}
-              questionnaires={questionnaires}
-              erreurListes={erreurListes}
-            />
-          </PanneauDetail>
         </div>
 
         {cartes !== null && donnees !== null && (
@@ -621,6 +621,7 @@ export function PageAccueil() {
           </>
         )}
 
+        {/* Le panneau unique doit rester le dernier enfant direct de .accueil-scene (le CSS cible .accueil-scene > .accueil-panneau) */}
         <PanneauDetail
           id={ID_PANNEAU}
           ouvert={ouvert}

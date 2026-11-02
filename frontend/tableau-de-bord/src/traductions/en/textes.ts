@@ -93,6 +93,164 @@ export const en = {
     titre: 'Dashboard',
     bonjour: 'Hello {nom}',
   },
+  // Screens E8 (reviews list) and E9 (review details), day 15
+  avis: {
+    statuts: {
+      NOUVEAU: 'New',
+      EN_COURS: 'In progress',
+      TRAITE: 'Handled',
+      IGNORE: 'Ignored',
+    },
+    appareils: {
+      mobile: 'Mobile',
+      tablette: 'Tablet',
+      ordinateur: 'Computer',
+    },
+    sansNote: 'No rating',
+    noteSur5: '{note}/5',
+    npsValeur: 'NPS {valeur}',
+    sansCommentaire: 'No comment',
+    nonRenseigne: 'Not provided',
+    alerte: 'Alert',
+    prioritaire: 'Priority',
+    lieu: '{point} · {site}',
+    ouvrir: 'Open the review of {date}',
+
+    liste: {
+      titre: 'Reviews',
+      resultats: 'Results: {total}',
+      chargement: 'Loading reviews…',
+      erreur: 'Unable to load the reviews.',
+      aucunAvis: 'No review matches these filters.',
+    },
+
+    filtres: {
+      recherche: 'Search in comments',
+      recherchePlaceholder: 'A word or a phrase…',
+      rechercher: 'Search',
+      statut: 'Status',
+      tousLesStatuts: 'All statuses',
+      negatifs: 'Negative reviews only',
+      avecCommentaire: 'With a comment only',
+      noteUnique: 'Rating {note} out of 5',
+      trancheNotes: 'Ratings from {min} to {max}',
+      retirerNotes: 'Remove the rating filter',
+    },
+
+    tableau: {
+      navigation: 'Reviews list',
+      colonnes: {
+        date: 'Date',
+        note: 'Rating',
+        nps: 'NPS',
+        statut: 'Status',
+        lieu: 'Contact point',
+        commentaire: 'Comment',
+      },
+      trierPar: 'Sort by {colonne}',
+      pagination: 'Reviews pagination',
+      pagePrecedente: 'Previous page',
+      pageSuivante: 'Next page',
+      pageSur: 'Page {page} of {pages}',
+      affichage: 'Reviews {debut} to {fin} of {total}',
+    },
+
+    fiche: {
+      retour: 'Back to the reviews list',
+      chargement: 'Loading the review…',
+      erreur: 'Unable to load this review.',
+      introuvable: 'This review does not exist or you do not have access to it.',
+      titre: 'Review of {date}',
+      noteGlobale: 'Overall rating',
+      nps: 'NPS',
+
+      details: {
+        titre: 'Details',
+        recuLe: 'Received on',
+        pointContact: 'Contact point',
+        site: 'Site',
+        questionnaire: 'Questionnaire',
+        version: 'Version {numero}',
+        langue: 'Customer’s language',
+        appareil: 'Device',
+      },
+
+      alerte: {
+        titre: 'Alert',
+        creeeLe: 'Alert created on {date}',
+        niveau: 'Level',
+        motifs: 'Reasons',
+        niveaux: {
+          NORMAL: 'Normal',
+          PRIORITAIRE: 'Priority',
+        },
+        listeMotifs: {
+          NOTE_BASSE: 'Low rating',
+          NPS_BAS: 'Low NPS',
+          RAPPEL_DEMANDE: 'Callback requested',
+        },
+      },
+
+      commentaire: {
+        titre: 'Customer comment',
+        aucun: 'The customer did not leave a comment.',
+      },
+
+      reponses: {
+        titre: 'Questionnaire answers',
+        aucune: 'No answers recorded.',
+        sansReponse: 'No answer',
+        oui: 'Yes',
+        non: 'No',
+        valeurSur: '{valeur} out of {max}',
+      },
+
+      coordonnees: {
+        titre: 'Customer contact details',
+        nom: 'Name',
+        telephone: 'Phone',
+        email: 'Email',
+        sansConsentement:
+          'The customer did not give consent: their contact details are not shown.',
+      },
+
+      suivi: {
+        titre: 'Handling the review',
+        statutActuel: 'Current status',
+        changerStatut: 'Change the status',
+        actuel: 'current',
+        commentaireStatut: 'Comment (optional)',
+        commentaireStatutAide:
+          'This comment is saved in the history along with the status change.',
+        commentaireTropLong: 'The comment cannot exceed 2000 characters.',
+        enregistrement: 'Saving…',
+        statutModifie: 'Status updated.',
+        erreurStatut: 'Unable to change the status.',
+        note: {
+          titre: 'Add an internal note',
+          aide: 'Visible only to your team, never to the customer.',
+          placeholder: 'Write your note…',
+          ajouter: 'Add the note',
+          ajout: 'Adding…',
+          ajoutee: 'Note added.',
+          vide: 'Write a note before adding it.',
+          tropLongue: 'The note cannot exceed 2000 characters.',
+          erreur: 'Unable to add the note.',
+          compteur: '{nombre}/2000',
+        },
+      },
+
+      historique: {
+        titre: 'History',
+        aucun: 'No action yet.',
+        changementStatut: 'Status change',
+        noteInterne: 'Internal note',
+        par: 'By {auteur}',
+        statutVers: '{ancien} → {nouveau}',
+      },
+    },
+  },
+
   tableau: {
     // Screen states
     chargement: 'Loading indicators…',
@@ -184,9 +342,6 @@ export const en = {
       reponses: '{nombre} answers',
       aucun: 'No rated theme in this period.',
       voirAutres: 'Show other themes ({nombre})',
-      masquerAutres: 'Hide other themes',
-      autresTitre: 'Other themes',
-      voirAutres: 'Show other themes ({nombre}),',
       masquerAutres: 'Hide other themes',
       autresTitre: 'Other themes',
     },

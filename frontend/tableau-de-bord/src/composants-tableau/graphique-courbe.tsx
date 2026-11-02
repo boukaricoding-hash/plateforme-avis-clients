@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { useNavigate } from 'react-router'
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { utiliserLangue } from '../hooks/utiliser-langue'
 import { construireLienAvis } from '../services/tableau-de-bord'
 import type { FiltresApi, PointSerie } from '../types/tableau-de-bord'
@@ -10,6 +10,9 @@ import { formaterJour, formaterJourCourt, formaterNombre } from '../utilitaires/
 // Un clic sur un jour ouvre la liste des avis de ce jour, avec les autres filtres du tableau de bord.
 // Le dessin se manipule a la souris ou au doigt ; au clavier, les cartes et les autres liens de la page
 // menent a la meme liste d'avis.
+// Refonte de l'accueil : la courbe prend toute la hauteur du panneau (classes accueil-remplir et
+// accueil-zone-graphique de styles/accueil.css), au lieu d'une hauteur fixe.
+// La zone sous la courbe est coloree (degrade de la couleur principale, qui suit le theme clair ou sombre).
 
 // Au-dela de ce nombre de jours, on ne dessine plus un point par jour (trop serre).
 const JOURS_AVEC_POINTS = 31
@@ -24,13 +27,15 @@ export function GraphiqueCourbe({ points, filtres }: Proprietes) {
   const { t, langue } = utiliserLangue()
   const navigate = useNavigate()
   const idTitre = useId()
+  // Les signes ':' que useId ajoute ne passent pas dans url(#...) : on les retire.
+  const idDegrade = `degrade-courbe-${useId().replace(/:/g, '')}`
 
   const total = points.reduce((somme, point) => somme + point.nb_avis, 0)
 
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-4 shadow-doux"
+      className="accueil-remplir rounded-lg bg-surface/50 p-4"
     >
       <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
         {t('tableau.courbe.titre')}
@@ -45,9 +50,9 @@ export function GraphiqueCourbe({ points, filtres }: Proprietes) {
             {t('tableau.cartes.nbAvis')} : {total}
           </p>
 
-          <div aria-hidden="true" className="mt-3 cursor-pointer">
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart
+          <div aria-hidden="true" className="accueil-zone-graphique cursor-pointer">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
                 data={points}
                 margin={{ top: 12, right: 12, bottom: 0, left: 0 }}
                 accessibilityLayer={false}
@@ -62,6 +67,12 @@ export function GraphiqueCourbe({ points, filtres }: Proprietes) {
                   }
                 }}
               >
+                <defs>
+                  <linearGradient id={idDegrade} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" style={{ stopColor: 'var(--couleur-principale)', stopOpacity: 0.4 }} />
+                    <stop offset="100%" style={{ stopColor: 'var(--couleur-principale)', stopOpacity: 0.04 }} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} stroke="var(--bordure)" />
                 <XAxis
                   dataKey="date"
@@ -103,17 +114,18 @@ export function GraphiqueCourbe({ points, filtres }: Proprietes) {
                     )
                   }}
                 />
-                {/* Sans animation : sinon la ligne se redessinerait a chaque actualisation de 10 secondes. */}
-                <Line
+                {/* Sans animation : sinon la courbe se redessinerait a chaque actualisation de 10 secondes. */}
+                <Area
                   type="monotone"
                   dataKey="nb_avis"
                   stroke="var(--couleur-principale)"
                   strokeWidth={2}
+                  fill={`url(#${idDegrade})`}
                   dot={points.length <= JOURS_AVEC_POINTS}
                   activeDot={{ r: 5 }}
                   isAnimationActive={false}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </>

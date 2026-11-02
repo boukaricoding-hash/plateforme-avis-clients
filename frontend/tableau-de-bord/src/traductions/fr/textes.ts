@@ -1,5 +1,5 @@
 // Textes du tableau de bord en francais (jour 13 : cadre, connexion, mot de passe oublie ;
-// jour 14 : ecran E7, indicateurs et graphiques).
+// jour 14 : ecran E7, indicateurs et graphiques ; refonte de l'accueil : raccourcis et groupes de cartes).
 // Les textes entre accolades, comme {minutes}, sont remplaces par le code.
 export const fr = {
   commun: {
@@ -7,6 +7,8 @@ export const fr = {
     langue: 'Langue',
     francais: 'Français',
     anglais: 'English',
+    themeClair: 'Passer au thème clair',
+    themeSombre: 'Passer au thème sombre',
     erreurGenerique: 'Une erreur est survenue. Merci de réessayer.',
     erreurReseau: 'Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.',
     retourConnexion: 'Retour à la connexion',
@@ -61,6 +63,13 @@ export const fr = {
     navigation: 'Navigation principale',
     ouvrir: 'Ouvrir le menu',
     fermer: 'Fermer le menu',
+    replier: 'Replier le menu',
+    deplier: 'Déplier le menu',
+    groupes: {
+      retours: 'Retours clients',
+      organisation: 'Organisation',
+      systeme: 'Système',
+    },
     tableauDeBord: 'Tableau de bord',
     avis: 'Avis',
     questionnaires: 'Questionnaires',
@@ -98,6 +107,8 @@ export const fr = {
     perimetreGestionnaire: 'Vous voyez uniquement les sites de votre périmètre.',
     aucuneDonnee: 'Pas de données',
     periodeAffichee: 'Du {debut} au {fin}',
+    periodeAujourdhui: 'Aujourd’hui, {debut}',
+    periodeUnJour: 'Le {debut}',
     periodePrecedente: 'Comparé à la période précédente (du {debut} au {fin})',
 
     filtres: {
@@ -173,6 +184,9 @@ export const fr = {
       score: 'Score sur 5',
       reponses: '{nombre} réponses',
       aucun: 'Aucun thème noté sur cette période.',
+      voirAutres: 'Voir les autres thèmes ({nombre})',
+      masquerAutres: 'Masquer les autres thèmes',
+      autresTitre: 'Autres thèmes',
     },
 
     courbe: {
@@ -241,6 +255,30 @@ export const fr = {
         EN_COURS: 'En cours',
         TRAITE: 'Traité',
         IGNORE: 'Ignoré',
+      },
+    },
+
+    // Page d'accueil : raccourcis en coin, groupes de cartes, panneau de detail
+    accueil: {
+      raccourcis: 'Raccourcis',
+      groupes: 'Groupes d’indicateurs',
+      groupePrecedent: 'Afficher les indicateurs précédents',
+      groupeSuivant: 'Afficher les indicateurs suivants',
+      groupeAller: 'Afficher le groupe {numero}',
+      groupeSur: 'Groupe {numero} sur {total}',
+      pagePrecedente: 'Page précédente',
+      pageSuivante: 'Page suivante',
+      pageAller: 'Aller à la page {numero}',
+      pageSur: 'Page {numero} sur {total}',
+      fermerDetail: 'Fermer le détail',
+      descriptions: {
+        noteMoyenne: 'Moyenne des notes données par vos clients sur la période.',
+        csat: 'Part des clients qui ont donné 4 ou 5 sur 5.',
+        nps: 'Promoteurs moins détracteurs : mesure l’envie de vous recommander.',
+        nbAvis: 'Avis reçus sur la période, comparés à la période précédente.',
+        tauxReponse: 'Part des personnes qui ont scanné un QR code et envoyé leur avis.',
+        alertes:
+          'Avis négatifs encore à traiter (nouveaux ou en cours), quelle que soit la période.',
       },
     },
   },

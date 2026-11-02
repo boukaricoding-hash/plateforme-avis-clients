@@ -1,0 +1,1074 @@
+/* ------------------------------------------------------------
+   Page d'accueil du tableau de bord (ecran E7).
+   Disposition reprise du tableau de bord de Gestion Scolaire :
+   icones de raccourci en coin, en-tete centre, cartes en groupes
+   avec fleches et points, panneau de detail qui s'ouvre au clic.
+   Les couleurs viennent des variables de styles/index.css :
+   aucune couleur n'est ecrite ici.
+
+   Deux modes :
+   - Ecran fixe (ordinateur, au moins 1100 px de large et 640 px de haut) :
+     la page a exactement la hauteur de l'ecran, rien ne defile.
+     Au repos on voit l'en-tete, le bouton Filtres et les cartes.
+     Quand un panneau s'ouvre, la page se compacte (classe accueil--ouvert)
+     et le panneau prend toute la hauteur qui reste.
+   - Page normale (tablette, telephone, ecran trop bas) :
+     le panneau s'ouvre sous les cartes et la page defile.
+   Le bloc "Ecran fixe" est tout en bas du fichier.
+   ------------------------------------------------------------ */
+
+.accueil {
+  /* Correspondance avec la palette du tableau de bord */
+  --a-accent: var(--couleur-principale);
+  --a-accent-fond: var(--accent-fond);
+  --a-survol: var(--fond-alt);
+  --a-translucide: color-mix(in srgb, var(--surface) 55%, transparent);
+  --a-texte-doux: var(--texte-secondaire);
+  --a-police-titre: var(--font-titre, Georgia, 'Iowan Old Style', 'Palatino Linotype', Charter, serif);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  padding-top: clamp(8px, 5vh, 56px);
+}
+
+.accueil-scene {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Icones de raccourci en coin ---------- */
+
+.accueil-raccourcis {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.accueil-raccourcis-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accueil-icone-coin {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--rayon-sm);
+  background: transparent;
+  color: var(--a-texte-doux);
+  cursor: pointer;
+  opacity: 0.8;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.accueil-icone-coin svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.accueil-icone-coin:hover {
+  background: var(--surface-douce);
+  color: var(--a-accent);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.accueil-icone-coin:hover svg {
+  transform: scale(1.12) rotate(-8deg);
+}
+
+/* Raccourci dont la section est ouverte */
+.accueil-icone-coin[aria-pressed='true'] {
+  background: var(--surface-douce);
+  color: var(--a-accent);
+  opacity: 1;
+}
+
+.accueil-infobulle {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  padding: 5px 9px;
+  border-radius: var(--rayon-sm);
+  background: var(--texte);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.accueil-icone-coin:hover .accueil-infobulle,
+.accueil-icone-coin:focus-visible .accueil-infobulle {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- En-tete ---------- */
+
+.accueil-titre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.accueil-salutation {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 14px;
+}
+
+.accueil-date {
+  margin: 2px 0 4px;
+  color: var(--a-texte-doux);
+  font-size: 12px;
+}
+
+/* Seule la premiere lettre prend une majuscule : "Dimanche 1 novembre 2026" */
+.accueil-date::first-letter {
+  text-transform: uppercase;
+}
+
+.accueil-sous-titre {
+  max-width: 100%;
+  margin: 0;
+  color: var(--texte);
+  font-family: var(--a-police-titre);
+  font-size: clamp(20px, 2.6vw, 32px);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.accueil-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 16px;
+  margin-top: 12px;
+  color: var(--a-texte-doux);
+  font-size: 13px;
+}
+
+.accueil-meta p {
+  margin: 0;
+}
+
+.accueil-bouton-actualiser {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-md);
+  background: transparent;
+  color: var(--texte);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.accueil-bouton-actualiser:hover:not(:disabled) {
+  background: var(--a-survol);
+}
+
+.accueil-bouton-actualiser:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.accueil-message {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--rayon-lg);
+  background: var(--a-translucide);
+  color: var(--a-texte-doux);
+  font-size: 14px;
+  text-align: center;
+}
+
+.accueil-message--erreur {
+  border-color: var(--erreur);
+  color: var(--erreur);
+}
+
+/* ---------- Bouton Filtres ---------- */
+
+.accueil-zone-filtres {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.accueil-filtres-bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--a-translucide);
+  color: var(--texte);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    background 0.15s ease,
+    min-height 0.3s ease;
+}
+
+.accueil-filtres-bouton svg {
+  width: 18px;
+  height: 18px;
+  color: var(--a-accent);
+}
+
+.accueil-filtres-bouton:hover,
+.accueil-filtres-bouton[aria-pressed='true'],
+.accueil-filtres-bouton[aria-expanded='true'] {
+  background: var(--a-accent-fond);
+}
+
+/* Petit point : au moins un filtre est different de ceux par defaut */
+.accueil-filtres-point {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--a-accent);
+}
+
+/* ---------- Cartes en groupes ---------- */
+
+.accueil-cartes {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.accueil-groupe {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  max-width: 980px;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 230ms ease,
+    transform 230ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.accueil-groupe--sortie {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.accueil-groupe--entree {
+  opacity: 0;
+  transform: translateX(12px);
+}
+
+@keyframes accueil-apparition {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.accueil-carte {
+  width: 230px;
+  min-height: 136px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--bordure);
+  border-top: 3px solid var(--couleur-carte, var(--a-accent));
+  border-radius: var(--rayon-lg);
+  background: var(--surface);
+  color: var(--texte);
+  cursor: pointer;
+  text-align: left;
+  animation: accueil-apparition 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    min-height 0.35s ease,
+    padding 0.35s ease,
+    gap 0.35s ease;
+}
+
+.accueil-carte:hover,
+.accueil-carte[aria-expanded='true'] {
+  border-right-color: var(--a-accent);
+  border-bottom-color: var(--a-accent);
+  border-left-color: var(--a-accent);
+  background: var(--a-survol);
+  box-shadow: var(--ombre-sm);
+}
+
+.accueil-carte:hover {
+  transform: translateY(-3px);
+}
+
+.accueil-carte-en-tete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accueil-carte-icone {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--couleur-carte, var(--a-accent));
+  transition: transform 0.15s ease;
+}
+
+.accueil-carte-icone svg {
+  width: 100%;
+  height: 100%;
+}
+
+.accueil-carte:hover .accueil-carte-icone {
+  transform: translateX(2px) scale(1.1);
+}
+
+.accueil-carte-titre {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.accueil-pastille {
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--erreur);
+  color: var(--texte-sur-principale);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.accueil-carte-donnees {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.accueil-carte-valeur {
+  color: var(--couleur-carte, var(--texte));
+  font-family: var(--a-police-titre);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  transition: font-size 0.35s ease;
+}
+
+.accueil-carte-unite {
+  margin-left: 4px;
+  color: var(--a-texte-doux);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.accueil-carte-vide {
+  color: var(--a-texte-doux);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Ligne du bas de la carte : disparait quand la page se compacte */
+.accueil-carte-sous-titre {
+  display: block;
+  max-height: 40px;
+  overflow: hidden;
+  color: var(--a-texte-doux);
+  font-size: 12px;
+  line-height: 1.3;
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease;
+}
+
+.accueil-hausse {
+  color: var(--succes);
+  font-weight: 600;
+}
+
+.accueil-baisse {
+  color: var(--erreur);
+  font-weight: 600;
+}
+
+/* ---------- Fleches, points et compteur ---------- */
+
+.accueil-controles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  transition: margin-top 0.35s ease;
+}
+
+.accueil-fleche {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--a-translucide);
+  color: var(--a-texte-doux);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease,
+    width 0.3s ease,
+    height 0.3s ease;
+}
+
+.accueil-fleche:hover {
+  background: var(--a-accent-fond);
+  color: var(--a-accent);
+}
+
+.accueil-fleche:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.accueil-fleche:disabled:hover {
+  background: var(--a-translucide);
+  color: var(--a-texte-doux);
+}
+
+.accueil-points {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Zone de clic confortable autour du petit point */
+.accueil-point {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.accueil-point::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bordure-forte);
+  transition:
+    width 0.15s ease,
+    background 0.15s ease;
+}
+
+.accueil-point:hover::before {
+  background: var(--texte-secondaire);
+}
+
+.accueil-point--actif::before {
+  width: 20px;
+  background: var(--a-accent);
+}
+
+.accueil-compteur {
+  max-height: 24px;
+  overflow: hidden;
+  margin: 4px 0 0;
+  color: var(--a-texte-doux);
+  font-size: 12px;
+  transition:
+    max-height 0.35s ease,
+    margin-top 0.35s ease,
+    opacity 0.25s ease;
+}
+
+/* ---------- Panneau de detail (page normale) ---------- */
+
+/* La hauteur passe de 0 a la hauteur du contenu (grille 0fr vers 1fr) :
+   marche pour un petit texte comme pour un graphique. */
+.accueil-panneau {
+  width: 100%;
+  max-width: 640px;
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    grid-template-rows 0.4s ease,
+    opacity 0.25s ease,
+    margin-top 0.4s ease,
+    transform 0.25s ease,
+    visibility 0s linear 0.4s;
+}
+
+.accueil-panneau--large {
+  max-width: 980px;
+}
+
+.accueil-panneau--ouvert {
+  grid-template-rows: 1fr;
+  margin-top: 32px;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    grid-template-rows 0.4s ease,
+    opacity 0.25s ease,
+    margin-top 0.4s ease,
+    transform 0.25s ease,
+    visibility 0s;
+}
+
+.accueil-panneau-interieur {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.accueil-panneau-contenu {
+  position: relative;
+  animation: accueil-apparition 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Petit panneau d'une carte */
+.accueil-detail {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--rayon-lg);
+  background: var(--a-translucide);
+}
+
+.accueil-detail-texte {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accueil-detail-titre {
+  margin: 0;
+  color: var(--texte);
+  font-family: var(--a-police-titre);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.accueil-detail-description {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 14px;
+}
+
+.accueil-detail-variation {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 13px;
+}
+
+.accueil-detail-aide {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 13px;
+}
+
+.accueil-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.accueil-detail-bouton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: var(--rayon-md);
+  background: var(--couleur-principale);
+  color: var(--texte-sur-principale);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.accueil-detail-bouton:hover {
+  background: var(--couleur-principale-fonce);
+}
+
+.accueil-fermer {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--rayon-md);
+  background: transparent;
+  color: var(--a-texte-doux);
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.accueil-fermer:hover {
+  background: var(--surface-douce);
+  color: var(--texte);
+}
+
+/* Panneau d'une section : le bouton de fermeture est au-dessus du composant */
+.accueil-section-fermer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+/* ---------- Pieces des sections (graphiques et listes en pages) ---------- */
+
+/* Racine d'une section qui doit remplir la hauteur du panneau (ecran fixe).
+   En page normale, elle garde sa hauteur naturelle. */
+.accueil-remplir {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Zone d'un graphique : hauteur fixe en page normale, tout l'espace restant en ecran fixe.
+   Le graphique (ResponsiveContainer en 100 %) est place dedans. */
+.accueil-zone-graphique {
+  position: relative;
+  height: 280px;
+  margin-top: 12px;
+}
+
+.accueil-zone-graphique > * {
+  position: absolute;
+  inset: 0;
+}
+
+/* Zone des lignes d'une liste : le nombre de lignes par page se calcule d'apres sa hauteur */
+.accueil-liste-zone {
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+/* Pagination : fleches, points et "Page 1 sur 3" */
+.accueil-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding-top: 8px;
+}
+
+.accueil-pagination .accueil-fleche {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+}
+
+.accueil-pagination .accueil-point {
+  width: 20px;
+  height: 20px;
+}
+
+.accueil-pagination-texte {
+  margin-left: 8px;
+  color: var(--a-texte-doux);
+  font-size: 12px;
+}
+
+/* ---------- Clavier ---------- */
+
+.accueil-icone-coin:focus-visible,
+.accueil-carte:focus-visible,
+.accueil-fleche:focus-visible,
+.accueil-point:focus-visible,
+.accueil-detail-bouton:focus-visible,
+.accueil-fermer:focus-visible,
+.accueil-bouton-actualiser:focus-visible,
+.accueil-filtres-bouton:focus-visible {
+  outline: 3px solid var(--a-accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Tablette et telephone ---------- */
+
+@media (max-width: 1280px) {
+  .accueil-raccourcis {
+    position: static;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .accueil-raccourcis-colonne {
+    flex-direction: row;
+  }
+
+  .accueil-infobulle {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%) translateY(-3px);
+  }
+
+  .accueil-icone-coin:hover .accueil-infobulle,
+  .accueil-icone-coin:focus-visible .accueil-infobulle {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .accueil-groupe {
+    max-width: 720px;
+  }
+}
+
+@media (max-width: 768px) {
+  .accueil {
+    padding-top: 0;
+  }
+
+  .accueil-titre {
+    margin-bottom: 24px;
+  }
+
+  .accueil-carte {
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .accueil-detail {
+    flex-direction: column;
+  }
+
+  .accueil-detail-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ---------- Ecran fixe : aucune barre de defilement ---------- */
+
+@media (min-width: 1100px) and (min-height: 640px) {
+  /* La page a exactement la hauteur de la zone principale du cadre */
+  .accueil {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    transition: padding-top 0.35s ease;
+  }
+
+  .accueil--ouvert {
+    padding-top: 4px;
+  }
+
+  .accueil-scene {
+    flex: 1 1 0;
+    min-height: 0;
+    max-width: 1040px;
+  }
+
+  /* Tout ce qui est au-dessus du panneau garde sa hauteur */
+  .accueil-scene > * {
+    flex-shrink: 0;
+  }
+
+  /* Les icones restent dans le coin, meme entre 1100 et 1280 px */
+  .accueil-raccourcis {
+    position: absolute;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    margin-bottom: 0;
+  }
+
+  .accueil-raccourcis-colonne {
+    flex-direction: column;
+  }
+
+  .accueil-infobulle {
+    right: 0;
+    left: auto;
+    transform: translateY(-3px);
+  }
+
+  .accueil-icone-coin:hover .accueil-infobulle,
+  .accueil-icone-coin:focus-visible .accueil-infobulle {
+    transform: translateY(0);
+  }
+
+  /* En-tete : au repos 4 lignes centrees ; ouvert, une seule ligne */
+  .accueil-titre {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    column-gap: 16px;
+    row-gap: 0;
+    margin-bottom: 24px;
+    transition: margin-bottom 0.35s ease;
+  }
+
+  .accueil-salutation,
+  .accueil-date,
+  .accueil-sous-titre,
+  .accueil-meta {
+    flex: 0 0 100%;
+  }
+
+  .accueil-salutation,
+  .accueil-date {
+    max-height: 32px;
+    overflow: hidden;
+    transition:
+      max-height 0.3s ease,
+      margin 0.3s ease,
+      opacity 0.25s ease;
+  }
+
+  .accueil-sous-titre {
+    transition: font-size 0.3s ease;
+  }
+
+  .accueil--ouvert .accueil-titre {
+    margin-bottom: 14px;
+  }
+
+  .accueil--ouvert .accueil-salutation,
+  .accueil--ouvert .accueil-date {
+    max-height: 0;
+    margin: 0;
+    opacity: 0;
+  }
+
+  .accueil--ouvert .accueil-sous-titre {
+    flex: 0 1 auto;
+    font-size: 17px;
+  }
+
+  .accueil--ouvert .accueil-meta {
+    flex: 0 1 auto;
+    margin-top: 0;
+    gap: 4px 12px;
+  }
+
+  /* Le texte sur l'actualisation automatique et le perimetre du gestionnaire passent apres */
+  .accueil--ouvert .accueil-meta-auto,
+  .accueil--ouvert .accueil-meta--perimetre {
+    display: none;
+  }
+
+  .accueil--ouvert .accueil-bouton-actualiser {
+    min-height: 32px;
+  }
+
+  /* Bouton Filtres */
+  .accueil-zone-filtres {
+    margin-bottom: 20px;
+    transition: margin-bottom 0.35s ease;
+  }
+
+  .accueil--ouvert .accueil-zone-filtres {
+    margin-bottom: 12px;
+  }
+
+  .accueil--ouvert .accueil-filtres-bouton {
+    min-height: 34px;
+  }
+
+  /* Cartes plus basses : icone, titre et chiffre, sans la ligne du bas */
+  .accueil--ouvert .accueil-carte {
+    min-height: 0;
+    gap: 4px;
+    padding: 10px 16px;
+  }
+
+  .accueil--ouvert .accueil-carte-valeur {
+    font-size: 22px;
+  }
+
+  .accueil--ouvert .accueil-carte-sous-titre {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  /* Fleches et points plus petits, compteur masque */
+  .accueil--ouvert .accueil-controles {
+    margin-top: 8px;
+  }
+
+  .accueil--ouvert .accueil-controles .accueil-fleche {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .accueil--ouvert .accueil-compteur {
+    max-height: 0;
+    margin-top: 0;
+    opacity: 0;
+  }
+
+  /* Panneau : il occupe toute la hauteur qui reste.
+     Ferme, il a une hauteur de 0 ; ouvert, il grandit avec une transition. */
+  .accueil-scene > .accueil-panneau {
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 0px;
+    min-height: 0;
+    margin-top: 0;
+    transition:
+      flex 0.4s ease,
+      opacity 0.25s ease,
+      margin-top 0.4s ease,
+      transform 0.25s ease,
+      visibility 0s linear 0.4s;
+  }
+
+  .accueil-scene > .accueil-panneau--large {
+    max-width: 1040px;
+  }
+
+  .accueil-scene > .accueil-panneau--ouvert {
+    flex: 1 1 0px;
+    margin-top: 12px;
+    transition:
+      flex 0.4s ease,
+      opacity 0.25s ease,
+      margin-top 0.4s ease,
+      transform 0.25s ease,
+      visibility 0s;
+  }
+
+  .accueil-panneau-interieur {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    margin: -4px;
+  }
+
+  .accueil-panneau-contenu {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Le detail d'une carte reste en haut du panneau, avec sa hauteur naturelle */
+  .accueil-detail {
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  /* Le bouton de fermeture d'une section ne prend plus de ligne : il flotte dans le coin */
+  .accueil-section-fermer {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    margin: 0;
+  }
+
+  /* Les sections remplissent la hauteur du panneau */
+  .accueil-remplir {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .accueil-zone-graphique {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 120px;
+  }
+
+  .accueil-liste-zone {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+}
+
+/* ---------- Mouvement reduit ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .accueil *,
+  .accueil *::before,
+  .accueil *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

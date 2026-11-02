@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { utiliserLangue } from '../hooks/utiliser-langue'
 import type { Langue } from '../types/langue'
+import { BoutonTheme } from './bouton-theme'
 
 type Proprietes = {
   titre: string
@@ -33,9 +34,12 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-fond px-4 py-8">
-      <div className="mb-4 flex w-full max-w-md justify-end gap-1" role="group" aria-label={t('commun.langue')}>
-        {boutonLangue('fr', 'FR', t('commun.francais'))}
-        {boutonLangue('en', 'EN', t('commun.anglais'))}
+      <div className="mb-4 flex w-full max-w-md items-center justify-end gap-1">
+        <BoutonTheme />
+        <div className="flex items-center gap-1" role="group" aria-label={t('commun.langue')}>
+          {boutonLangue('fr', 'FR', t('commun.francais'))}
+          {boutonLangue('en', 'EN', t('commun.anglais'))}
+        </div>
       </div>
 
       <div className="w-full max-w-md animate-monte rounded-xl border border-bordure bg-surface p-6 shadow-moyen motion-reduce:animate-none sm:p-8">

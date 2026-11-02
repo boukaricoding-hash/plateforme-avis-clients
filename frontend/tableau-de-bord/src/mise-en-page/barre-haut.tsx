@@ -1,21 +1,15 @@
-import { useState } from 'react'
+import { BoutonTheme } from '../composants-communs/bouton-theme'
 import { utiliserLangue } from '../hooks/utiliser-langue'
-import { utiliserUtilisateur } from '../hooks/utiliser-utilisateur'
 import type { Langue } from '../types/langue'
 
 type Proprietes = {
   onOuvrirMenu: () => void
 }
 
+// Barre du haut : bouton du menu (tablette et telephone), choix du theme et de la langue.
+// Le nom, le role et la deconnexion sont dans le bloc utilisateur du menu lateral.
 export function BarreHaut({ onOuvrirMenu }: Proprietes) {
   const { t, langue, changerLangue } = utiliserLangue()
-  const { utilisateur, seDeconnecter } = utiliserUtilisateur()
-  const [deconnexionEnCours, setDeconnexionEnCours] = useState(false)
-
-  async function surDeconnexion() {
-    setDeconnexionEnCours(true)
-    await seDeconnecter()
-  }
 
   function boutonLangue(code: Langue, libelle: string, nom: string) {
     const actif = langue === code
@@ -52,26 +46,12 @@ export function BarreHaut({ onOuvrirMenu }: Proprietes) {
 
       <div className="flex-1" />
 
+      <BoutonTheme />
+
       <div className="flex items-center gap-1" role="group" aria-label={t('commun.langue')}>
         {boutonLangue('fr', 'FR', t('commun.francais'))}
         {boutonLangue('en', 'EN', t('commun.anglais'))}
       </div>
-
-      {utilisateur !== null && (
-        <div className="hidden text-right leading-tight sm:block">
-          <p className="text-sm font-semibold text-texte">{utilisateur.nom}</p>
-          <p className="text-xs text-texte-secondaire">{t(`roles.${utilisateur.role}`)}</p>
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={() => void surDeconnexion()}
-        disabled={deconnexionEnCours}
-        className="min-h-11 rounded-md border border-bordure-champ px-3 text-sm font-medium text-texte transition-colors hover:bg-fond-alt disabled:opacity-60"
-      >
-        {deconnexionEnCours ? t('barreHaut.deconnexionEnCours') : t('barreHaut.deconnexion')}
-      </button>
     </header>
   )
 }

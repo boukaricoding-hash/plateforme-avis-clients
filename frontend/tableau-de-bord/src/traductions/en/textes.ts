@@ -1,5 +1,5 @@
 // Dashboard texts in English (day 13: layout, sign in, forgotten password;
-// day 14: screen E7, indicators and charts).
+// day 14: screen E7, indicators and charts; home page redesign: shortcuts and card groups).
 // Texts in braces, like {minutes}, are replaced by the code.
 export const en = {
   commun: {
@@ -7,6 +7,8 @@ export const en = {
     langue: 'Language',
     francais: 'Français',
     anglais: 'English',
+    themeClair: 'Switch to light theme',
+    themeSombre: 'Switch to dark theme',
     erreurGenerique: 'Something went wrong. Please try again.',
     erreurReseau: 'Unable to reach the server. Check your connection and try again.',
     retourConnexion: 'Back to sign in',
@@ -61,6 +63,13 @@ export const en = {
     navigation: 'Main navigation',
     ouvrir: 'Open the menu',
     fermer: 'Close the menu',
+    replier: 'Collapse the menu',
+    deplier: 'Expand the menu',
+    groupes: {
+      retours: 'Customer feedback',
+      organisation: 'Organization',
+      systeme: 'System',
+    },
     tableauDeBord: 'Dashboard',
     avis: 'Reviews',
     questionnaires: 'Questionnaires',
@@ -97,6 +106,8 @@ export const en = {
     perimetreGestionnaire: 'You only see the sites in your scope.',
     aucuneDonnee: 'No data',
     periodeAffichee: 'From {debut} to {fin}',
+    periodeAujourdhui: 'Today, {debut}',
+    periodeUnJour: 'On {debut}',
     periodePrecedente: 'Compared with the previous period (from {debut} to {fin})',
 
     filtres: {
@@ -172,6 +183,12 @@ export const en = {
       score: 'Score out of 5',
       reponses: '{nombre} answers',
       aucun: 'No rated theme in this period.',
+      voirAutres: 'Show other themes ({nombre})',
+      masquerAutres: 'Hide other themes',
+      autresTitre: 'Other themes',
+      voirAutres: 'Show other themes ({nombre}),',
+      masquerAutres: 'Hide other themes',
+      autresTitre: 'Other themes',
     },
 
     courbe: {
@@ -240,6 +257,29 @@ export const en = {
         EN_COURS: 'In progress',
         TRAITE: 'Handled',
         IGNORE: 'Ignored',
+      },
+    },
+
+    // Home page: corner shortcuts, card groups, detail panel
+    accueil: {
+      raccourcis: 'Shortcuts',
+      groupes: 'Indicator groups',
+      groupePrecedent: 'Show the previous indicators',
+      groupeSuivant: 'Show the next indicators',
+      groupeAller: 'Show group {numero}',
+      groupeSur: 'Group {numero} of {total}',
+      pagePrecedente: 'Previous page',
+      pageSuivante: 'Next page',
+      pageAller: 'Go to page {numero}',
+      pageSur: 'Page {numero} of {total}',
+      fermerDetail: 'Close the detail',
+      descriptions: {
+        noteMoyenne: 'Average of the ratings given by your customers in the period.',
+        csat: 'Share of customers who gave 4 or 5 out of 5.',
+        nps: 'Promoters minus detractors: shows how likely customers are to recommend you.',
+        nbAvis: 'Reviews received in the period, compared with the previous period.',
+        tauxReponse: 'Share of people who scanned a QR code and sent a review.',
+        alertes: 'Negative reviews still to handle (new or in progress), whatever the period.',
       },
     },
   },

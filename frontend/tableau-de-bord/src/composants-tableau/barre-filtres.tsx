@@ -9,10 +9,13 @@ import type {
 } from '../types/tableau-de-bord'
 import type { ErreurPeriode } from '../utilitaires/periodes'
 
-// Barre de filtres de l'ecran E7 : periode, site, point de contact, questionnaire.
+// Filtres de l'ecran E7 : periode, site, point de contact, questionnaire.
+// Presentation en sections aerees, sans cadre : le fond est translucide et se fond dans la page.
 // Elle ne charge rien : elle recoit l'etat et les listes du hook utiliserDonneesTableau.
 
 const PERIODES: ChoixPeriode[] = ['aujourdhui', '7jours', '30jours', 'mois', 'personnalisee']
+
+const CLASSES_ETIQUETTE = 'mb-2 block text-sm font-medium text-texte-secondaire'
 
 type Option = { valeur: string; libelle: string }
 
@@ -29,7 +32,7 @@ function Selecteur({ etiquette, valeur, toutes, options, onChanger }: PropsSelec
   const id = useId()
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium text-texte">
+      <label htmlFor={id} className={CLASSES_ETIQUETTE}>
         {etiquette}
       </label>
       <select
@@ -60,7 +63,7 @@ function ChampDate({ etiquette, valeur, invalide, onChanger }: PropsChampDate) {
   const id = useId()
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium text-texte">
+      <label htmlFor={id} className={CLASSES_ETIQUETTE}>
         {etiquette}
       </label>
       <input
@@ -100,6 +103,7 @@ export function BarreFiltres({
 }: Proprietes) {
   const { t, langue } = utiliserLangue()
   const idTitre = useId()
+  const idPeriode = useId()
   const idErreurPeriode = useId()
 
   const nomsSites = new Map(sites.map((site) => [site.id, site.nom]))
@@ -126,40 +130,42 @@ export function BarreFiltres({
     filtres.questionnaire === ''
 
   return (
-    <section
-      aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-4 shadow-doux"
-    >
+    <section aria-labelledby={idTitre} className="rounded-lg bg-surface/50 p-5 sm:p-6">
       <h2 id={idTitre} className="sr-only">
         {t('tableau.filtres.titre')}
       </h2>
 
       {/* Periode */}
-      <div role="group" aria-label={t('tableau.filtres.periode')} className="flex flex-wrap gap-2">
-        {PERIODES.map((periode) => {
-          const actif = filtres.periode === periode
-          return (
-            <button
-              key={periode}
-              type="button"
-              aria-pressed={actif}
-              onClick={() => onChanger({ periode })}
-              className={`min-h-11 rounded-md px-3 text-sm font-medium transition-colors ${
-                actif
-                  ? 'bg-principale text-texte-sur-principale'
-                  : 'border border-bordure-champ bg-surface text-texte hover:bg-fond-alt'
-              }`}
-            >
-              {t(`tableau.filtres.periodes.${periode}`)}
-            </button>
-          )
-        })}
+      <div>
+        <p id={idPeriode} className={CLASSES_ETIQUETTE}>
+          {t('tableau.filtres.periode')}
+        </p>
+        <div role="group" aria-labelledby={idPeriode} className="flex flex-wrap gap-2">
+          {PERIODES.map((periode) => {
+            const actif = filtres.periode === periode
+            return (
+              <button
+                key={periode}
+                type="button"
+                aria-pressed={actif}
+                onClick={() => onChanger({ periode })}
+                className={`min-h-11 rounded-full px-4 text-sm font-medium transition-colors ${
+                  actif
+                    ? 'bg-principale text-texte-sur-principale'
+                    : 'bg-fond-alt text-texte hover:bg-surface-douce'
+                }`}
+              >
+                {t(`tableau.filtres.periodes.${periode}`)}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Dates de la periode personnalisee */}
       {filtres.periode === 'personnalisee' && (
-        <div className="mt-3" aria-describedby={erreurPeriode !== null ? idErreurPeriode : undefined}>
-          <div className="grid gap-3 sm:grid-cols-2 lg:max-w-xl">
+        <div className="mt-4" aria-describedby={erreurPeriode !== null ? idErreurPeriode : undefined}>
+          <div className="grid gap-4 sm:grid-cols-2 lg:max-w-xl">
             <ChampDate
               etiquette={t('tableau.filtres.du')}
               valeur={filtres.debut}
@@ -174,7 +180,7 @@ export function BarreFiltres({
             />
           </div>
           {erreurPeriode !== null && (
-            <p id={idErreurPeriode} role="alert" className="mt-1 text-sm text-erreur">
+            <p id={idErreurPeriode} role="alert" className="mt-2 text-sm text-erreur">
               {t(`tableau.filtres.${erreurPeriode}`)}
             </p>
           )}
@@ -182,7 +188,7 @@ export function BarreFiltres({
       )}
 
       {/* Site, point de contact, questionnaire */}
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Selecteur
           etiquette={t('tableau.filtres.site')}
           valeur={filtres.site}
@@ -206,12 +212,12 @@ export function BarreFiltres({
         />
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3">
+      <div className="mt-5 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={onReinitialiser}
           disabled={parDefaut}
-          className="min-h-11 rounded-md border border-bordure-champ px-3 text-sm font-medium text-texte transition-colors hover:bg-fond-alt disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-11 rounded-md px-3 text-sm font-medium text-principale-fonce underline underline-offset-4 transition-colors hover:bg-fond-alt disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50"
         >
           {t('tableau.filtres.reinitialiser')}
         </button>

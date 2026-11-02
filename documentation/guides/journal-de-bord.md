@@ -131,3 +131,74 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - Tant que la route `/avis/:id` n'existe pas (jour 15), un clic sur un avis recent renvoie a l'accueil.
 - L'actualisation toutes les 10 secondes garde la session active tant que l'onglet est visible : une page laissee ouverte n'expire pas. A decider au jour 26.
 - `Cell` de recharts est declare obsolete (retrait prevu en recharts 4) : a revoir si on change de version.
+
+## Hors planning - dimanche 1er novembre 2026 : refonte de l'accueil du tableau de bord
+
+**Fait**
+- Disposition reprise du tableau de bord de Gestion Scolaire, avec la palette beige rose et terracotta du jour 13 (pas de noir et or).
+- En-tête centré : « Bonjour {nom} », la date du jour, la période affichée en grand, puis « Mis à jour à… », l'actualisation automatique et le bouton Actualiser.
+- Six cartes en deux groupes de trois, avec flèches, points et « Groupe 1 sur 2 » : note moyenne, CSAT, NPS, puis nombre d'avis, taux de réponse, alertes ouvertes (pastille rouge). Les chiffres sont ceux de l'API et montent en animation.
+- Un clic sur une carte ouvre un panneau dessous : description, variation, aide et « Voir les avis concernés » (mêmes liens qu'avant). Un second clic ou le « × » le referme.
+- Sept icônes en coin : Filtres, Répartition, Thèmes, Courbe, Classement, Avis récents, Questions. Un clic ouvre la section dans le panneau (une seule à la fois) avec les composants du jour 14, donc liens, erreurs et actualisation toutes les 10 secondes sont inchangés.
+- Petit écran : les icônes passent en rangée au-dessus de l'en-tête.
+- Fichiers : `styles/accueil.css`, `composants-tableau/carte-accueil.tsx`, `composants-tableau/panneau-detail.tsx`, `pages/tableau-de-bord/page-accueil.tsx` (réécrit). Textes et icônes étaient déjà dans le commit précédent.
+- Backend non modifié, aucune dépendance ajoutée. `tsc -b` et `vite build` sans erreur. Vérifié dans Chrome (ordinateur et 390 px) avec de fausses données : ouverture et fermeture du panneau, passage d'un groupe à l'autre, chiffres animés, filtres, courbe, français et anglais.
+
+**Décisions**
+- Les filtres ne sont plus visibles en permanence : ils s'ouvrent avec la première icône. Ils s'appliquent toujours à tous les blocs.
+- Le panneau d'une carte se ferme quand on change de groupe (la carte n'est plus à l'écran). Celui d'une section reste ouvert.
+- Le chiffre repart de sa valeur précédente à chaque actualisation, pas de zéro. Avec « mouvement réduit » activé dans le système, il saute directement à la valeur.
+- Le `overflow: hidden` du `reset.css` de Gestion Scolaire n'est pas repris : il bloquerait le défilement du cadre.
+- `carte-indicateur.tsx` n'est plus utilisé par l'accueil, mais son composant `Variation` l'est (dans le panneau). Le fichier reste.
+
+**Point d'attention**
+- `npx eslint .` signale 2 erreurs dans `tableau-classement.tsx` (mémoïsation du tri, React Compiler). Elles existaient avant cette branche.
+- Jour 15 (écrans E8 et E9) pas encore commencé : à reprendre après la fusion de cette branche.
+
+## Hors planning - dimanche 1er novembre 2026 : palette claire creme et or
+
+**Fait**
+- La palette beige rose et terracotta du tableau de bord est remplacee par celle de Gestion Scolaire en theme clair : fond creme, cartes blanches, accent or. Un seul theme, pas de theme sombre.
+- Tout est dans `styles/index.css` (bloc `:root`) : les noms de variables ne changent pas, donc l'accueil, la barre laterale, la connexion et les graphiques suivent sans modification de leur code.
+- Nouvelle variable `--accent-fond` (#f3e8d3) pour le survol des icones. Dans `styles/accueil.css`, une seule ligne change : `--a-accent-fond`.
+- Les couleurs des notes (vert, orange, rouge) et les etats (succes, erreur) sont gardes : ils servent aux seuils 4,2 et 3,5.
+
+**Decisions**
+- Boutons en #8f6c31 (contraste 4,8 avec du texte blanc) et non #a8813f (environ 3,6, trop bas). L'or #a8813f reste reserve aux decors : barres et graphiques.
+- La page d'avis du client (autre projet) garde sa palette beige rose et terracotta.
+- Pas de nouvelle police : Playfair Display et Cormorant Garamond de Gestion Scolaire ne sont pas repris (aucune police a telecharger).
+
+**Point d'attention**
+- Le commentaire en tete de `index.css` ne parle plus de la page d'avis du client : les deux palettes sont maintenant differentes.
+
+## Hors planning - dimanche 1er novembre 2026 : refonte de l'accueil, plus de defilement
+
+**Fait**
+- Sur grand ecran (au moins 1100 px de large ET 640 px de haut), l'accueil a exactement la hauteur de l'ecran : ni defilement de la page, ni defilement dans le panneau. En dessous (tablette, telephone, fenetre basse), la page reste normale : elle defile et le panneau s'ouvre sous les cartes. Le seuil est ecrit a deux endroits qui doivent rester identiques : la requete CSS en bas de `styles/accueil.css` et la constante `REQUETE_ECRAN_FIXE` de `hooks/utiliser-pages.ts`.
+- Deux etats. Repos : en-tete complet (Bonjour, date, periode en grand, mise a jour, actualisation automatique, Actualiser), bouton Filtres, trois cartes, fleches, points et "Groupe 1 sur 2". Ouvert (classe `accueil--ouvert` sur la racine) : l'en-tete tient sur une ligne, les cartes deviennent basses (sans la ligne du bas), les fleches rapetissent, le compteur disparait et le panneau prend toute la hauteur restante, avec une transition.
+- Un seul panneau a la fois : detail d'une carte, Filtres, Repartition, Themes, Courbe, Classement, Avis recents ou Questions. Ouvrir autre chose remplace le contenu. Les filtres s'ouvrent dans ce meme panneau ; le bouton Filtres reste au-dessus des cartes, avec son point quand un filtre est modifie.
+- Classement, avis recents et questions sont decoupes en pages (fleches, points, "Page 1 sur 3", points jusqu'a 7 pages). Le nombre de lignes par page vient de la hauteur mesuree de la zone (`utiliserPages`, avec ResizeObserver) ; en page normale : 8 lignes (3 lignes de cartes pour les questions). Les graphiques remplissent la hauteur du panneau.
+- Fichiers : `styles/accueil.css` (reecrit), `hooks/utiliser-pages.ts`, `composants-tableau/pagination.tsx`, les 3 graphiques, classement, avis recents, questions, textes fr et en (4 cles de pagination), `pages/tableau-de-bord/page-accueil.tsx`. `panneau-detail.tsx` n'a pas change : le CSS vise sa structure actuelle.
+- Backend non modifie, aucune dependance ajoutee.
+
+**Decisions**
+- Plus de defilement automatique vers le panneau (inutile en ecran fixe).
+- Un nouveau tri du classement revient a la page 1 ; le rang # reste la position donnee par l'API.
+- Avis recents : 10 maximum, commentaire sur une seule ligne. Questions : cartes de 232 px, deux par ligne, pages de lignes entieres (au moins une ligne).
+- Le detail d'une carte se ferme toujours quand on change de groupe de cartes ; celui d'une section reste ouvert.
+- Les filtres restent utilisables avant le premier chargement des donnees.
+
+**Point d'attention**
+- Les hauteurs de ligne sont des estimations, a ajuster si la derniere ligne est coupee ou s'il reste trop de vide en bas : HAUTEUR_LIGNE = 54 et HAUTEUR_EN_TETE = 46 (`tableau-classement.tsx`), HAUTEUR_AVIS = 94 (`avis-recents.tsx`), HAUTEUR_CARTE = 232 (`detail-questions.tsx`).
+- Themes en page normale : la zone du graphique garde 280 px fixes, donc avec beaucoup de themes les barres s'amincissent (`maxBarSize` 18).
+- `npx eslint` : les hooks nommes `utiliser...` (utiliserLangue, utiliserDonneesTableau, utiliserPages) declenchent la regle react-hooks/rules-of-hooks. C'est la convention de nommage du projet, pas un probleme bloquant.
+
+## Hors planning - lundi 2 novembre 2026 : titre de la periode sur un seul jour
+
+**Fait**
+- Quand la periode affichee tient en un seul jour, le titre de l'accueil n'ecrit plus "Du 2 nov. 2026 au 2 nov. 2026" : il dit "Aujourd'hui, 2 nov. 2026" avec le filtre Aujourd'hui, et "Le 2 nov. 2026" pour tout autre jour unique (periode personnalisee, ou "Ce mois" le 1er du mois). Sur plusieurs jours, "Du ... au ..." comme avant.
+- Textes `periodeAujourdhui` et `periodeUnJour` (fr et en) et fonction `cleTitrePeriode` dans `pages/tableau-de-bord/page-accueil.tsx`.
+- Verifications finales de la refonte : `npm run build` sans erreur, controle a l'ecran fait sur ordinateur et a 390 px.
+
+**Point d'attention**
+- Les periodes sont des jours UTC (Africa/Lome = UTC+0), comme le backend : apres minuit, le titre et les chiffres changent a la prochaine actualisation (10 secondes).

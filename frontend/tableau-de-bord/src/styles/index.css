@@ -1,48 +1,64 @@
 @import "tailwindcss";
 
-/* ------------------------------------------------------------
-   Variables globales du tableau de bord.
-   Meme palette que la page d'avis du client (beige rose et terracotta).
-   La couleur de l'organisation (jour 16) pourra remplacer --couleur-principale
-   sans toucher au reste.
-   ------------------------------------------------------------ */
-:root {
-  /* Fonds */
-  --fond: #efe6e1;
-  --fond-alt: #f7f1ed;
-  --surface: #fffdfc;
-  --surface-douce: #e6dbd5;
+/* =========================================
+   AVIS CLIENTS - DATA TRACE SERVICE
+   DEUX THEMES : SOMBRE (par defaut) ET CLAIR
+   Le theme est choisi par l'attribut data-theme
+   sur la balise html (voir fournisseur-theme.tsx).
+========================================= */
 
-  /* Couleur principale : boutons (texte blanc dessus : contraste 4,6 sur 1) */
-  --couleur-principale: #af6046;
-  --couleur-principale-fonce: #9a5038;
-  /* Decors seulement (barres, graphiques, fonds clairs). Jamais comme fond d'un bouton avec du texte blanc. */
-  --couleur-decor: #d97757;
-  --couleur-decor-clair: #f0c4b0;
+/* ---------- Theme sombre (noir premium) ---------- */
+:root {
+  color-scheme: dark;
+
+  /* Fonds */
+  --fond: #080808;
+  --fond-alt: #0D0D0D;
+  --surface: #111111;
+  --surface-douce: #181818;
+  --accent-fond: #222222;
+
+  /* Couleurs principales : noir et blanc */
+  --couleur-principale: #E5E5E5;
+  --couleur-principale-fonce: #CCCCCC;
+  --couleur-decor: #FFFFFF;
+  --couleur-decor-clair: #D4D4D4;
+
+  /* Cartes et graphiques */
+  --carte-bleu: #A0A0A0;
+  --carte-violet: #808080;
+  --carte-sarcelle: #BDBDBD;
 
   /* Textes */
-  --texte: #2a1f1c;
-  --texte-secondaire: #6d5d57;
-  /* Decor seulement : contraste faible, a ne jamais utiliser pour du texte a lire. */
-  --texte-discret: #a39792;
-  --texte-sur-principale: #ffffff;
+  --texte: #F5F5F5;
+  --texte-secondaire: #A3A3A3;
+  --texte-discret: #666666;
+  --texte-sur-principale: #080808;
 
   /* Bordures */
-  --bordure: #e2d6cf;
-  --bordure-forte: #d2c3bb;
-  --bordure-champ: #8a7b75; /* contour des champs : contraste 4 sur 1 */
+  --bordure: #252525;
+  --bordure-forte: #333333;
+  --bordure-champ: #444444;
+  --bordure-champ-focus: #777777;
 
-  /* Etats */
-  --erreur: #c0392b;
-  --succes: #2f7a33;
-  --alerte: #d9a33d; /* decor seulement */
-  --info: #2f6a9b;
+  /* Etats fonctionnels */
+  --erreur: #EF4444;
+  --succes: #22C55E;
+  --alerte: #F59E0B;
+  --info: #3B82F6;
 
-  /* Couleurs des notes (jour 14) : vert a partir de 4,2 ; orange entre 3,5 et 4,2 ; rouge en dessous de 3,5.
-     Versions assez sombres pour du texte sur fond clair. */
-  --note-bonne: #2f7a33;
-  --note-moyenne: #b45f06;
-  --note-mauvaise: #c0392b;
+  /* Notes */
+  --note-bonne: #22C55E;
+  --note-moyenne: #F59E0B;
+  --note-mauvaise: #EF4444;
+
+  /* Focus clavier, selection de texte, barre de defilement */
+  --focus: #FFFFFF;
+  --selection-fond: #444444;
+  --selection-texte: #FFFFFF;
+  --defilement-piste: #080808;
+  --defilement-pouce: #333333;
+  --defilement-pouce-survol: #555555;
 
   /* Rayons */
   --rayon-sm: 6px;
@@ -50,23 +66,93 @@
   --rayon-lg: 16px;
   --rayon-xl: 22px;
 
-  /* Ombres douces teintees de brun */
-  --ombre-sm: 0 1px 3px rgb(42 31 28 / 0.06);
-  --ombre-md: 0 4px 10px rgb(42 31 28 / 0.09);
-  --ombre-lg: 0 8px 20px rgb(42 31 28 / 0.13);
+  /* Ombres */
+  --ombre-sm: 0 4px 12px rgb(0 0 0 / 0.25);
+  --ombre-md: 0 8px 24px rgb(0 0 0 / 0.35);
+  --ombre-lg: 0 20px 50px rgb(0 0 0 / 0.5);
 }
 
-/* Noms utilisables dans les classes : bg-fond, text-texte, border-bordure, shadow-moyen... */
+/* ---------- Theme clair (creme et or) ---------- */
+:root[data-theme='clair'] {
+  color-scheme: light;
+
+  /* Fonds */
+  --fond: #faf8f4;
+  --fond-alt: #f0ece2;
+  --surface: #ffffff;
+  --surface-douce: #ebe5d8;
+  /* Fond teinte d'or : survol des icones et des boutons discrets */
+  --accent-fond: #f3e8d3;
+
+  /* Couleur principale : boutons (texte blanc dessus : contraste 4,8 sur 1) */
+  --couleur-principale: #8f6c31;
+  --couleur-principale-fonce: #7a5b28;
+  /* Decors seulement (barres, graphiques). Jamais comme fond d'un bouton avec du texte blanc. */
+  --couleur-decor: #a8813f;
+  --couleur-decor-clair: #e8d5ab;
+
+  /* Cartes de l'accueil sans sens bon ou mauvais (contraste d'au moins 5 sur 1 sur fond blanc) */
+  --carte-bleu: #2f6a9b;
+  --carte-violet: #7a4fa3;
+  --carte-sarcelle: #1f7a7a;
+
+  /* Textes */
+  --texte: #201c14;
+  --texte-secondaire: #6b6252;
+  /* Decor seulement : contraste faible, jamais pour du texte a lire */
+  --texte-discret: #948a76;
+  --texte-sur-principale: #ffffff;
+
+  /* Bordures */
+  --bordure: #e5ddcb;
+  --bordure-forte: #d6cbb0;
+  --bordure-champ: #857a64; /* contour des champs : contraste 4 sur 1 */
+  --bordure-champ-focus: #8f6c31;
+
+  /* Etats fonctionnels */
+  --erreur: #c0392b;
+  --succes: #2f7a33;
+  --alerte: #d9a33d; /* decor seulement */
+  --info: #2f6a9b;
+
+  /* Notes : versions assez sombres pour du texte sur fond clair */
+  --note-bonne: #2f7a33;
+  --note-moyenne: #b45f06;
+  --note-mauvaise: #c0392b;
+
+  /* Focus clavier, selection de texte, barre de defilement */
+  --focus: #8f6c31;
+  --selection-fond: #e8d5ab;
+  --selection-texte: #201c14;
+  --defilement-piste: #faf8f4;
+  --defilement-pouce: #d6cbb0;
+  --defilement-pouce-survol: #b9ab88;
+
+  /* Ombres douces teintees de brun */
+  --ombre-sm: 0 4px 12px rgb(20 18 14 / 0.08);
+  --ombre-md: 0 8px 24px rgb(20 18 14 / 0.1);
+  --ombre-lg: 0 20px 50px rgb(20 18 14 / 0.14);
+}
+
+/* =========================================
+   TAILWIND CSS V4
+========================================= */
+
 @theme inline {
   --color-fond: var(--fond);
   --color-fond-alt: var(--fond-alt);
   --color-surface: var(--surface);
   --color-surface-douce: var(--surface-douce);
+  --color-accent-fond: var(--accent-fond);
 
   --color-principale: var(--couleur-principale);
   --color-principale-fonce: var(--couleur-principale-fonce);
   --color-decor: var(--couleur-decor);
   --color-decor-clair: var(--couleur-decor-clair);
+
+  --color-carte-bleu: var(--carte-bleu);
+  --color-carte-violet: var(--carte-violet);
+  --color-carte-sarcelle: var(--carte-sarcelle);
 
   --color-texte: var(--texte);
   --color-texte-secondaire: var(--texte-secondaire);
@@ -91,17 +177,22 @@
   --shadow-fort: var(--ombre-lg);
 }
 
-/* Polices : aucune police a telecharger. */
-@theme {
-  --font-titre: Georgia, "Iowan Old Style", "Palatino Linotype", Charter, serif;
+/* =========================================
+   TYPOGRAPHIE
+========================================= */
 
-  /* Un element apparait en montant doucement. A utiliser avec motion-reduce:animate-none. */
+@theme {
+  --font-titre: Georgia, "Iowan Old Style",
+    "Palatino Linotype", Charter, serif;
+
   --animate-monte: monte 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+
   @keyframes monte {
     from {
       opacity: 0;
       transform: translateY(16px);
     }
+
     to {
       opacity: 1;
       transform: none;
@@ -109,23 +200,30 @@
   }
 }
 
+/* =========================================
+   BASE
+========================================= */
+
 html,
 body,
 #root {
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family:
-    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--fond);
   color: var(--texte);
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
 }
 
-/* Zone tactile confortable sur tablette et telephone */
 button,
 a,
 input,
@@ -134,8 +232,102 @@ textarea {
   touch-action: manipulation;
 }
 
-/* Contour visible au clavier */
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* =========================================
+   FOCUS
+========================================= */
+
 :focus-visible {
-  outline: 2px solid var(--couleur-principale);
-  outline-offset: 2px;
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--selection-fond);
+  color: var(--selection-texte);
+}
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--defilement-piste);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--defilement-pouce);
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--defilement-pouce-survol);
+}
+
+/* =========================================
+   CHAMPS DE FORMULAIRE
+========================================= */
+
+input,
+select,
+textarea {
+  color: var(--texte);
+  background-color: var(--surface);
+  border-color: var(--bordure-forte);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--texte-discret);
+  opacity: 1;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--bordure-champ-focus);
+}
+
+/* =========================================
+   TRANSITIONS
+========================================= */
+
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* =========================================
+   ACCESSIBILITE
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

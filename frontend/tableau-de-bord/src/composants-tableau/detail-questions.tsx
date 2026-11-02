@@ -1,7 +1,20 @@
 import { useId } from 'react'
 import { utiliserLangue } from '../hooks/utiliser-langue'
+import { utiliserPages } from '../hooks/utiliser-pages'
 import type { DetailQuestion, QuestionnaireFiltre } from '../types/tableau-de-bord'
 import { formaterNombre } from '../utilitaires/periodes'
+import { Pagination } from './pagination'
+
+// Refonte de l'accueil : les questions sont coupees en pages (fleches, points, "Page 1 sur 3").
+// Chaque question est une carte de hauteur fixe, deux par ligne ; le nombre de lignes par page se
+// calcule d'apres la hauteur du panneau, pour que rien ne defile (au moins une ligne par page).
+// Les valeurs numeriques (etoiles, echelle, NPS) sont dessinees en colonnes, les choix en barres.
+const HAUTEUR_CARTE = 232
+const ECART_CARTES = 12
+// Cartes par ligne (deux colonnes des 1024 px de large, comme la classe lg:grid-cols-2)
+const CARTES_PAR_LIGNE = 2
+// Lignes par page quand la page n'est pas en ecran fixe
+const LIGNES_PAR_DEFAUT = 3
 
 type Proprietes = {
   questions: DetailQuestion[]
@@ -16,39 +29,67 @@ type LigneBarre = {
 
 type ProprietesBarres = {
   lignes: LigneBarre[]
-  // true = libelle court (un chiffre), false = libelle long (texte d'un choix)
-  etroit: boolean
 }
 
 // Plus grand ecart de valeurs pour lequel on complete les zeros manquants
 const ECART_MAX_ECHELLE = 20
 
-// Barres simples en HTML : la largeur est en pourcentage du plus grand nombre.
-// Le chiffre est ecrit en texte, donc lisible au lecteur d'ecran.
-function BarresRepartition({ lignes, etroit }: ProprietesBarres) {
+// Barres horizontales en HTML (choix, oui/non) : la largeur est en pourcentage du plus grand nombre.
+// Les lignes se partagent la hauteur restante de la carte. Le chiffre est ecrit en texte,
+// donc lisible au lecteur d'ecran.
+function BarresRepartition({ lignes }: ProprietesBarres) {
   const maximum = Math.max(...lignes.map((ligne) => ligne.nombre))
 
   return (
-    <ul className="mt-3 space-y-1.5">
+    <ul className="mt-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-hidden">
       {lignes.map((ligne) => {
         const largeur =
           maximum > 0 && ligne.nombre > 0 ? Math.max((ligne.nombre / maximum) * 100, 2) : 0
         return (
-          <li key={ligne.cle} className="flex items-center gap-2 text-sm">
-            <span
-              className={
-                etroit
-                  ? 'w-8 shrink-0 text-texte-secondaire'
-                  : 'w-2/5 min-w-0 shrink-0 break-words text-texte-secondaire'
-              }
-            >
+          <li key={ligne.cle} className="flex max-h-6 min-h-0 flex-1 items-center gap-2 text-xs leading-none">
+            <span className="w-2/5 min-w-0 shrink-0 truncate text-texte-secondaire" title={ligne.libelle}>
               {ligne.libelle}
             </span>
-            <span aria-hidden="true" className="h-3 flex-1 overflow-hidden rounded-full bg-fond-alt">
+            <span aria-hidden="true" className="h-2.5 flex-1 overflow-hidden rounded-full bg-fond-alt">
               <span className="block h-full rounded-full bg-principale" style={{ width: `${largeur}%` }} />
             </span>
             <span className="w-10 shrink-0 text-right font-medium tabular-nums text-texte">
               {ligne.nombre}
+            </span>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+// Colonnes en HTML (etoiles, emojis, echelle, NPS) : la hauteur est en pourcentage du plus grand nombre.
+// Le nombre est au-dessus de la colonne, la valeur en dessous ; le texte pour les lecteurs d'ecran
+// dit "valeur : nombre".
+function ColonnesRepartition({ lignes }: ProprietesBarres) {
+  const maximum = Math.max(...lignes.map((ligne) => ligne.nombre))
+
+  return (
+    <ul className="mt-2 flex min-h-0 flex-1 gap-1">
+      {lignes.map((ligne) => {
+        const hauteur =
+          maximum > 0 && ligne.nombre > 0 ? Math.max((ligne.nombre / maximum) * 100, 3) : 0
+        return (
+          <li key={ligne.cle} className="flex min-w-0 flex-1 flex-col items-center text-xs leading-4">
+            <span className="sr-only">
+              {ligne.libelle} : {ligne.nombre}
+            </span>
+            <span aria-hidden="true" className="font-medium tabular-nums text-texte">
+              {ligne.nombre}
+            </span>
+            <span aria-hidden="true" className="relative min-h-0 w-full flex-1">
+              <span
+                className="absolute inset-x-0 bottom-0 rounded-t-sm bg-principale"
+                style={{ height: `${hauteur}%` }}
+              />
+            </span>
+            <span aria-hidden="true" className="text-texte-secondaire">
+              {ligne.libelle}
             </span>
           </li>
         )
@@ -111,6 +152,19 @@ export function DetailQuestions({ questions, questionnaires }: Proprietes) {
   const plusieursQuestionnaires =
     new Set(questions.map((question) => question.questionnaire_id)).size > 1
 
+  // Les questions sont rangees par lignes de deux cartes ; on affiche un nombre entier de lignes par page
+  const lignesDeCartes: DetailQuestion[][] = []
+  for (let debut = 0; debut < questions.length; debut += CARTES_PAR_LIGNE) {
+    lignesDeCartes.push(questions.slice(debut, debut + CARTES_PAR_LIGNE))
+  }
+  // hauteurEnTete negatif : le dernier ecart n'existe pas, il y a un ecart de moins que de cartes
+  const { refZone, elementsPage, pageCourante, nbPages, allerA } = utiliserPages(lignesDeCartes, {
+    hauteurLigne: HAUTEUR_CARTE + ECART_CARTES,
+    hauteurEnTete: -ECART_CARTES,
+    lignesMin: 1,
+    lignesParDefaut: LIGNES_PAR_DEFAUT,
+  })
+
   function libelleDe(question: DetailQuestion): string {
     return langue === 'en' ? question.libelle.en || question.libelle.fr : question.libelle.fr
   }
@@ -168,7 +222,7 @@ export function DetailQuestions({ questions, questionnaires }: Proprietes) {
   return (
     <section
       aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-4 shadow-doux"
+      className="accueil-remplir rounded-lg bg-surface/50 p-4"
     >
       <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
         {t('tableau.questions.titre')}
@@ -178,46 +232,56 @@ export function DetailQuestions({ questions, questionnaires }: Proprietes) {
       {questions.length === 0 ? (
         <p className="mt-3 text-sm text-texte-secondaire">{t('tableau.questions.aucune')}</p>
       ) : (
-        <ul className="mt-4 grid gap-4 lg:grid-cols-2">
-          {questions.map((question) => {
-            const resume = resumer(question)
-            const lignes = lignesDe(question)
-            const titreQuestionnaire = plusieursQuestionnaires
-              ? titresQuestionnaires.get(question.questionnaire_id)
-              : undefined
+        <div ref={refZone} className="accueil-liste-zone">
+          <ul className="grid gap-3 lg:grid-cols-2">
+            {elementsPage.flat().map((question) => {
+              const resume = resumer(question)
+              const lignes = lignesDe(question)
+              const estNumerique = TYPES_NUMERIQUES.includes(question.type)
+              const titreQuestionnaire = plusieursQuestionnaires
+                ? titresQuestionnaires.get(question.questionnaire_id)
+                : undefined
 
-            return (
-              <li
-                key={`${question.questionnaire_id}|${question.type}|${question.libelle.fr}`}
-                className="rounded-md border border-bordure bg-fond p-3"
-              >
-                {titreQuestionnaire ? (
-                  <p className="text-xs text-texte-discret">{titreQuestionnaire}</p>
-                ) : null}
-                <h3 className="text-sm font-medium text-texte">{libelleDe(question)}</h3>
-                <p className="mt-1 text-xs text-texte-secondaire">
-                  {t(`tableau.questions.types.${question.type}`)} ·{' '}
-                  {t('tableau.questions.reponses', { nombre: question.nb_reponses })}
-                </p>
-                {resume !== null ? (
-                  <p className="mt-2 font-titre text-base font-bold text-texte">{resume}</p>
-                ) : null}
-                {question.type === 'TEXTE_LIBRE' ? (
-                  <p className="mt-2 text-sm text-texte-secondaire">
-                    {t('tableau.questions.texteLibre')}
+              return (
+                <li
+                  key={`${question.questionnaire_id}|${question.type}|${question.libelle.fr}`}
+                  className="flex h-[232px] flex-col overflow-hidden rounded-md bg-fond-alt/50 p-3"
+                >
+                  {titreQuestionnaire ? (
+                    <p className="truncate text-xs text-texte-discret">{titreQuestionnaire}</p>
+                  ) : null}
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="line-clamp-2 min-w-0 text-sm font-medium text-texte" title={libelleDe(question)}>
+                      {libelleDe(question)}
+                    </h3>
+                    {resume !== null ? (
+                      <p className="shrink-0 font-titre text-base font-bold leading-5 text-texte">{resume}</p>
+                    ) : null}
+                  </div>
+                  <p className="mt-1 text-xs text-texte-secondaire">
+                    {t(`tableau.questions.types.${question.type}`)} ·{' '}
+                    {t('tableau.questions.reponses', { nombre: question.nb_reponses })}
                   </p>
-                ) : null}
-                {lignes.length > 0 ? (
-                  <BarresRepartition
-                    lignes={lignes}
-                    etroit={TYPES_NUMERIQUES.includes(question.type)}
-                  />
-                ) : null}
-              </li>
-            )
-          })}
-        </ul>
+                  {question.type === 'TEXTE_LIBRE' ? (
+                    <p className="mt-2 text-sm text-texte-secondaire">
+                      {t('tableau.questions.texteLibre')}
+                    </p>
+                  ) : null}
+                  {lignes.length > 0 ? (
+                    estNumerique ? (
+                      <ColonnesRepartition lignes={lignes} />
+                    ) : (
+                      <BarresRepartition lignes={lignes} />
+                    )
+                  ) : null}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
       )}
+
+      <Pagination pageCourante={pageCourante} nbPages={nbPages} onAller={allerA} />
     </section>
   )
 }

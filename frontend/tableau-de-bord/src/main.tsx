@@ -9,7 +9,8 @@ import { FournisseurUtilisateur } from './contextes/fournisseur-utilisateur'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    {/* basename : toutes les routes et tous les liens sont sous /tableau-de-bord */}
+    <BrowserRouter basename="/tableau-de-bord">
       <FournisseurTheme>
         <FournisseurLangue>
           <FournisseurUtilisateur>

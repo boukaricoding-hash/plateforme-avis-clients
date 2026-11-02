@@ -7,6 +7,8 @@ export const fr = {
     langue: 'Langue',
     francais: 'Français',
     anglais: 'English',
+    themeClair: 'Passer au thème clair',
+    themeSombre: 'Passer au thème sombre',
     erreurGenerique: 'Une erreur est survenue. Merci de réessayer.',
     erreurReseau: 'Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.',
     retourConnexion: 'Retour à la connexion',

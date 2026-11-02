@@ -7,6 +7,8 @@ export const en = {
     langue: 'Language',
     francais: 'Français',
     anglais: 'English',
+    themeClair: 'Switch to light theme',
+    themeSombre: 'Switch to dark theme',
     erreurGenerique: 'Something went wrong. Please try again.',
     erreurReseau: 'Unable to reach the server. Check your connection and try again.',
     retourConnexion: 'Back to sign in',

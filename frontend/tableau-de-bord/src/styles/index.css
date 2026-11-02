@@ -1,12 +1,16 @@
-
 @import "tailwindcss";
 
 /* =========================================
    AVIS CLIENTS - DATA TRACE SERVICE
-   THEME : BLACK PREMIUM
+   DEUX THEMES : SOMBRE (par defaut) ET CLAIR
+   Le theme est choisi par l'attribut data-theme
+   sur la balise html (voir fournisseur-theme.tsx).
 ========================================= */
 
+/* ---------- Theme sombre (noir premium) ---------- */
 :root {
+  color-scheme: dark;
+
   /* Fonds */
   --fond: #080808;
   --fond-alt: #0D0D0D;
@@ -35,8 +39,9 @@
   --bordure: #252525;
   --bordure-forte: #333333;
   --bordure-champ: #444444;
+  --bordure-champ-focus: #777777;
 
-  /* États fonctionnels */
+  /* Etats fonctionnels */
   --erreur: #EF4444;
   --succes: #22C55E;
   --alerte: #F59E0B;
@@ -46,6 +51,14 @@
   --note-bonne: #22C55E;
   --note-moyenne: #F59E0B;
   --note-mauvaise: #EF4444;
+
+  /* Focus clavier, selection de texte, barre de defilement */
+  --focus: #FFFFFF;
+  --selection-fond: #444444;
+  --selection-texte: #FFFFFF;
+  --defilement-piste: #080808;
+  --defilement-pouce: #333333;
+  --defilement-pouce-survol: #555555;
 
   /* Rayons */
   --rayon-sm: 6px;
@@ -57,6 +70,68 @@
   --ombre-sm: 0 4px 12px rgb(0 0 0 / 0.25);
   --ombre-md: 0 8px 24px rgb(0 0 0 / 0.35);
   --ombre-lg: 0 20px 50px rgb(0 0 0 / 0.5);
+}
+
+/* ---------- Theme clair (creme et or) ---------- */
+:root[data-theme='clair'] {
+  color-scheme: light;
+
+  /* Fonds */
+  --fond: #faf8f4;
+  --fond-alt: #f0ece2;
+  --surface: #ffffff;
+  --surface-douce: #ebe5d8;
+  /* Fond teinte d'or : survol des icones et des boutons discrets */
+  --accent-fond: #f3e8d3;
+
+  /* Couleur principale : boutons (texte blanc dessus : contraste 4,8 sur 1) */
+  --couleur-principale: #8f6c31;
+  --couleur-principale-fonce: #7a5b28;
+  /* Decors seulement (barres, graphiques). Jamais comme fond d'un bouton avec du texte blanc. */
+  --couleur-decor: #a8813f;
+  --couleur-decor-clair: #e8d5ab;
+
+  /* Cartes de l'accueil sans sens bon ou mauvais (contraste d'au moins 5 sur 1 sur fond blanc) */
+  --carte-bleu: #2f6a9b;
+  --carte-violet: #7a4fa3;
+  --carte-sarcelle: #1f7a7a;
+
+  /* Textes */
+  --texte: #201c14;
+  --texte-secondaire: #6b6252;
+  /* Decor seulement : contraste faible, jamais pour du texte a lire */
+  --texte-discret: #948a76;
+  --texte-sur-principale: #ffffff;
+
+  /* Bordures */
+  --bordure: #e5ddcb;
+  --bordure-forte: #d6cbb0;
+  --bordure-champ: #857a64; /* contour des champs : contraste 4 sur 1 */
+  --bordure-champ-focus: #8f6c31;
+
+  /* Etats fonctionnels */
+  --erreur: #c0392b;
+  --succes: #2f7a33;
+  --alerte: #d9a33d; /* decor seulement */
+  --info: #2f6a9b;
+
+  /* Notes : versions assez sombres pour du texte sur fond clair */
+  --note-bonne: #2f7a33;
+  --note-moyenne: #b45f06;
+  --note-mauvaise: #c0392b;
+
+  /* Focus clavier, selection de texte, barre de defilement */
+  --focus: #8f6c31;
+  --selection-fond: #e8d5ab;
+  --selection-texte: #201c14;
+  --defilement-piste: #faf8f4;
+  --defilement-pouce: #d6cbb0;
+  --defilement-pouce-survol: #b9ab88;
+
+  /* Ombres douces teintees de brun */
+  --ombre-sm: 0 4px 12px rgb(20 18 14 / 0.08);
+  --ombre-md: 0 8px 24px rgb(20 18 14 / 0.1);
+  --ombre-lg: 0 20px 50px rgb(20 18 14 / 0.14);
 }
 
 /* =========================================
@@ -137,7 +212,6 @@ body,
 
 html {
   scroll-behavior: smooth;
-  color-scheme: dark;
 }
 
 body {
@@ -172,13 +246,13 @@ a {
 ========================================= */
 
 :focus-visible {
-  outline: 2px solid #FFFFFF;
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
 ::selection {
-  background: #444444;
-  color: #FFFFFF;
+  background: var(--selection-fond);
+  color: var(--selection-texte);
 }
 
 /* =========================================
@@ -191,16 +265,16 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: #080808;
+  background: var(--defilement-piste);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: var(--defilement-pouce);
   border-radius: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555555;
+  background: var(--defilement-pouce-survol);
 }
 
 /* =========================================
@@ -224,7 +298,7 @@ textarea::placeholder {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: #777777;
+  border-color: var(--bordure-champ-focus);
 }
 
 /* =========================================

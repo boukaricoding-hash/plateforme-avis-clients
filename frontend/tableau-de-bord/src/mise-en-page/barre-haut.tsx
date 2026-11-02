@@ -1,3 +1,4 @@
+import { BoutonTheme } from '../composants-communs/bouton-theme'
 import { utiliserLangue } from '../hooks/utiliser-langue'
 import type { Langue } from '../types/langue'
 
@@ -5,7 +6,7 @@ type Proprietes = {
   onOuvrirMenu: () => void
 }
 
-// Barre du haut : bouton du menu (tablette et telephone) et choix de la langue.
+// Barre du haut : bouton du menu (tablette et telephone), choix du theme et de la langue.
 // Le nom, le role et la deconnexion sont dans le bloc utilisateur du menu lateral.
 export function BarreHaut({ onOuvrirMenu }: Proprietes) {
   const { t, langue, changerLangue } = utiliserLangue()
@@ -44,6 +45,8 @@ export function BarreHaut({ onOuvrirMenu }: Proprietes) {
       </button>
 
       <div className="flex-1" />
+
+      <BoutonTheme />
 
       <div className="flex items-center gap-1" role="group" aria-label={t('commun.langue')}>
         {boutonLangue('fr', 'FR', t('commun.francais'))}

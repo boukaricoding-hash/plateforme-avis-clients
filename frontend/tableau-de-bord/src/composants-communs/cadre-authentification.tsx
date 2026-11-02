@@ -43,16 +43,17 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
   return (
     // Page fixe : jamais de defilement. Tout tient dans 90 % de la hauteur de l'ecran
     // et les tailles (logo, espaces) se reduisent avec la hauteur disponible.
-    <div className="flex h-dvh items-center justify-center overflow-hidden bg-fond px-4">
-      <div className="flex h-[90dvh] w-full max-w-md animate-monte flex-col motion-reduce:animate-none">
-        <div className="flex shrink-0 items-center justify-end gap-1">
-          <BoutonTheme />
-          <div className="flex items-center gap-1" role="group" aria-label={t('commun.langue')}>
-            {boutonLangue('fr', 'FR', t('commun.francais'))}
-            {boutonLangue('en', 'EN', t('commun.anglais'))}
-          </div>
+    <div className="relative flex h-dvh items-center justify-center overflow-hidden bg-fond px-4">
+      {/* Theme et langue : dans le coin en haut a droite de l'ecran, hors de la colonne centrale */}
+      <div className="absolute right-3 top-3 z-10 flex items-center gap-1 sm:right-6 sm:top-5">
+        <BoutonTheme />
+        <div className="flex items-center gap-1" role="group" aria-label={t('commun.langue')}>
+          {boutonLangue('fr', 'FR', t('commun.francais'))}
+          {boutonLangue('en', 'EN', t('commun.anglais'))}
         </div>
+      </div>
 
+      <div className="flex h-[90dvh] w-full max-w-md animate-monte flex-col motion-reduce:animate-none">
         <div className="flex min-h-0 flex-1 flex-col px-2 sm:px-4">
           {/* my-auto : centre le bloc, et s'il est trop haut il deborde vers le bas (jamais vers le haut) */}
           <div className="my-auto">

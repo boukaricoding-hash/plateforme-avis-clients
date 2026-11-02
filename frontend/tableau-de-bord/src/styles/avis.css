@@ -3,34 +3,36 @@
    Une seule page : barre de filtres en haut, liste des avis a gauche,
    detail de l'avis choisi a droite.
    Les couleurs viennent des variables de styles/index.css (theme sombre
-   et theme clair) : aucune couleur propre a cette page, ni vert, ni halo.
-   Les separations se font par de legers changements de fond et par des
-   traits de 1 px tres discrets, pas par des cadres epais.
+   et theme clair) : aucune couleur propre a cette page.
+   Les separations se font par des traits de 1 px tres discrets
+   (pas de cadres, pas de fonds differents par panneau) pour laisser
+   respirer le contenu.
 
    Deux modes :
    - Ecran fixe (ordinateur, au moins 1100 px de large et 640 px de haut) :
-     la page a exactement la hauteur de l'ecran, rien ne defile a part
-     l'interieur des panneaux de droite, qui ont chacun leur defilement
-     vertical quand leur contenu est trop long.
+     la page a exactement la hauteur de l'ecran. Le detail a un seul
+     defilement (celui des onglets) et la colonne de traitement defile
+     seulement si elle est trop longue.
      Le bloc "Ecran fixe" est tout en bas du fichier.
    - Page normale (tablette, telephone, ecran trop bas) :
      la liste puis le detail sont l'un sous l'autre et la page defile.
    ------------------------------------------------------------ */
 
 .avis-ecran {
-  /* Accent : celui du theme (blanc cassé en sombre, or en clair) */
+  /* Accent : celui du theme */
   --v-accent: var(--couleur-principale);
   --v-sur-accent: var(--texte-sur-principale);
   --v-selection: var(--bordure-champ-focus);
-  /* Fonds : panneau (un cran au dessus de la page) et element en relief */
+  /* Fonds : zone un cran au dessus de la page, et element en relief */
   --v-panneau: var(--surface);
   --v-panneau-fort: var(--surface-douce);
   /* Trait fin de separation */
   --v-trait: var(--bordure);
-  /* Hauteur d'une carte et ecart entre cartes : le hook utiliser-cartes-par-page.ts
-     reprend ces deux valeurs, elles doivent rester identiques. */
-  --v-hauteur-carte: 72px;
-  --v-ecart: 8px;
+  /* Hauteur d'une carte et epaisseur du trait qui la separe de la suivante.
+     Une rangee fait donc 72 px (71 + 1). Le hook utiliser-cartes-par-page.ts
+     lit ces deux valeurs : elles ne doivent pas changer sans lui. */
+  --v-hauteur-carte: 71px;
+  --v-ecart: 1px;
 
   display: flex;
   flex-direction: column;
@@ -61,6 +63,7 @@
   background: var(--v-panneau);
 }
 
+/* Recherche : aucun cadre, aucun contour, aucun effet quand on clique dedans */
 .avis-recherche {
   flex: 1 1 220px;
   display: flex;
@@ -69,20 +72,19 @@
   min-width: 0;
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: 999px;
   color: var(--texte-secondaire);
 }
 
-.avis-recherche:focus-within {
-  border-color: var(--v-selection);
-}
-
-.avis-recherche input {
+.avis-recherche input,
+.avis-recherche input:focus,
+.avis-recherche input:focus-visible {
   flex: 1;
   min-width: 0;
   border: 0;
   outline: none;
+  box-shadow: none;
   background: transparent;
   color: var(--texte);
   font-size: 0.9rem;
@@ -233,7 +235,7 @@
 .avis-corps {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .avis-liste,
@@ -241,11 +243,11 @@
   min-width: 0;
 }
 
-/* La liste n'a ni cadre ni fond : les cartes reposent directement sur la page */
+/* La liste n'a ni cadre ni fond : une grille de rangees separees par des traits fins */
 .avis-liste {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
 }
 
 .avis-liste-tete {
@@ -253,7 +255,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 2px;
+  padding: 0 2px 10px;
+  border-bottom: 1px solid var(--v-trait);
   color: var(--texte-secondaire);
   font-size: 0.8rem;
 }
@@ -263,15 +266,28 @@
   min-height: 0;
 }
 
+/* Grille de 2 colonnes : pas d'ecart, ce sont les traits des cellules qui separent.
+   Chaque rangee mesure --v-hauteur-carte + --v-ecart, trait du bas compris. */
 .avis-cartes {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: var(--v-hauteur-carte);
-  gap: var(--v-ecart);
+  grid-auto-rows: calc(var(--v-hauteur-carte) + var(--v-ecart));
+  gap: 0;
   align-content: start;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Trait horizontal sous chaque cellule */
+.avis-cartes > li {
+  min-width: 0;
+  border-bottom: var(--v-ecart) solid var(--v-trait);
+}
+
+/* Trait vertical au milieu : a droite de la premiere colonne */
+.avis-cartes > li:nth-child(odd) {
+  border-right: 1px solid var(--v-trait);
 }
 
 .avis-carte {
@@ -281,28 +297,26 @@
   gap: 6px;
   width: 100%;
   height: 100%;
-  padding: 8px 10px;
+  padding: 8px 14px;
   overflow: hidden;
-  border: 1px solid var(--v-trait);
-  border-radius: var(--rayon-md);
-  background: var(--v-panneau);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--texte);
   text-align: left;
   cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+  transition: background 0.15s ease;
 }
 
 .avis-carte:hover {
-  border-color: var(--bordure-forte);
   background: var(--v-panneau-fort);
 }
 
+/* Carte choisie : fond doux et petite barre a gauche */
 .avis-carte--choisie,
 .avis-carte--choisie:hover {
-  border-color: var(--v-selection);
   background: var(--accent-fond);
+  box-shadow: inset 3px 0 0 var(--v-accent);
 }
 
 .avis-carte-ligne {
@@ -331,6 +345,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  padding-top: 12px;
 }
 
 .avis-bulle {
@@ -374,10 +389,13 @@
 
 /* ---------- Detail de l'avis ---------- */
 
+/* Page normale : un trait au dessus du detail, qui est sous la liste */
 .avis-detail {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--v-trait);
 }
 
 .avis-detail-tete {
@@ -386,6 +404,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  padding-bottom: 14px;
 }
 
 .avis-detail-titre {
@@ -396,10 +415,12 @@
   font-weight: 700;
 }
 
+/* Resume : trois cases separees par des traits verticaux, entre deux traits horizontaux */
 .avis-resume {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  border-top: 1px solid var(--v-trait);
+  border-bottom: 1px solid var(--v-trait);
 }
 
 .avis-resume-item {
@@ -407,9 +428,15 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
-  padding: 10px 14px;
-  border-radius: var(--rayon-md);
-  background: var(--v-panneau);
+  padding: 12px 16px;
+}
+
+.avis-resume-item:first-child {
+  padding-left: 0;
+}
+
+.avis-resume-item + .avis-resume-item {
+  border-left: 1px solid var(--v-trait);
 }
 
 .avis-resume-item svg {
@@ -430,32 +457,45 @@
   font-size: 0.75rem;
 }
 
+/* Deux colonnes : onglets a gauche (large), traitement a droite, separes par un trait vertical */
 .avis-detail-grille {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 0;
 }
 
 .avis-detail-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   min-width: 0;
 }
 
-/* Panneau : pas de cadre, juste un fond un cran au dessus de la page */
+.avis-detail-col:first-child {
+  padding-right: 20px;
+}
+
+.avis-detail-col + .avis-detail-col {
+  padding-left: 20px;
+  border-left: 1px solid var(--v-trait);
+}
+
+/* Panneau : ni cadre ni fond, separe du suivant par un trait horizontal fin */
 .avis-panneau {
   min-width: 0;
-  padding: 10px 14px;
-  border-radius: var(--rayon-md);
-  background: var(--v-panneau);
+  padding: 14px 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.avis-panneau + .avis-panneau {
+  border-top: 1px solid var(--v-trait);
 }
 
 .avis-panneau-titre {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: var(--texte);
   font-size: 0.9rem;
   font-weight: 700;
@@ -465,22 +505,32 @@
   color: var(--texte-secondaire);
 }
 
-/* Le commentaire est affiche en entier : si c'est long, le panneau defile */
+/* Le commentaire est affiche en entier */
 .avis-commentaire {
   margin: 0;
   color: var(--texte);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-style: italic;
+  line-height: 1.55;
   overflow-wrap: anywhere;
 }
 
+/* Lignes "etiquette : valeur" des details et des coordonnees, separees par un trait fin */
 .avis-ligne-donnee {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding: 3px 0;
-  font-size: 0.82rem;
+  padding: 8px 0;
+  font-size: 0.85rem;
+}
+
+.avis-ligne-donnee + .avis-ligne-donnee {
+  border-top: 1px solid var(--v-trait);
+}
+
+.avis-ligne-donnee:first-child {
+  padding-top: 0;
 }
 
 .avis-ligne-donnee dt {
@@ -495,6 +545,7 @@
   text-align: right;
 }
 
+/* Historique */
 .avis-chrono {
   margin: 0;
   padding: 0;
@@ -503,9 +554,10 @@
 
 .avis-chrono-item {
   position: relative;
-  padding: 0 0 8px 22px;
+  padding: 0 0 12px 22px;
   color: var(--texte);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .avis-chrono-item::before {
@@ -535,6 +587,58 @@
 
 .avis-chrono-item:last-child::after {
   display: none;
+}
+
+/* ---------- Onglets du detail (reponses, details, client, historique) ---------- */
+
+.avis-onglets {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.avis-onglets-liste {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--v-trait);
+  scrollbar-width: none;
+}
+
+.avis-onglet {
+  position: relative;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--texte-secondaire);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.avis-onglet:hover,
+.avis-onglet[aria-selected='true'] {
+  color: var(--texte);
+}
+
+/* Onglet actif : petit trait d'accent sous le texte, par dessus le trait fin de la liste */
+.avis-onglet[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  bottom: -1px;
+  left: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--v-accent);
+}
+
+.avis-onglets-contenu {
+  min-width: 0;
 }
 
 /* ---------- Traitement : statuts, note, bouton ---------- */
@@ -625,11 +729,37 @@
   .avis-detail-grille {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .avis-resume-item,
+  .avis-resume-item:first-child {
+    padding-left: 0;
+  }
+
+  .avis-resume-item + .avis-resume-item {
+    border-top: 1px solid var(--v-trait);
+    border-left: 0;
+  }
+
+  .avis-detail-col:first-child {
+    padding-right: 0;
+  }
+
+  .avis-detail-col + .avis-detail-col {
+    padding-top: 14px;
+    padding-left: 0;
+    border-top: 1px solid var(--v-trait);
+    border-left: 0;
+  }
 }
 
 @media (max-width: 479px) {
   .avis-cartes {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Une seule colonne : plus de trait vertical au milieu */
+  .avis-cartes > li:nth-child(odd) {
+    border-right: 0;
   }
 }
 
@@ -639,7 +769,7 @@
   }
 }
 
-/* ---------- Ecran fixe : la page ne defile pas, les panneaux oui ---------- */
+/* ---------- Ecran fixe : la page ne defile pas ---------- */
 /* Meme seuil que l'accueil (styles/accueil.css et hooks/utiliser-pages.ts). */
 
 @media (min-width: 1100px) and (min-height: 640px) {
@@ -654,9 +784,11 @@
     flex-shrink: 0;
   }
 
+  /* Liste a gauche, detail a droite, separes par un trait vertical fin */
   .avis-corps {
     flex: 1 1 0;
     min-height: 0;
+    gap: 0;
     grid-template-columns: clamp(340px, 34%, 480px) minmax(0, 1fr);
   }
 
@@ -666,51 +798,60 @@
     overflow: hidden;
   }
 
+  .avis-liste {
+    padding-right: 16px;
+  }
+
+  .avis-detail {
+    padding-top: 0;
+    padding-left: 20px;
+    border-top: 0;
+    border-left: 1px solid var(--v-trait);
+  }
+
   /* La zone des cartes prend la hauteur qui reste : on la mesure pour savoir combien de cartes tiennent */
   .avis-liste-zone {
     overflow: hidden;
   }
 
+  .avis-detail-tete,
+  .avis-resume {
+    flex-shrink: 0;
+  }
+
   .avis-detail-grille {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  /* Colonne de gauche du detail : elle defile si le contenu est trop long */
+  .avis-detail-col:first-child {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--defilement-pouce) transparent;
+  }
+
+  /* Colonne du traitement : filet de securite, elle defile seulement si elle est trop longue */
+  .avis-detail-col + .avis-detail-col {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--defilement-pouce) transparent;
+  }
+
+  .avis-onglets {
     flex: 1 1 0;
     min-height: 0;
   }
 
-  /* Filet de securite : si meme les panneaux reduits ne tiennent pas, la colonne defile */
-  .avis-detail-col {
+  /* Un seul defilement pour tout le contenu de l'onglet */
+  .avis-onglets-contenu {
+    flex: 1 1 0;
     min-height: 0;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--defilement-pouce) transparent;
-  }
-
-  /* Chaque panneau garde la taille de son contenu, puis se reduit et defile a l'interieur.
-     Le titre reste visible en haut pendant le defilement. */
-  .avis-panneau {
-    flex: 0 1 auto;
-    min-height: 96px;
-    padding: 0;
+    padding-right: 6px;
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color: var(--defilement-pouce) transparent;
-  }
-
-  .avis-panneau-titre {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    margin: 0;
-    padding: 10px 14px 6px;
-    background: var(--v-panneau);
-  }
-
-  .avis-panneau > :not(.avis-panneau-titre) {
-    margin-right: 14px;
-    margin-left: 14px;
-  }
-
-  .avis-panneau > :last-child {
-    margin-bottom: 10px;
   }
 }

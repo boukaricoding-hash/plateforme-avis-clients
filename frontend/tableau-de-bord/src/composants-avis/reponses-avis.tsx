@@ -1,3 +1,4 @@
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { utiliserLangue } from '../hooks/utiliser-langue'
 import type {
   FicheAvis,
@@ -7,20 +8,54 @@ import type {
   TexteMultilingue,
 } from '../types/avis'
 import { formaterNombre } from '../utilitaires/periodes'
+import { IconeCommentaire, IconeReponses } from './icones-avis'
 
-// Bloc "Commentaire du client" et bloc "Reponses au questionnaire" de la fiche d'un avis (E9).
+// Bloc "Commentaire du client" et bloc "Reponses au questionnaire" du detail d'un avis
+// (page unique, jour 15 design). Version compacte de l'ecran E9.
 // Ce composant n'appelle pas l'API : il affiche la fiche deja chargee.
 // Les reponses sont dans l'ordre des questions. Une question sans valeur affiche "Pas de reponse".
 // La valeur est toujours ecrite en texte (jamais seulement une couleur ou une icone).
+//
+// Ce qui ne rentre pas est raccourci :
+// - le commentaire est limite a 3 lignes par le style (classe avis-commentaire) ;
+// - chaque reponse tient sur une ligne de hauteur fixe (libelle, puis valeur coupee par "...") ;
+// - en ecran fixe, on ne montre que les reponses qui tiennent dans le bloc, suivies de "+N".
+//   En page normale (la page defile), toutes les reponses sont montrees.
 
 type Proprietes = {
   fiche: FicheAvis
 }
 
+// Doit rester egale a la requete de l'ecran fixe dans styles/avis.css
+const REQUETE_ECRAN_FIXE = '(min-width: 1100px) and (min-height: 640px)'
+// Hauteur en pixels d'une reponse (libelle sur une ligne, valeur sur une ligne)
+const HAUTEUR_REPONSE = 44
+// Hauteur en pixels de la ligne "+N", reservee quand des reponses sont masquees
+const HAUTEUR_PLUS = 24
+
 // Valeur maximale d'une question a note (etoiles et emojis : 5, NPS : 10, echelle : echelle_max).
 const MAXIMUM_ETOILES = 5
 const MAXIMUM_EMOJIS = 5
 const MAXIMUM_NPS = 10
+
+function sAbonnerEcranFixe(rappel: () => void) {
+  const requete = window.matchMedia(REQUETE_ECRAN_FIXE)
+  requete.addEventListener('change', rappel)
+  return () => requete.removeEventListener('change', rappel)
+}
+
+function lireEcranFixe() {
+  return window.matchMedia(REQUETE_ECRAN_FIXE).matches
+}
+
+// Combien de reponses montrer dans une zone de cette hauteur. Si elles tiennent toutes, toutes.
+// Sinon on garde la place de la ligne "+N" et on ne montre que les reponses entieres qui restent.
+function compterReponsesVisibles(hauteurZone: number, total: number): number {
+  if (Math.floor(hauteurZone / HAUTEUR_REPONSE) >= total) {
+    return total
+  }
+  return Math.max(0, Math.floor((hauteurZone - HAUTEUR_PLUS) / HAUTEUR_REPONSE))
+}
 
 // Texte d'un libelle selon la langue : anglais si demande et rempli, sinon francais.
 function texteLangue(texte: TexteMultilingue, langue: string): string {
@@ -85,18 +120,25 @@ type PropsValeurReponse = {
   reponse: ReponseFiche
 }
 
-// La valeur d'une reponse, ecrite selon le type de la question.
+// La valeur d'une reponse, ecrite selon le type de la question, sur une seule ligne.
+// Un texte trop long est coupe par "..." ; le texte complet reste dans l'infobulle (title).
 function ValeurReponse({ reponse }: PropsValeurReponse) {
   const { t, langue } = utiliserLangue()
   const { question } = reponse
-  const sansReponse = <span className="text-texte-discret">{t('avis.fiche.reponses.sansReponse')}</span>
+  const sansReponse = (
+    <span className="block truncate text-sm text-texte-discret">
+      {t('avis.fiche.reponses.sansReponse')}
+    </span>
+  )
 
   if (question.type === 'TEXTE_LIBRE') {
     const texte = reponse.valeur_texte?.trim() ?? ''
     return texte === '' ? (
       sansReponse
     ) : (
-      <p className="whitespace-pre-wrap break-words text-texte">{texte}</p>
+      <span className="block truncate text-sm text-texte" title={texte}>
+        {texte}
+      </span>
     )
   }
 
@@ -106,17 +148,11 @@ function ValeurReponse({ reponse }: PropsValeurReponse) {
     if (valeurs.length === 0) {
       return sansReponse
     }
+    const texte = valeurs.map((valeur) => texteChoix(valeur, question, langue)).join(', ')
     return (
-      <ul className="flex flex-wrap gap-1.5">
-        {valeurs.map((valeur) => (
-          <li
-            key={valeur}
-            className="rounded-full border border-bordure-champ bg-surface px-2.5 py-0.5 text-sm text-texte"
-          >
-            {texteChoix(valeur, question, langue)}
-          </li>
-        ))}
-      </ul>
+      <span className="block truncate text-sm font-medium text-texte" title={texte}>
+        {texte}
+      </span>
     )
   }
 
@@ -126,7 +162,7 @@ function ValeurReponse({ reponse }: PropsValeurReponse) {
 
   if (question.type === 'OUI_NON') {
     return (
-      <span className="font-medium text-texte">
+      <span className="block truncate text-sm font-medium text-texte">
         {reponse.valeur_numerique === 1 ? t('avis.fiche.reponses.oui') : t('avis.fiche.reponses.non')}
       </span>
     )
@@ -135,7 +171,7 @@ function ValeurReponse({ reponse }: PropsValeurReponse) {
   const valeur = formaterNombre(reponse.valeur_numerique, langue)
   const maximum = maximumDeLaQuestion(question)
   return (
-    <span className="font-medium text-texte">
+    <span className="block truncate text-sm font-medium text-texte">
       {maximum === null
         ? valeur
         : t('avis.fiche.reponses.valeurSur', { valeur, max: formaterNombre(maximum, langue) })}
@@ -143,63 +179,107 @@ function ValeurReponse({ reponse }: PropsValeurReponse) {
   )
 }
 
-// Libelles des deux extremites d'une echelle (ex. "Pas du tout" et "Tout a fait"), s'ils existent.
-function extremitesEchelle(question: QuestionFiche, langue: string): string | null {
-  if (question.type !== 'ECHELLE' || question.libelles_extremites === null) {
-    return null
-  }
-  const min = texteLangue(question.libelles_extremites.min, langue).trim()
-  const max = texteLangue(question.libelles_extremites.max, langue).trim()
-  if (min === '' && max === '') {
-    return null
-  }
-  return `${min} – ${max}`
+type PropsPanneauReponses = {
+  // Deja dans l'ordre des questions
+  reponses: ReponseFiche[]
+}
+
+// Bloc des reponses. En ecran fixe, il prend toute la hauteur qui reste dans sa colonne
+// (flex-1), et sa zone de lignes est mesuree pour savoir combien de reponses tiennent.
+function PanneauReponses({ reponses }: PropsPanneauReponses) {
+  const { t, langue } = utiliserLangue()
+  const ecranFixe = useSyncExternalStore(sAbonnerEcranFixe, lireEcranFixe)
+  const [zone, setZone] = useState<HTMLDivElement | null>(null)
+  const [hauteurZone, setHauteurZone] = useState<number | null>(null)
+
+  // La mesure se refait quand la fenetre change de taille ou que le menu se replie ou se deplie.
+  useEffect(() => {
+    if (!ecranFixe || zone === null) {
+      return
+    }
+    const observateur = new ResizeObserver(() => {
+      setHauteurZone(zone.clientHeight)
+    })
+    observateur.observe(zone)
+    return () => observateur.disconnect()
+  }, [ecranFixe, zone])
+
+  // Tant que la zone n'est pas mesuree (ou en page normale), toutes les reponses sont montrees.
+  const nombreVisibles =
+    ecranFixe && hauteurZone !== null
+      ? compterReponsesVisibles(hauteurZone, reponses.length)
+      : reponses.length
+  const masquees = reponses.length - nombreVisibles
+
+  return (
+    <section
+      aria-labelledby="titre-reponses-avis"
+      className={`avis-panneau flex flex-col ${ecranFixe ? 'min-h-0 flex-1 basis-0' : ''}`}
+    >
+      <h3 id="titre-reponses-avis" className="avis-panneau-titre">
+        <IconeReponses />
+        {t('avis.fiche.reponses.titre')}
+      </h3>
+      {reponses.length === 0 ? (
+        <p className="m-0 text-sm text-texte-discret">{t('avis.fiche.reponses.aucune')}</p>
+      ) : (
+        <div ref={setZone} className={ecranFixe ? 'min-h-0 flex-1 overflow-hidden' : ''}>
+          <ol className="m-0 list-none p-0">
+            {reponses.slice(0, nombreVisibles).map((reponse) => (
+              <li
+                key={reponse.id}
+                className="flex flex-col justify-center overflow-hidden border-t border-bordure first:border-t-0"
+                style={{ height: HAUTEUR_REPONSE }}
+              >
+                <span
+                  className="block truncate text-xs text-texte-secondaire"
+                  title={texteLangue(reponse.question.libelle, langue)}
+                >
+                  {texteLangue(reponse.question.libelle, langue)}
+                </span>
+                <ValeurReponse reponse={reponse} />
+              </li>
+            ))}
+          </ol>
+          {masquees > 0 && (
+            <p
+              className="m-0 flex items-center justify-end text-xs font-semibold text-texte-secondaire"
+              style={{ height: HAUTEUR_PLUS }}
+              title={t('avis.detail.autresReponses', { nombre: masquees })}
+            >
+              <span aria-hidden="true">+{masquees}</span>
+              <span className="sr-only">{t('avis.detail.autresReponses', { nombre: masquees })}</span>
+            </p>
+          )}
+        </div>
+      )}
+    </section>
+  )
 }
 
 export function ReponsesAvis({ fiche }: Proprietes) {
-  const { t, langue } = utiliserLangue()
+  const { t } = utiliserLangue()
 
   const commentaire = fiche.commentaire?.trim() ?? ''
   const reponses = [...fiche.reponses].sort((a, b) => a.question.ordre - b.question.ordre)
 
   return (
     <>
-      <section aria-labelledby="titre-commentaire-avis" className="rounded-xl border border-bordure bg-surface p-4">
-        <h2 id="titre-commentaire-avis" className="font-titre text-lg font-bold text-texte">
+      <section aria-labelledby="titre-commentaire-avis" className="avis-panneau">
+        <h3 id="titre-commentaire-avis" className="avis-panneau-titre">
+          <IconeCommentaire />
           {t('avis.fiche.commentaire.titre')}
-        </h2>
+        </h3>
         {commentaire === '' ? (
-          <p className="mt-2 text-sm text-texte-discret">{t('avis.fiche.commentaire.aucun')}</p>
+          <p className="m-0 text-sm text-texte-discret">{t('avis.fiche.commentaire.aucun')}</p>
         ) : (
-          <p className="mt-2 whitespace-pre-wrap break-words text-texte">{commentaire}</p>
+          <p className="avis-commentaire break-words" title={commentaire}>
+            {commentaire}
+          </p>
         )}
       </section>
 
-      <section aria-labelledby="titre-reponses-avis" className="rounded-xl border border-bordure bg-surface p-4">
-        <h2 id="titre-reponses-avis" className="font-titre text-lg font-bold text-texte">
-          {t('avis.fiche.reponses.titre')}
-        </h2>
-        {reponses.length === 0 ? (
-          <p className="mt-2 text-sm text-texte-discret">{t('avis.fiche.reponses.aucune')}</p>
-        ) : (
-          <ol className="mt-3 divide-y divide-bordure">
-            {reponses.map((reponse) => {
-              const extremites = extremitesEchelle(reponse.question, langue)
-              return (
-                <li key={reponse.id} className="py-3 first:pt-0 last:pb-0">
-                  <p className="text-sm font-medium text-texte-secondaire">
-                    {texteLangue(reponse.question.libelle, langue)}
-                  </p>
-                  {extremites !== null && <p className="text-xs text-texte-discret">{extremites}</p>}
-                  <div className="mt-1">
-                    <ValeurReponse reponse={reponse} />
-                  </div>
-                </li>
-              )
-            })}
-          </ol>
-        )}
-      </section>
+      <PanneauReponses reponses={reponses} />
     </>
   )
 }

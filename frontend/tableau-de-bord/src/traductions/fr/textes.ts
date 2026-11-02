@@ -135,6 +135,9 @@ export const fr = {
       noteUnique: 'Note {note} sur 5',
       trancheNotes: 'Notes de {min} à {max}',
       retirerNotes: 'Retirer le filtre sur les notes',
+      note: 'Note',
+      toutesLesDates: 'Toutes les dates',
+      toutesLesNotes: 'Toutes les notes',
     },
 
     tableau: {
@@ -153,6 +156,13 @@ export const fr = {
       pageSuivante: 'Page suivante',
       pageSur: 'Page {page} sur {pages}',
       affichage: 'Avis {debut} à {fin} sur {total}',
+    },
+
+    detail: {
+      choisir: 'Choisissez un avis dans la liste pour voir son détail.',
+      autresReponses: 'Réponses supplémentaires non affichées : {nombre}',
+      autresHistorique: 'Lignes supplémentaires dans l’historique : {nombre}',
+      enregistrer: 'Enregistrer',
     },
 
     fiche: {

@@ -5,7 +5,6 @@ import { CadreProtege } from './mise-en-page/cadre-protege'
 import { PageConnexion } from './pages/connexion/page-connexion'
 import { PageMotDePasseOublie } from './pages/connexion/page-mot-de-passe-oublie'
 import { PageReinitialisation } from './pages/connexion/page-reinitialisation'
-import { PageFicheAvis } from './pages/fiche-avis/page-fiche-avis'
 import { PageListeAvis } from './pages/liste-avis/page-liste-avis'
 import { PageAccueil } from './pages/tableau-de-bord/page-accueil'
 
@@ -42,7 +41,7 @@ export default function App() {
         <Route element={<CadreApplication />}>
           <Route index element={<PageAccueil />} />
           <Route path="avis" element={<PageListeAvis />} />
-          <Route path="avis/:id" element={<PageFicheAvis />} />
+          <Route path="avis/:id" element={<PageListeAvis />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route
               key={ecran.chemin}

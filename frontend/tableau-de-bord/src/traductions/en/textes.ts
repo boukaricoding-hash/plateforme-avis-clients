@@ -183,6 +183,12 @@ export const en = {
       score: 'Score out of 5',
       reponses: '{nombre} answers',
       aucun: 'No rated theme in this period.',
+      voirAutres: 'Show other themes ({nombre})',
+      masquerAutres: 'Hide other themes',
+      autresTitre: 'Other themes',
+      voirAutres: 'Show other themes ({nombre}),',
+      masquerAutres: 'Hide other themes',
+      autresTitre: 'Other themes',
     },
 
     courbe: {

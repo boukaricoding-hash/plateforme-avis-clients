@@ -184,6 +184,9 @@ export const fr = {
       score: 'Score sur 5',
       reponses: '{nombre} réponses',
       aucun: 'Aucun thème noté sur cette période.',
+      voirAutres: 'Voir les autres thèmes ({nombre})',
+      masquerAutres: 'Masquer les autres thèmes',
+      autresTitre: 'Autres thèmes',
     },
 
     courbe: {

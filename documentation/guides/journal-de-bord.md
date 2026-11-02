@@ -202,3 +202,28 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 
 **Point d'attention**
 - Les periodes sont des jours UTC (Africa/Lome = UTC+0), comme le backend : apres minuit, le titre et les chiffres changent a la prochaine actualisation (10 secondes).
+
+## Jour 15 - lundi 2 novembre 2026 : liste des avis et fiche d'un avis
+
+**Fait**
+- Ecran E8 (`/avis`) : la liste des avis avec filtres (periode, site, point de contact, questionnaire, statut, recherche dans les commentaires, negatifs, avec commentaire, notes), tri par date, note ou NPS, et pagination. Tableau sur ordinateur et tablette, cartes sur telephone. Statuts ecrits en texte, notes colorees.
+- Ecran E9 (`/avis/:id`) : la fiche d'un avis avec la note, le NPS, le statut, l'alerte eventuelle, le commentaire, toutes les reponses selon le type de question, les details (point de contact, site, questionnaire et version, langue, appareil), les coordonnees (seulement si le client a consenti), les 4 boutons de statut avec un commentaire facultatif, les notes internes et l'historique (qui, quoi, quand).
+- Les deux routes remplacent « en construction » dans `App.tsx`. Un clic sur un avis recent de l'accueil ouvre maintenant la fiche.
+- Fichiers dans `frontend/tableau-de-bord/src` : `types/avis.ts`, `services/avis.ts`, `utilitaires/statuts-avis.ts`, `hooks/` (`utiliser-filtres-avis`, `utiliser-liste-avis`, `utiliser-fiche-avis`), `composants-avis/` (`pastille-statut`, `barre-filtres-avis`, `tableau-avis`, `reponses-avis`, `historique-avis`, `panneau-suivi`), `pages/liste-avis/page-liste-avis.tsx`, `pages/fiche-avis/page-fiche-avis.tsx` et `App.tsx`. Textes fr et en dans `src/traductions` (bloc `avis`).
+- Backend non modifie, aucune route nouvelle (donc rien a ajouter au test d'isolation), aucune dependance ajoutee. `tsc -b` sans erreur.
+
+**Decisions**
+- Filtres, tri et page dans l'adresse : un clic de l'accueil arrive deja filtre, et la liste peut etre rechargee ou partagee telle quelle.
+- La pagination vient de l'API (`page` et `limite`), pas d'un decoupage cote ecran.
+- « Retour a la liste des avis » retrouve les memes filtres, le meme tri et la meme page grace a l'etat de navigation (`listeAdresse`). Depuis un avis recent de l'accueil, il renvoie a `/avis` sans filtre.
+- Apres un changement de statut ou l'ajout d'une note, la fiche est mise a jour avec la reponse de l'API, sans rechargement complet. Si le statut a deja change ailleurs (`STATUT_INCHANGE` ou `CONFLIT_STATUT`), la fiche est rechargee.
+- Commentaire et note : 2000 caracteres au plus, comme le backend. Une note vide est refusee avant l'appel.
+- La couleur ne suffit jamais seule : chaque statut, alerte et note est aussi ecrit en toutes lettres.
+- Les coordonnees du client ne sont affichees que si l'API les renvoie, c'est-a-dire s'il a consenti.
+
+**A faire ensuite**
+- Verifications du soir, a faire a la main : envoyer un avis de 1/5 depuis le telephone, l'ouvrir, le passer en Traite avec une note interne, puis verifier que l'historique montre qui a fait quoi, et quand.
+- Jour 16 : cloche de notifications, alertes par e-mail, ecran E14.
+
+**Point d'attention**
+- Le point d'attention du jour 14 sur la route `/avis/:id` est regle : un clic sur un avis recent ouvre la fiche.

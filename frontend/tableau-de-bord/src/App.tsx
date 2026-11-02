@@ -5,11 +5,12 @@ import { CadreProtege } from './mise-en-page/cadre-protege'
 import { PageConnexion } from './pages/connexion/page-connexion'
 import { PageMotDePasseOublie } from './pages/connexion/page-mot-de-passe-oublie'
 import { PageReinitialisation } from './pages/connexion/page-reinitialisation'
+import { PageFicheAvis } from './pages/fiche-avis/page-fiche-avis'
+import { PageListeAvis } from './pages/liste-avis/page-liste-avis'
 import { PageAccueil } from './pages/tableau-de-bord/page-accueil'
 
 // Ecrans prevus mais pas encore construits : chacun est remplace par son vrai ecran le jour venu.
 const ECRANS_A_VENIR = [
-  { chemin: 'avis', cle: 'menu.avis' },
   { chemin: 'questionnaires', cle: 'menu.questionnaires' },
   { chemin: 'qr-codes', cle: 'menu.qrCodes' },
   { chemin: 'sites', cle: 'menu.sites' },
@@ -40,6 +41,8 @@ export default function App() {
       <Route element={<CadreProtege />}>
         <Route element={<CadreApplication />}>
           <Route index element={<PageAccueil />} />
+          <Route path="avis" element={<PageListeAvis />} />
+          <Route path="avis/:id" element={<PageFicheAvis />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route
               key={ecran.chemin}

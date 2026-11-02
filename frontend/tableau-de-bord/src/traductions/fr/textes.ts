@@ -93,6 +93,164 @@ export const fr = {
     titre: 'Tableau de bord',
     bonjour: 'Bonjour {nom}',
   },
+  // Ecrans E8 (liste des avis) et E9 (fiche d'un avis), jour 15
+  avis: {
+    statuts: {
+      NOUVEAU: 'Nouveau',
+      EN_COURS: 'En cours',
+      TRAITE: 'Traité',
+      IGNORE: 'Ignoré',
+    },
+    appareils: {
+      mobile: 'Mobile',
+      tablette: 'Tablette',
+      ordinateur: 'Ordinateur',
+    },
+    sansNote: 'Sans note',
+    noteSur5: '{note}/5',
+    npsValeur: 'NPS {valeur}',
+    sansCommentaire: 'Sans commentaire',
+    nonRenseigne: 'Non renseigné',
+    alerte: 'Alerte',
+    prioritaire: 'Prioritaire',
+    lieu: '{point} · {site}',
+    ouvrir: 'Ouvrir l’avis du {date}',
+
+    liste: {
+      titre: 'Avis',
+      resultats: 'Résultats : {total}',
+      chargement: 'Chargement des avis…',
+      erreur: 'Impossible de charger les avis.',
+      aucunAvis: 'Aucun avis ne correspond à ces filtres.',
+    },
+
+    filtres: {
+      recherche: 'Rechercher dans les commentaires',
+      recherchePlaceholder: 'Un mot ou une phrase…',
+      rechercher: 'Rechercher',
+      statut: 'Statut',
+      tousLesStatuts: 'Tous les statuts',
+      negatifs: 'Avis négatifs seulement',
+      avecCommentaire: 'Avec commentaire seulement',
+      noteUnique: 'Note {note} sur 5',
+      trancheNotes: 'Notes de {min} à {max}',
+      retirerNotes: 'Retirer le filtre sur les notes',
+    },
+
+    tableau: {
+      navigation: 'Liste des avis',
+      colonnes: {
+        date: 'Date',
+        note: 'Note',
+        nps: 'NPS',
+        statut: 'Statut',
+        lieu: 'Point de contact',
+        commentaire: 'Commentaire',
+      },
+      trierPar: 'Trier par {colonne}',
+      pagination: 'Pagination des avis',
+      pagePrecedente: 'Page précédente',
+      pageSuivante: 'Page suivante',
+      pageSur: 'Page {page} sur {pages}',
+      affichage: 'Avis {debut} à {fin} sur {total}',
+    },
+
+    fiche: {
+      retour: 'Retour à la liste des avis',
+      chargement: 'Chargement de l’avis…',
+      erreur: 'Impossible de charger cet avis.',
+      introuvable: 'Cet avis est introuvable ou vous n’y avez pas accès.',
+      titre: 'Avis du {date}',
+      noteGlobale: 'Note globale',
+      nps: 'NPS',
+
+      details: {
+        titre: 'Détails',
+        recuLe: 'Reçu le',
+        pointContact: 'Point de contact',
+        site: 'Site',
+        questionnaire: 'Questionnaire',
+        version: 'Version {numero}',
+        langue: 'Langue du client',
+        appareil: 'Appareil',
+      },
+
+      alerte: {
+        titre: 'Alerte',
+        creeeLe: 'Alerte créée le {date}',
+        niveau: 'Niveau',
+        motifs: 'Motifs',
+        niveaux: {
+          NORMAL: 'Normale',
+          PRIORITAIRE: 'Prioritaire',
+        },
+        listeMotifs: {
+          NOTE_BASSE: 'Note basse',
+          NPS_BAS: 'NPS bas',
+          RAPPEL_DEMANDE: 'Rappel demandé',
+        },
+      },
+
+      commentaire: {
+        titre: 'Commentaire du client',
+        aucun: 'Le client n’a pas laissé de commentaire.',
+      },
+
+      reponses: {
+        titre: 'Réponses au questionnaire',
+        aucune: 'Aucune réponse enregistrée.',
+        sansReponse: 'Pas de réponse',
+        oui: 'Oui',
+        non: 'Non',
+        valeurSur: '{valeur} sur {max}',
+      },
+
+      coordonnees: {
+        titre: 'Coordonnées du client',
+        nom: 'Nom',
+        telephone: 'Téléphone',
+        email: 'E-mail',
+        sansConsentement:
+          'Le client n’a pas donné son consentement : ses coordonnées ne sont pas affichées.',
+      },
+
+      suivi: {
+        titre: 'Traitement de l’avis',
+        statutActuel: 'Statut actuel',
+        changerStatut: 'Changer le statut',
+        actuel: 'actuel',
+        commentaireStatut: 'Commentaire (facultatif)',
+        commentaireStatutAide:
+          'Ce commentaire est enregistré dans l’historique avec le changement de statut.',
+        commentaireTropLong: 'Le commentaire ne peut pas dépasser 2000 caractères.',
+        enregistrement: 'Enregistrement…',
+        statutModifie: 'Statut modifié.',
+        erreurStatut: 'Impossible de modifier le statut.',
+        note: {
+          titre: 'Ajouter une note interne',
+          aide: 'Visible seulement par votre équipe, jamais par le client.',
+          placeholder: 'Écrivez votre note…',
+          ajouter: 'Ajouter la note',
+          ajout: 'Ajout…',
+          ajoutee: 'Note ajoutée.',
+          vide: 'Écrivez une note avant de l’ajouter.',
+          tropLongue: 'La note ne peut pas dépasser 2000 caractères.',
+          erreur: 'Impossible d’ajouter la note.',
+          compteur: '{nombre}/2000',
+        },
+      },
+
+      historique: {
+        titre: 'Historique',
+        aucun: 'Aucune action pour le moment.',
+        changementStatut: 'Changement de statut',
+        noteInterne: 'Note interne',
+        par: 'Par {auteur}',
+        statutVers: '{ancien} → {nouveau}',
+      },
+    },
+  },
+
   tableau: {
     // Etats de l'ecran
     chargement: 'Chargement des indicateurs…',

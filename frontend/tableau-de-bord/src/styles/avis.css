@@ -855,3 +855,47 @@
     scrollbar-color: var(--defilement-pouce) transparent;
   }
 }
+
+/* ---------- Menu de tri (select natif) ---------- */
+
+.avis-ecran select {
+  border: 1px solid var(--bordure-forte);
+  border-radius: 5px;
+  background-color: var(--surface);
+  color: var(--texte);
+}
+
+.avis-ecran select:hover {
+  border-color: var(--v-accent);
+}
+
+/* Remplace l'anneau blanc epais par un liseré vert fin, collé au champ */
+.avis-ecran select:focus-visible {
+  outline: 1px solid var(--v-accent);
+  outline-offset: 0;
+  border-color: var(--v-accent);
+}
+
+.avis-ecran select option {
+  background-color: var(--surface);
+  color: var(--texte);
+}
+
+/* ---------- Correction : l'historique long ne doit plus agrandir la page ---------- */
+/* Les lignes de grille sont verrouillees a la hauteur disponible (minmax(0, 1fr)) :
+   le contenu ne peut plus les etirer. Si une colonne depasse, elle defile en interne. */
+
+@media (min-width: 1100px) and (min-height: 640px) {
+  .avis-corps {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .avis-detail-grille {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .avis-detail-col {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}

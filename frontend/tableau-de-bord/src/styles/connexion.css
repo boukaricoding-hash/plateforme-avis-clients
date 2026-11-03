@@ -1,0 +1,107 @@
+/* ------------------------------------------------------------
+   Ecrans accessibles sans etre connecte (connexion, mot de passe oublie,
+   reinitialisation). Le composant est composants-communs/cadre-authentification.tsx.
+
+   Deux modes :
+   - Ecran large (au moins 1280 px de large et un ecran au moins aussi large
+     que 3 sur 2) : connexion.png (16 sur 9, avec la zone creme deja dessinee
+     a droite) couvre toute la page. Le texte de la marque est a gauche sur la
+     partie sombre, le formulaire a droite sur la zone creme.
+     Le bloc "Ecran large" est en bas du fichier.
+   - Autres ecrans : le formulaire seul, avec le logo au dessus.
+
+   Pas de cadres : ni autour du formulaire, ni autour des blocs de texte.
+   Le dore est limite a ces ecrans : la palette globale ne change pas.
+   ------------------------------------------------------------ */
+
+.connexion-ecran {
+  --connexion-or: #f2b53f;
+}
+
+/* Cache par defaut : ces blocs n'existent qu'en ecran large */
+.connexion-fond,
+.connexion-gauche {
+  display: none;
+}
+
+.connexion-or {
+  color: var(--connexion-or);
+}
+
+/* Ombre douce : garde le texte lisible sur la photo */
+.connexion-texte-photo {
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* ------------------------------------------------------------
+   Ecran large
+   ------------------------------------------------------------ */
+@media (min-width: 1280px) and (min-aspect-ratio: 3/2) {
+  /* Image plein ecran, calee a droite : la zone creme reste sous le formulaire */
+  .connexion-avec-photo .connexion-fond {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right 8%;
+  }
+
+  /* Theme sombre (theme par defaut) : on assombrit l'image, y compris la zone creme,
+     pour que le texte clair du formulaire reste lisible (contraste d'au moins 4,5 sur 1) */
+  :root:not([data-theme='clair']) .connexion-avec-photo .connexion-fond {
+    filter: brightness(0.24) saturate(0.9);
+  }
+
+  /* Colonne de gauche : un voile sombre tres doux garde le texte lisible sur la photo */
+  .connexion-avec-photo .connexion-gauche {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 42%;
+    background: linear-gradient(
+      to right,
+      rgba(16, 10, 4, 0.62) 0%,
+      rgba(16, 10, 4, 0.4) 50%,
+      rgba(16, 10, 4, 0) 100%
+    );
+  }
+
+  .connexion-avec-photo .connexion-entete {
+    position: absolute;
+    top: 6dvh;
+    left: 4vw;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .connexion-avec-photo .connexion-message {
+    position: absolute;
+    top: 36dvh;
+    left: 4vw;
+    width: 25vw;
+  }
+
+  /* Colonne de droite : le tiers de l'ecran, la ou se trouve la zone creme.
+     Le formulaire est un peu remonte pour rester loin des vagues dorees du bas. */
+  .connexion-avec-photo .connexion-droite {
+    flex: none;
+    width: 33%;
+    margin-left: auto;
+    padding-bottom: 6dvh;
+  }
+
+  /* Le logo au dessus du formulaire n'est utile que sans la photo */
+  .connexion-avec-photo .connexion-logo-petit {
+    display: none;
+  }
+
+  /* Le copyright reste sur la partie creme, au dessus des vagues dorees */
+  .connexion-avec-photo .connexion-copyright {
+    bottom: 17dvh;
+  }
+}

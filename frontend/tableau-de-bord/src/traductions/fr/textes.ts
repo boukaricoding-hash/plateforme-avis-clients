@@ -20,6 +20,8 @@ export const fr = {
     fournisseur: 'DATA TRACE SERVICE',
     accroche: 'Chaque avis est une occasion de s’améliorer.',
     accrocheDetail: 'Collectez les avis de vos clients par QR code, suivez les alertes et agissez au bon moment.',
+    photoTitre: 'Votre photo ici',
+    photoConseil: 'Format portrait conseillé, environ 1200 × 1800 px : restaurant, équipe, produit...',
   },
   connexion: {
     titre: 'Connexion',

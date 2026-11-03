@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { utiliserLangue } from '../hooks/utiliser-langue'
 import type { Langue } from '../types/langue'
+import '../styles/connexion.css'
 import { BoutonTheme } from './bouton-theme'
 
 type Proprietes = {
@@ -16,12 +17,17 @@ const URL_LOGO = `${import.meta.env.BASE_URL}data.png`
 const URL_PHOTO = `${import.meta.env.BASE_URL}connexion.png`
 
 // Presentation commune des ecrans accessibles sans etre connecte.
-// Grand ecran : photo a gauche, formulaire a droite. Petit ecran : formulaire seul.
+// Ecran large : photo plein ecran, texte a gauche, formulaire a droite. Autres ecrans : formulaire seul.
 export function CadreAuthentification({ titre, sousTitre, children }: Proprietes) {
   const { t, langue, changerLangue } = utiliserLangue()
   // Si une image est absente, on la cache au lieu d'afficher une icone cassee.
   const [logoDisponible, setLogoDisponible] = useState(true)
   const [photoDisponible, setPhotoDisponible] = useState(true)
+
+  // Dernier mot en dore : "de s'ameliorer." / "Africa"
+  const accroche = t('marque.accroche')
+  const coupeAccroche = accroche.lastIndexOf(' ')
+  const coupeNom = NOM_ENTREPRISE.lastIndexOf(' ')
 
   function boutonLangue(code: Langue, libelle: string, nom: string) {
     const actif = langue === code
@@ -59,39 +65,50 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
   return (
     // Page fixe : jamais de defilement. Tout tient dans 90 % de la hauteur de l'ecran
     // et les tailles (logo, espaces) se reduisent avec la hauteur disponible.
-    <div className="relative flex h-dvh overflow-hidden bg-fond">
-      {/* Panneau photo : a partir de 1024 px de large. Le degrade sert de fond si la photo est absente. */}
-      <div className="relative hidden w-[55%] overflow-hidden bg-linear-to-br from-[#7a5f36] via-[#4a3a22] to-[#211a10] lg:block">
-        {photoDisponible && (
-          <img
-            src={URL_PHOTO}
-            alt=""
-            aria-hidden="true"
-            onError={() => setPhotoDisponible(false)}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        )}
-        {/* Voile sombre : garde le texte lisible, quelle que soit la photo */}
-        <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/10 to-black/80" />
+    <div
+      className={`connexion-ecran relative flex h-dvh overflow-hidden bg-fond ${
+        photoDisponible ? 'connexion-avec-photo' : ''
+      }`}
+    >
+      {/* Ecran large : connexion.png couvre toute la page (voir styles/connexion.css).
+          loading="lazy" : sur un petit ecran l'image est cachee, donc elle n'est pas chargee. */}
+      {photoDisponible && (
+        <img
+          src={URL_PHOTO}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          onError={() => setPhotoDisponible(false)}
+          className="connexion-fond"
+        />
+      )}
 
-        <div className="absolute left-14 top-12 flex items-center gap-3.5">
-          {logo('h-[clamp(2.5rem,7vh,3.5rem)]')}
-          <div>
-            <p className="font-titre text-2xl font-bold tracking-wide text-white">{NOM_ENTREPRISE}</p>
-            <p className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-white/80">
+      {/* Ecran large : le texte de la marque, a gauche sur la partie sombre de la photo */}
+      <div className="connexion-gauche">
+        <div className="connexion-entete">
+          {logo('h-[clamp(2.75rem,7dvh,4rem)]')}
+          <div className="connexion-texte-photo">
+            <p className="font-titre text-[clamp(1.25rem,1.7vw,1.9rem)] font-bold leading-tight tracking-wide text-white">
+              {NOM_ENTREPRISE.slice(0, coupeNom)} <span className="connexion-or">{NOM_ENTREPRISE.slice(coupeNom + 1)}</span>
+            </p>
+            <p className="mt-1 text-[clamp(0.625rem,0.75vw,0.8125rem)] uppercase tracking-[0.3em] text-white/85">
               {t('marque.produit')}
             </p>
           </div>
         </div>
 
-        <div className="absolute bottom-14 left-14 right-14 max-w-xl">
-          <p className="font-titre text-4xl font-bold leading-tight text-white">{t('marque.accroche')}</p>
-          <p className="mt-3 text-base leading-relaxed text-white/85">{t('marque.accrocheDetail')}</p>
+        <div className="connexion-message connexion-texte-photo">
+          <p className="font-titre text-[clamp(1.75rem,2.7vw,3.1rem)] font-bold leading-[1.12] text-white">
+            {accroche.slice(0, coupeAccroche)} <span className="connexion-or">{accroche.slice(coupeAccroche + 1)}</span>
+          </p>
+          <p className="mt-[2.4dvh] text-[clamp(0.875rem,1.05vw,1.0625rem)] leading-relaxed text-white/90">
+            {t('marque.accrocheDetail')}
+          </p>
         </div>
       </div>
 
       {/* Panneau formulaire */}
-      <div className="relative flex h-dvh flex-1 items-center justify-center px-6">
+      <div className="connexion-droite relative flex h-dvh flex-1 items-center justify-center px-6">
         {/* Theme et langue : dans le coin en haut a droite de l'ecran */}
         <div className="absolute right-3 top-3 z-10 flex items-center gap-1 sm:right-6 sm:top-5">
           <BoutonTheme />
@@ -105,7 +122,7 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
           {/* my-auto : centre le bloc, et s'il est trop haut il deborde vers le bas (jamais vers le haut) */}
           <div className="my-auto">
             {/* Petit ecran : pas de photo, donc le logo et le nom passent au-dessus du formulaire */}
-            <div className="mb-[3vh] flex flex-col items-center text-center lg:hidden">
+            <div className="connexion-logo-petit mb-[3vh] flex flex-col items-center text-center">
               {logo('mb-3 h-[clamp(3rem,13vh,7rem)] max-w-full')}
               <p className="font-titre text-3xl font-bold tracking-wide text-texte">{NOM_ENTREPRISE}</p>
               <p className="mt-1 text-xs uppercase tracking-widest text-texte-secondaire">
@@ -122,7 +139,7 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
           </div>
         </div>
 
-        <p className="absolute bottom-4 left-0 right-0 text-center text-xs text-texte-secondaire">
+        <p className="connexion-copyright absolute bottom-4 left-0 right-0 text-center text-xs text-texte-secondaire">
           © {new Date().getFullYear()} {NOM_ENTREPRISE}
         </p>
       </div>

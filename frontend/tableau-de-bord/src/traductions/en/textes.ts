@@ -18,6 +18,8 @@ export const en = {
   marque: {
     produit: 'Customer feedback',
     fournisseur: 'DATA TRACE SERVICE',
+    accroche: 'Every piece of feedback is a chance to improve.',
+    accrocheDetail: 'Collect customer feedback by QR code, follow alerts and act at the right time.',
   },
   connexion: {
     titre: 'Sign in',

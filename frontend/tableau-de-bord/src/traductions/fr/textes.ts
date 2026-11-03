@@ -18,6 +18,8 @@ export const fr = {
   marque: {
     produit: 'Avis clients',
     fournisseur: 'DATA TRACE SERVICE',
+    accroche: 'Chaque avis est une occasion de s’améliorer.',
+    accrocheDetail: 'Collectez les avis de vos clients par QR code, suivez les alertes et agissez au bon moment.',
   },
   connexion: {
     titre: 'Connexion',

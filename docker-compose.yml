@@ -46,9 +46,14 @@ services:
       # Adresse du tableau de bord : les liens des e-mails (mot de passe oublie) pointent ici.
       # Par defaut : PUBLIC_BASE_URL + /tableau-de-bord. Cette valeur remplace celle de backend/.env.
       TABLEAU_DE_BORD_URL: ${TABLEAU_DE_BORD_URL:-${PUBLIC_BASE_URL:-http://localhost:3000}/tableau-de-bord}
+      # Dossier des logos des organisations : il est dans le volume donnees-logos (il survit aux redemarrages).
+      LOGOS_DOSSIER: /app/televersements/logos
     command: sh -c "npx prisma migrate deploy --config prisma7.config.ts && node dist/src/serveur.js"
     ports:
       - "3000:3000"
+    volumes:
+      - donnees-logos:/app/televersements/logos
 
 volumes:
   donnees-postgres:
+  donnees-logos:

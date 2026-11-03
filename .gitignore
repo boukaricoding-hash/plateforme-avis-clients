@@ -25,3 +25,6 @@ Thumbs.db
 .idea/
 # QR de test genere par la procedure du tunnel
 qr.png
+
+# Logos envoyes par les organisations (dossier du serveur, jamais dans Git)
+backend/televersements/

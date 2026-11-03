@@ -1,6 +1,7 @@
 import { prisma } from "../../../configuration/base-de-donnees";
 import { enregistrerAudit } from "../../journal-audit/services/journal";
 import { genererCodePublic } from "../../points-de-contact/services/points-contact";
+import { lireLogoPourChevalet } from "../../organisations/services/logo";
 
 // ------------------------------------------------------------
 // QR codes : lecture, revocation et statistiques (jour 8)
@@ -61,18 +62,19 @@ function comparerNoms(a: string, b: string): number {
 // ------------------------------------------------------------
 
 // Nom et couleur de l'organisation, pour les chevalets.
-// Le logo viendra avec les parametres de l'organisation (jour 16).
+// Le logo est lu dans le dossier des logos : null s'il manque, s'il est en WebP ou heberge ailleurs (le nom le remplace).
 export async function lireOrganisationPourChevalet(
   organisationId: string,
-): Promise<{ nom: string; couleur: string | null }> {
+): Promise<{ nom: string; couleur: string | null; logo: Buffer | null }> {
   const organisation = await prisma.organisation.findUnique({
     where: { id: organisationId },
-    select: { nom: true, couleur_principale: true },
+    select: { nom: true, couleur_principale: true, logo_url: true },
   });
   if (!organisation) {
     throw new Error("Organisation introuvable : " + organisationId);
   }
-  return { nom: organisation.nom, couleur: organisation.couleur_principale };
+  const logo = await lireLogoPourChevalet(organisation.logo_url);
+  return { nom: organisation.nom, couleur: organisation.couleur_principale, logo };
 }
 
 // Un point de contact de CETTE organisation (et du perimetre). null sinon.

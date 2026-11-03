@@ -22,3 +22,16 @@ export const schemaFiltresNotifications = z.object({
 });
 
 export type FiltresNotifications = z.infer<typeof schemaFiltresNotifications>;
+
+// PATCH /api/v1/notifications/preferences
+// Un seul reglage pour l'instant : alertes_groupees.
+// - true : un seul resume par jour, a 08h00, avec tous les avis negatifs.
+// - false : un e-mail tout de suite pour chaque avis negatif.
+// strictObject : tout autre champ envoye est refuse.
+export const schemaModificationPreferencesNotifications = z.strictObject({
+  alertes_groupees: z.boolean({ error: "Le choix des alertes groupées doit être vrai ou faux." }),
+});
+
+export type DonneesModificationPreferencesNotifications = z.infer<
+  typeof schemaModificationPreferencesNotifications
+>;

@@ -1,6 +1,9 @@
 import { Prisma } from "../../../../generated/prisma/client";
 import { prisma } from "../../../configuration/base-de-donnees";
-import type { FiltresNotifications } from "../validations/notifications";
+import type {
+  DonneesModificationPreferencesNotifications,
+  FiltresNotifications,
+} from "../validations/notifications";
 
 // Ce que l'API renvoie pour une notification (jamais organisation_id, utilisateur_id ni email_envoye_le).
 const SELECTION_NOTIFICATION = {
@@ -93,5 +96,36 @@ export async function marquerNotificationLue(
   return prisma.notification.findUniqueOrThrow({
     where: { id: existante.id },
     select: SELECTION_NOTIFICATION,
+  });
+}
+
+// ------------------------------------------------------------
+// Preferences de notification de l'utilisateur connecte
+// ------------------------------------------------------------
+
+// Renvoie null si l'utilisateur n'existe plus ou n'appartient pas a cette organisation.
+// Chacun ne lit et ne modifie que SES preferences : l'identifiant vient de la session.
+export async function lirePreferencesNotifications(organisationId: string, utilisateurId: string) {
+  return prisma.utilisateur.findFirst({
+    where: { id: utilisateurId, organisation_id: organisationId, actif: true, supprime_le: null },
+    select: { alertes_groupees: true },
+  });
+}
+
+// alertes_groupees = true : un resume par jour a 08h00 ; false : un e-mail par avis negatif.
+export async function modifierPreferencesNotifications(
+  organisationId: string,
+  utilisateurId: string,
+  donnees: DonneesModificationPreferencesNotifications,
+) {
+  const existant = await lirePreferencesNotifications(organisationId, utilisateurId);
+  if (existant === null) {
+    return null;
+  }
+
+  return prisma.utilisateur.update({
+    where: { id: utilisateurId },
+    data: { alertes_groupees: donnees.alertes_groupees },
+    select: { alertes_groupees: true },
   });
 }

@@ -72,66 +72,66 @@
   --ombre-lg: 0 20px 50px rgb(0 0 0 / 0.5);
 }
 
-/* ---------- Theme clair (creme et or) ---------- */
+/* ---------- Theme clair (blanc et gris doux, style Claude) ---------- */
 :root[data-theme='clair'] {
   color-scheme: light;
 
-  /* Fonds */
-  --fond: #faf8f4;
-  --fond-alt: #f0ece2;
+  /* Fonds : blanc pur, gris tres clair pour les zones secondaires */
+  --fond: #ffffff;
+  --fond-alt: #fafafa;
   --surface: #ffffff;
-  --surface-douce: #ebe5d8;
-  /* Fond teinte d'or : survol des icones et des boutons discrets */
-  --accent-fond: #f3e8d3;
+  --surface-douce: #f3f3f3;
+  /* Fond gris : survol des icones et des boutons discrets, element actif */
+  --accent-fond: #ececec;
 
-  /* Couleur principale : boutons (texte blanc dessus : contraste 4,8 sur 1) */
-  --couleur-principale: #8f6c31;
-  --couleur-principale-fonce: #7a5b28;
-  /* Decors seulement (barres, graphiques). Jamais comme fond d'un bouton avec du texte blanc. */
-  --couleur-decor: #a8813f;
-  --couleur-decor-clair: #e8d5ab;
+  /* Couleur principale : boutons noirs (texte blanc dessus : contraste 15 sur 1) */
+  --couleur-principale: #262626;
+  --couleur-principale-fonce: #0a0a0a;
+  /* Decors seulement (barres, graphiques) */
+  --couleur-decor: #404040;
+  --couleur-decor-clair: #e5e5e5;
 
   /* Cartes de l'accueil sans sens bon ou mauvais (contraste d'au moins 5 sur 1 sur fond blanc) */
-  --carte-bleu: #2f6a9b;
-  --carte-violet: #7a4fa3;
-  --carte-sarcelle: #1f7a7a;
+  --carte-bleu: #1d4ed8;
+  --carte-violet: #6d28d9;
+  --carte-sarcelle: #0f766e;
 
   /* Textes */
-  --texte: #201c14;
-  --texte-secondaire: #6b6252;
+  --texte: #171717;
+  --texte-secondaire: #525252;
   /* Decor seulement : contraste faible, jamais pour du texte a lire */
-  --texte-discret: #948a76;
+  --texte-discret: #a3a3a3;
   --texte-sur-principale: #ffffff;
 
   /* Bordures */
-  --bordure: #e5ddcb;
-  --bordure-forte: #d6cbb0;
-  --bordure-champ: #857a64; /* contour des champs : contraste 4 sur 1 */
-  --bordure-champ-focus: #8f6c31;
+  --bordure: #e8e8e8;
+  --bordure-forte: #d4d4d4;
+  --bordure-champ: #737373; /* contour des champs : contraste 4,7 sur 1 */
+  --bordure-champ-focus: #1d4ed8;
 
   /* Etats fonctionnels */
-  --erreur: #c0392b;
-  --succes: #2f7a33;
-  --alerte: #d9a33d; /* decor seulement */
-  --info: #2f6a9b;
+  --erreur: #dc2626;
+  --succes: #15803d;
+  --alerte: #f59e0b; /* decor seulement */
+  --info: #1d4ed8;
 
   /* Notes : versions assez sombres pour du texte sur fond clair */
-  --note-bonne: #2f7a33;
-  --note-moyenne: #b45f06;
-  --note-mauvaise: #c0392b;
+  --note-bonne: #15803d;
+  --note-moyenne: #b45309;
+  --note-mauvaise: #dc2626;
 
   /* Focus clavier, selection de texte, barre de defilement */
-  --focus: #8f6c31;
-  --selection-fond: #e8d5ab;
-  --selection-texte: #201c14;
-  --defilement-piste: #faf8f4;
-  --defilement-pouce: #d6cbb0;
-  --defilement-pouce-survol: #b9ab88;
+  --focus: #1d4ed8;
+  --selection-fond: #dbeafe;
+  --selection-texte: #171717;
+  --defilement-piste: #ffffff;
+  --defilement-pouce: #d4d4d4;
+  --defilement-pouce-survol: #a3a3a3;
 
-  /* Ombres douces teintees de brun */
-  --ombre-sm: 0 4px 12px rgb(20 18 14 / 0.08);
-  --ombre-md: 0 8px 24px rgb(20 18 14 / 0.1);
-  --ombre-lg: 0 20px 50px rgb(20 18 14 / 0.14);
+  /* Ombres tres douces */
+  --ombre-sm: 0 4px 12px rgb(0 0 0 / 0.05);
+  --ombre-md: 0 8px 24px rgb(0 0 0 / 0.07);
+  --ombre-lg: 0 20px 50px rgb(0 0 0 / 0.1);
 }
 
 /* =========================================
@@ -299,6 +299,14 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--bordure-champ-focus);
+}
+
+/* Champs "ligne fine" : le remplissage automatique du navigateur ne doit pas recolorer le fond */
+.champ-ligne:-webkit-autofill,
+.champ-ligne:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--texte);
+  caret-color: var(--texte);
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 /* =========================================

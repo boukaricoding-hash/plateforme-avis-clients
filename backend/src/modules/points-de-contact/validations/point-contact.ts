@@ -11,12 +11,15 @@ export const schemaFiltrePointsContact = z.object({
 
 const nom = z.string().trim().min(1, "Le nom est obligatoire.").max(120);
 const type = z.string().trim().min(1).max(30);
+const questionnaireId = z.uuid("Identifiant de questionnaire invalide.");
 
 export const schemaCreationPointContact = z.strictObject({
   site_id: z.uuid("Identifiant de site invalide."),
   nom,
   type: type.default("table"),
   zone: z.string().trim().max(60).optional(),
+  // Questionnaire associe (facultatif) : il doit appartenir a la meme organisation.
+  questionnaire_id: questionnaireId.optional(),
 });
 
 // Cree "Table 1", "Table 2", ... jusqu'a "Table 40" en une seule fois.
@@ -27,6 +30,8 @@ export const schemaCreationMasse = z
     type: type.default("table"),
     debut: z.number().int().min(1).default(1),
     fin: z.number().int().min(1),
+    // Questionnaire associe a tous les points crees (facultatif).
+    questionnaire_id: questionnaireId.optional(),
   })
   .refine((donnees) => donnees.fin >= donnees.debut, {
     message: "Le numero de fin doit etre superieur ou egal au numero de debut.",
@@ -42,6 +47,8 @@ export const schemaModificationPointContact = z
     nom: nom.optional(),
     type: type.optional(),
     zone: z.string().trim().max(60).nullable().optional(),
+    // null retire le questionnaire associe.
+    questionnaire_id: questionnaireId.nullable().optional(),
   })
   .refine((donnees) => Object.keys(donnees).length > 0, {
     message: "Aucune modification envoyee.",

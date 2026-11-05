@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { sitesAutorises } from "../../../utilitaires/perimetre";
 import { repondreDonneesInvalides, repondreNonTrouve } from "../../../utilitaires/reponses";
 import {
+  activerPointContact,
   creerPointContact,
   creerPointsContactEnMasse,
   desactiverPointContact,
@@ -15,6 +16,10 @@ import {
   schemaIdPointContact,
   schemaModificationPointContact,
 } from "../validations/point-contact";
+
+const MESSAGE_SITE_INTROUVABLE = "Site introuvable.";
+const MESSAGE_POINT_INTROUVABLE = "Point de contact introuvable.";
+const MESSAGE_QUESTIONNAIRE_INTROUVABLE = "Questionnaire introuvable.";
 
 // Les contrôles d'accès ont déjà rempli ces deux valeurs ; on vérifie quand même.
 function contexte(req: Request) {
@@ -50,9 +55,14 @@ export async function creerUnPointContact(req: Request, res: Response): Promise<
   const lecture = schemaCreationPointContact.safeParse(req.body);
   if (!lecture.success) return repondreDonneesInvalides(res, lecture.error);
 
-  const pointContact = await creerPointContact(ctx.organisationId, lecture.data);
-  if (!pointContact) return repondreNonTrouve(res, "Site introuvable.");
-  res.status(201).json({ point_contact: pointContact });
+  const resultat = await creerPointContact(ctx.organisationId, lecture.data);
+  if (resultat.etat === "site_introuvable") {
+    return repondreNonTrouve(res, MESSAGE_SITE_INTROUVABLE);
+  }
+  if (resultat.etat === "questionnaire_invalide") {
+    return repondreNonTrouve(res, MESSAGE_QUESTIONNAIRE_INTROUVABLE);
+  }
+  res.status(201).json({ point_contact: resultat.point_contact });
 }
 
 export async function creerPointsContactMasse(req: Request, res: Response): Promise<void> {
@@ -63,8 +73,13 @@ export async function creerPointsContactMasse(req: Request, res: Response): Prom
   if (!lecture.success) return repondreDonneesInvalides(res, lecture.error);
 
   const resultat = await creerPointsContactEnMasse(ctx.organisationId, lecture.data);
-  if (!resultat) return repondreNonTrouve(res, "Site introuvable.");
-  res.status(201).json(resultat);
+  if (resultat.etat === "site_introuvable") {
+    return repondreNonTrouve(res, MESSAGE_SITE_INTROUVABLE);
+  }
+  if (resultat.etat === "questionnaire_invalide") {
+    return repondreNonTrouve(res, MESSAGE_QUESTIONNAIRE_INTROUVABLE);
+  }
+  res.status(201).json({ crees: resultat.crees, deja_existants: resultat.deja_existants });
 }
 
 export async function modifierUnPointContact(req: Request, res: Response): Promise<void> {
@@ -76,13 +91,18 @@ export async function modifierUnPointContact(req: Request, res: Response): Promi
   const lecture = schemaModificationPointContact.safeParse(req.body);
   if (!lecture.success) return repondreDonneesInvalides(res, lecture.error);
 
-  const pointContact = await modifierPointContact(
+  const resultat = await modifierPointContact(
     ctx.organisationId,
     identifiant.data.id,
     lecture.data,
   );
-  if (!pointContact) return repondreNonTrouve(res, "Point de contact introuvable.");
-  res.status(200).json({ point_contact: pointContact });
+  if (resultat.etat === "introuvable") {
+    return repondreNonTrouve(res, MESSAGE_POINT_INTROUVABLE);
+  }
+  if (resultat.etat === "questionnaire_invalide") {
+    return repondreNonTrouve(res, MESSAGE_QUESTIONNAIRE_INTROUVABLE);
+  }
+  res.status(200).json({ point_contact: resultat.point_contact });
 }
 
 export async function desactiverUnPointContact(req: Request, res: Response): Promise<void> {
@@ -93,6 +113,18 @@ export async function desactiverUnPointContact(req: Request, res: Response): Pro
   if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
 
   const pointContact = await desactiverPointContact(ctx.organisationId, identifiant.data.id);
-  if (!pointContact) return repondreNonTrouve(res, "Point de contact introuvable.");
+  if (!pointContact) return repondreNonTrouve(res, MESSAGE_POINT_INTROUVABLE);
+  res.status(200).json({ point_contact: pointContact });
+}
+
+export async function activerUnPointContact(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdPointContact.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+
+  const pointContact = await activerPointContact(ctx.organisationId, identifiant.data.id);
+  if (!pointContact) return repondreNonTrouve(res, MESSAGE_POINT_INTROUVABLE);
   res.status(200).json({ point_contact: pointContact });
 }

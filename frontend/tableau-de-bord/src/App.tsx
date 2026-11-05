@@ -6,6 +6,7 @@ import { PageConnexion } from './pages/connexion/page-connexion'
 import { PageMotDePasseOublie } from './pages/connexion/page-mot-de-passe-oublie'
 import { PageReinitialisation } from './pages/connexion/page-reinitialisation'
 import { PageListeAvis } from './pages/liste-avis/page-liste-avis'
+import { PageParametres } from './pages/parametres-organisation/page-parametres'
 import { PageAccueil } from './pages/tableau-de-bord/page-accueil'
 
 // Ecrans prevus mais pas encore construits : chacun est remplace par son vrai ecran le jour venu.
@@ -15,7 +16,6 @@ const ECRANS_A_VENIR = [
   { chemin: 'sites', cle: 'menu.sites' },
   { chemin: 'utilisateurs', cle: 'menu.utilisateurs' },
   { chemin: 'exports', cle: 'menu.exports' },
-  { chemin: 'parametres', cle: 'menu.parametres' },
 ]
 
 function EcranAVenir({ cle }: { cle: string }) {
@@ -42,6 +42,7 @@ export default function App() {
           <Route index element={<PageAccueil />} />
           <Route path="avis" element={<PageListeAvis />} />
           <Route path="avis/:id" element={<PageListeAvis />} />
+          <Route path="parametres" element={<PageParametres />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route
               key={ecran.chemin}

@@ -13,6 +13,8 @@ import { routesQuestionnaires } from "./modules/questionnaires/routes/questionna
 import { routesAvisPublic } from "./modules/avis-public/routes/avis-public.routes";
 import { routesAvis } from "./modules/avis/routes/avis.routes";
 import { routesNotifications } from "./modules/notifications/routes/notifications.routes";
+import { routesParametres } from "./modules/organisations/routes/parametres.routes";
+import { dossierLogos } from "./modules/organisations/services/logo";
 import { routesDashboard } from "./modules/tableaux-de-bord/routes/dashboard.routes";
 
 export const app = express();
@@ -96,6 +98,14 @@ app.use("/api/v1/questionnaires", routesQuestionnaires);
 app.use("/api/v1/public", routesAvisPublic);
 app.use("/api/v1/avis", routesAvis);
 app.use("/api/v1/notifications", routesNotifications);
+app.use("/api/v1/organisation", routesParametres);
+
+// Logos des organisations : adresse publique (la page d'avis et les chevalets les affichent).
+// Les noms de fichiers sont des identifiants aleatoires. Un logo absent donne le 404 JSON habituel.
+app.use(
+  "/api/v1/logos",
+  express.static(dossierLogos(), { index: false, dotfiles: "ignore", maxAge: "30d", immutable: true }),
+);
 app.use("/api/v1/dashboard", routesDashboard);
 // 404 : aucune route ne correspond
 app.use((_req: Request, res: Response) => {

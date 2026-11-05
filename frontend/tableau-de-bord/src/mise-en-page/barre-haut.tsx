@@ -1,15 +1,26 @@
 import { BoutonTheme } from '../composants-communs/bouton-theme'
+import { ClocheNotifications } from '../composants-communs/cloche-notifications'
 import { utiliserLangue } from '../hooks/utiliser-langue'
+import { utiliserUtilisateur } from '../hooks/utiliser-utilisateur'
 import type { Langue } from '../types/langue'
 
 type Proprietes = {
   onOuvrirMenu: () => void
 }
 
-// Barre du haut : bouton du menu (tablette et telephone), choix du theme et de la langue.
+// Barre du haut : bouton du menu (tablette et telephone), cloche de notifications,
+// choix du theme et de la langue.
+// La cloche est reservee au Responsable et au Gestionnaire : l'administrateur DTS n'a pas
+// d'organisation, l'API lui refuse les notifications. Tant qu'elle n'est pas affichee, elle
+// ne fait aucun appel a l'API (le hook des notifications vit dans la cloche).
 // Le nom, le role et la deconnexion sont dans le bloc utilisateur du menu lateral.
 export function BarreHaut({ onOuvrirMenu }: Proprietes) {
   const { t, langue, changerLangue } = utiliserLangue()
+  const { utilisateur } = utiliserUtilisateur()
+
+  const afficherCloche =
+    utilisateur !== null &&
+    (utilisateur.role === 'RESPONSABLE' || utilisateur.role === 'GESTIONNAIRE')
 
   function boutonLangue(code: Langue, libelle: string, nom: string) {
     const actif = langue === code
@@ -45,6 +56,8 @@ export function BarreHaut({ onOuvrirMenu }: Proprietes) {
       </button>
 
       <div className="flex-1" />
+
+      {afficherCloche && <ClocheNotifications />}
 
       <BoutonTheme />
 

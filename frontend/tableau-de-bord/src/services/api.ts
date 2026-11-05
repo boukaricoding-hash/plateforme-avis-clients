@@ -29,7 +29,10 @@ export async function appeler<T>(chemin: string, options?: RequestInit): Promise
   try {
     reponse = await fetch(`${BASE}${chemin}`, {
       ...options,
-      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      // Un fichier (FormData) part sans en-tete JSON : le navigateur ajoute lui-meme l'en-tete multipart.
+      headers: options?.body instanceof FormData
+        ? options.headers
+        : { 'Content-Type': 'application/json', ...options?.headers },
       credentials: 'same-origin',
     })
   } catch {

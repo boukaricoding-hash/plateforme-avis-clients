@@ -96,6 +96,7 @@ export async function telechargerLeQr(req: Request, res: Response): Promise<void
     const pdf = await genererChevaletPdf({ nom: point.nom, adresse }, taille, {
       nomOrganisation: organisation.nom,
       couleur: organisation.couleur,
+      logo: organisation.logo,
     });
     envoyerFichier(res, pdf, "application/pdf", "chevalet-" + nomDeFichier(point.nom) + "-" + taille.toLowerCase() + ".pdf");
   } catch (erreur) {
@@ -133,7 +134,7 @@ export async function telechargerLaPlanche(req: Request, res: Response): Promise
     const organisation = await lireOrganisationPourChevalet(ctx.organisationId);
     const pdf = await genererPlancheA4Pdf(
       points.map((point) => ({ nom: point.nom, adresse: adresseDuQr(point.code_public) })),
-      { nomOrganisation: organisation.nom, couleur: organisation.couleur },
+      { nomOrganisation: organisation.nom, couleur: organisation.couleur, logo: organisation.logo },
     );
     envoyerFichier(res, pdf, "application/pdf", "planche-qr.pdf");
   } catch (erreur) {

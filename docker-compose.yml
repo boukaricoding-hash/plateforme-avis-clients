@@ -17,8 +17,8 @@ services:
       retries: 10
 
   # Fausse boite mail pour le developpement : recoit les e-mails du backend sans rien envoyer.
-  # Interface : http://localhost:8025 - serveur SMTP : localhost:1025.
-  # Demarrage : docker compose --profile dev up -d mailpit
+  # Interface : http://localhost:8025 - serveur SMTP : localhost:1025 (depuis le PC) ou mailpit:1025 (depuis Docker).
+  # Demarrage avec toute la plateforme : docker compose --profile dev up -d --build
   # Profil "dev" : ne demarre jamais sur le serveur de test ni en production.
   mailpit:
     image: axllent/mailpit:latest
@@ -48,6 +48,12 @@ services:
       TABLEAU_DE_BORD_URL: ${TABLEAU_DE_BORD_URL:-${PUBLIC_BASE_URL:-http://localhost:3000}/tableau-de-bord}
       # Dossier des logos des organisations : il est dans le volume donnees-logos (il survit aux redemarrages).
       LOGOS_DOSSIER: /app/televersements/logos
+      # E-mails : dans Docker, "localhost" est le conteneur lui-meme, pas Mailpit. Ces valeurs remplacent
+      # SMTP_HOTE, SMTP_PORT et SMTP_SECURISE de backend/.env. Avec un vrai service (Brevo, Mailgun...),
+      # definir SMTP_HOTE_DOCKER, SMTP_PORT_DOCKER et SMTP_SECURISE_DOCKER dans le .env de la racine.
+      SMTP_HOTE: ${SMTP_HOTE_DOCKER:-mailpit}
+      SMTP_PORT: ${SMTP_PORT_DOCKER:-1025}
+      SMTP_SECURISE: ${SMTP_SECURISE_DOCKER:-false}
     command: sh -c "npx prisma migrate deploy --config prisma7.config.ts && node dist/src/serveur.js"
     ports:
       - "3000:3000"

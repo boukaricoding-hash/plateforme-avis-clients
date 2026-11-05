@@ -251,3 +251,28 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 
 **Point d'attention**
 - `eslint` lance sur tout `src` signale 56 erreurs dans des fichiers non modifies ce jour (hooks nommes `utiliser...` que la regle des hooks ne reconnait pas, et `tableau-classement.tsx`). A traiter plus tard, pas de lien avec le jour 15.
+
+
+## Jour 16 - jeudi 5 novembre 2026 : alertes, cloche et parametres de l'organisation
+
+**Fait**
+- Cloche de notifications dans la barre du haut : compteur de non lues, liste, marquer comme lue, un clic ouvre l'avis. Routes `GET /notifications`, `POST /notifications/:id/lue`, `GET` et `PATCH /notifications/preferences`.
+- Alertes par e-mail (`email-alerte.ts`) : site, point de contact, note, extrait du commentaire et lien direct vers l'avis. Au choix de chaque utilisateur : immediate, ou groupee en un resume par jour (`resume-alertes.ts` et tache `resume-quotidien.ts`).
+- Ecran E14 (parametres de l'organisation) : logo, couleur principale, seuils d'alerte (note et NPS), preferences de notification. Routes `GET` et `PATCH /parametres`, `POST` et `DELETE /logo` (Responsable seulement).
+- Logo : envoi avec multer, PNG, JPEG ou WebP, 1 Mo au plus, SVG refuse. Dossier `LOGOS_DOSSIER`, servi sur `/api/v1/logos/`, et utilise sur le chevalet PDF.
+- Test d'isolation des parametres, des notifications et du logo : `tests/integration/isolation-parametres.test.ts`.
+- Correctif Docker (branche du jour 17) : l'application conteneurisee envoie ses e-mails vers Mailpit.
+
+**Decisions**
+- Le resume quotidien part a 08h00 UTC (= 08h00 a Lome, pas de changement d'heure).
+- Les e-mails sont codes avec Mailpit. Quand DTS aura choisi son service (Brevo, Mailgun ou autre), on changera seulement les variables `SMTP_*`. Aucun abonnement payant sans accord de DTS.
+- Seuils d'alerte : note de 1 a 4 et NPS de 0 a 9 (un seuil de 5 ou de 10 alerterait sur tous les avis).
+- Le logo est dans un volume Docker (`donnees-logos`) : il survit aux redemarrages.
+
+**A faire ensuite**
+- Jour 17 : ecrans E12 (sites et points de contact) et E11 (QR codes).
+- Decision de DTS attendue le lundi 9 novembre : service d'e-mails.
+
+**Points d'attention**
+- Un e-mail refuse par le serveur d'envoi n'est pas retente.
+- Les sauvegardes du jour 28 devront couvrir aussi le dossier des logos.

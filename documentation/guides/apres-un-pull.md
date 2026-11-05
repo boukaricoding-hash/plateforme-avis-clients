@@ -26,3 +26,9 @@ Ce guide dit quoi lancer apres avoir recupere le code. Il est mis a jour chaque 
   - Sept nouvelles variables dans `backend/.env` (copier depuis `backend/.env.example`) : `TABLEAU_DE_BORD_URL` (http://localhost:5174), `SMTP_HOTE` (localhost), `SMTP_PORT` (1025), `SMTP_SECURISE` (false), `SMTP_UTILISATEUR` et `SMTP_MOT_DE_PASSE` (vides avec Mailpit), `EMAIL_EXPEDITEUR`.
   - Demarrage du tableau de bord : terminal 1 = `cd backend` puis `npm run dev` ; terminal 2 = `cd frontend\tableau-de-bord` puis `npm run dev`.
   - Variables facultatives, utiles seulement pour les tests : `LIMITE_REINITIALISATION_DEMANDE_MAX` et `LIMITE_REINITIALISATION_MAX` (le fichier de tests les regle lui-meme).
+
+- Jour 16 : nouvelle dependance `multer` (envoi du logo). Apres un pull, lancer `npm ci` dans `backend`. Le tableau de bord n'a pas de nouvelle dependance.
+  - Nouvelle variable facultative dans `backend/.env` (copier depuis `backend/.env.example`) : `LOGOS_DOSSIER`. La laisser vide en local : les logos vont dans `backend/televersements/logos`, ignore par Git.
+  - Dans Docker, le dossier des logos est dans le volume `donnees-logos` : il survit aux redemarrages. Pour lancer toute la plateforme avec Mailpit : `docker compose --profile dev up -d --build` (depuis la racine du projet).
+  - Dans Docker, `localhost` est le conteneur lui-meme : l'application envoie ses e-mails vers `mailpit` grace a `SMTP_HOTE_DOCKER`, `SMTP_PORT_DOCKER` et `SMTP_SECURISE_DOCKER`. Sans ces variables dans le `.env` de la racine, les valeurs par defaut conviennent (Mailpit). Avec un vrai service d'e-mails (choix de DTS), on les renseigne.
+  - Le resume quotidien des alertes part a 08h00 UTC : aucune commande a lancer, il demarre avec le serveur.

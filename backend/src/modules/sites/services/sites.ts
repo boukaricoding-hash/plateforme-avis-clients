@@ -75,3 +75,15 @@ export async function desactiverSite(organisationId: string, siteId: string) {
   }
   return lireSite(organisationId, siteId);
 }
+
+// Reactiver remet seulement "actif" a vrai. Les points de contact du site gardent leur propre statut.
+export async function activerSite(organisationId: string, siteId: string) {
+  const resultat = await prisma.site.updateMany({
+    where: { id: siteId, organisation_id: organisationId, supprime_le: null },
+    data: { actif: true },
+  });
+  if (resultat.count === 0) {
+    return null;
+  }
+  return lireSite(organisationId, siteId);
+}

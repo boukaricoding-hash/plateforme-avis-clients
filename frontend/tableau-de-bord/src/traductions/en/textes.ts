@@ -274,6 +274,64 @@ export const en = {
       stand: 'Stand',
     },
   },
+  // Screen E11: QR codes and table stands, day 17
+  qrCodes: {
+    titre: 'QR codes and table stands',
+    sousTitre:
+      'Download the QR codes of your tables and print your table stands. You can also revoke or regenerate a QR code.',
+    sousTitreGestionnaire:
+      'You can download the QR codes of the sites in your scope. Only the Manager can revoke or regenerate them.',
+    chargement: 'Loading QR codes…',
+    erreur: 'Unable to load the QR codes.',
+    filtreSite: 'Site',
+    tousLesSites: 'All sites',
+    planche: 'A4 sheet',
+    plancheAide: 'Table stands on the sheet: {nombre} (4 per A4 page).',
+    plancheAucun: 'No valid QR code to print for this choice.',
+    plancheTrop:
+      'The sheet is limited to {limite} table stands and this choice has {nombre}. Choose a site, or download the table stands one by one.',
+    nombrePoints: 'Contact points: {nombre}',
+    aucunPoint: 'No contact points yet. Create your tables from the Sites and tables screen.',
+    pagination: 'QR code pagination',
+    pagePrecedente: 'Previous page',
+    pageSuivante: 'Next page',
+    pageSur: 'Page {page} of {pages}',
+    consigne: {
+      titre: 'Before you print',
+      taille: 'Minimum QR code size: 3 × 3 cm.',
+      contraste:
+        'Keep a good contrast: dark QR code on a light background, with no filter or image on top.',
+      support: 'Prefer a matt surface: the glare of glossy paper makes scanning harder.',
+    },
+    carte: {
+      statutValide: 'Valid QR code',
+      statutRevoque: 'Revoked QR code',
+      pointDesactive: 'Point disabled',
+      qrIndisponible: 'QR code unavailable',
+      apercu: 'Preview of the QR code of {nom}',
+      scans: 'Scans',
+      avis: 'Reviews',
+      tauxConversion: 'Conversion rate',
+      revoqueExplication:
+        'This QR code is revoked: the table stand already printed shows “QR code disabled”. The scan and review history is kept. Only regenerating it puts it back in service.',
+      telecharger: 'Download the QR code of {nom} as {format}',
+      revoquer: 'Revoke',
+      regenerer: 'Regenerate',
+      confirmationRevoquer:
+        'Revoke the QR code of {nom}? The table stand already printed will show “QR code disabled”. The review history is kept.',
+      confirmationRegenerer:
+        'Regenerate the QR code of {nom}? A new code replaces the old one: the table stand already printed will stop working and you will need to print the new one. The review history is kept.',
+      enCours: 'In progress…',
+      confirmerRevoquer: 'Yes, revoke',
+      confirmerRegenerer: 'Yes, regenerate',
+      annuler: 'Cancel',
+      erreurDroits: 'Only the Manager can revoke or regenerate a QR code.',
+      erreurIntrouvable: 'This contact point cannot be found. Reload the page.',
+      erreur: 'The operation could not be completed. Please try again.',
+      succesRevoque: 'QR code revoked.',
+      succesRegenere: 'QR code regenerated. Print the new table stand.',
+    },
+  },
   roles: {
     RESPONSABLE: 'Manager',
     GESTIONNAIRE: 'Supervisor',

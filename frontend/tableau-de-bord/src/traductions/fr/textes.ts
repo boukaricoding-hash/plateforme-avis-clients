@@ -277,6 +277,64 @@ export const fr = {
       stand: 'Stand',
     },
   },
+  qrCodes: {
+    titre: 'QR codes et chevalets',
+    sousTitre:
+      'Téléchargez les QR codes de vos tables et imprimez vos chevalets. Vous pouvez aussi révoquer ou régénérer un QR code.',
+    sousTitreGestionnaire:
+      'Vous téléchargez les QR codes des sites de votre périmètre. Seul le Responsable peut les révoquer ou les régénérer.',
+    chargement: 'Chargement des QR codes…',
+    erreur: 'Impossible de charger les QR codes.',
+    filtreSite: 'Site',
+    tousLesSites: 'Tous les sites',
+    planche: 'Planche A4',
+    plancheAide: 'Nombre de chevalets sur la planche : {nombre} (4 par page A4).',
+    plancheAucun: 'Aucun QR code valide à imprimer pour ce choix.',
+    plancheTrop:
+      'La planche est limitée à {limite} chevalets et ce choix en compte {nombre}. Choisissez un site, ou téléchargez les chevalets un par un.',
+    nombrePoints: 'Points de contact : {nombre}',
+    aucunPoint:
+      'Aucun point de contact pour le moment. Créez vos tables depuis l’écran Sites et tables.',
+    pagination: 'Pagination des QR codes',
+    pagePrecedente: 'Page précédente',
+    pageSuivante: 'Page suivante',
+    pageSur: 'Page {page} sur {pages}',
+    consigne: {
+      titre: 'Avant d’imprimer',
+      taille: 'Taille minimale du QR code : 3 × 3 cm.',
+      contraste:
+        'Gardez un bon contraste : QR code foncé sur fond clair, sans filtre ni image par-dessus.',
+      support: 'Préférez un support mat : les reflets d’un papier brillant gênent le scan.',
+    },
+    carte: {
+      statutValide: 'QR code valide',
+      statutRevoque: 'QR code révoqué',
+      pointDesactive: 'Point désactivé',
+      qrIndisponible: 'QR code indisponible',
+      apercu: 'Aperçu du QR code de {nom}',
+      scans: 'Scans',
+      avis: 'Avis',
+      tauxConversion: 'Taux de conversion',
+      revoqueExplication:
+        'Ce QR code est révoqué : le chevalet déjà imprimé affiche « QR code désactivé ». L’historique des scans et des avis est conservé. Seule la régénération le remet en service.',
+      telecharger: 'Télécharger le QR code de {nom} au format {format}',
+      revoquer: 'Révoquer',
+      regenerer: 'Régénérer',
+      confirmationRevoquer:
+        'Révoquer le QR code de {nom} ? Le chevalet déjà imprimé affichera « QR code désactivé ». L’historique des avis est conservé.',
+      confirmationRegenerer:
+        'Régénérer le QR code de {nom} ? Un nouveau code remplace l’ancien : le chevalet déjà imprimé ne fonctionnera plus et il faudra imprimer le nouveau. L’historique des avis est conservé.',
+      enCours: 'En cours…',
+      confirmerRevoquer: 'Oui, révoquer',
+      confirmerRegenerer: 'Oui, régénérer',
+      annuler: 'Annuler',
+      erreurDroits: 'Seul le Responsable peut révoquer ou régénérer un QR code.',
+      erreurIntrouvable: 'Ce point de contact est introuvable. Rechargez la page.',
+      erreur: 'L’opération n’a pas pu être faite. Merci de réessayer.',
+      succesRevoque: 'QR code révoqué.',
+      succesRegenere: 'QR code régénéré. Imprimez le nouveau chevalet.',
+    },
+  },
   roles: {
     RESPONSABLE: 'Responsable',
     GESTIONNAIRE: 'Gestionnaire',

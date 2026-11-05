@@ -7,13 +7,13 @@ import { PageMotDePasseOublie } from './pages/connexion/page-mot-de-passe-oublie
 import { PageReinitialisation } from './pages/connexion/page-reinitialisation'
 import { PageListeAvis } from './pages/liste-avis/page-liste-avis'
 import { PageParametres } from './pages/parametres-organisation/page-parametres'
+import { PageQrCodes } from './pages/qr-codes/page-qr-codes'
 import { PageSites } from './pages/sites-points-de-contact/page-sites'
 import { PageAccueil } from './pages/tableau-de-bord/page-accueil'
 
 // Ecrans prevus mais pas encore construits : chacun est remplace par son vrai ecran le jour venu.
 const ECRANS_A_VENIR = [
   { chemin: 'questionnaires', cle: 'menu.questionnaires' },
-  { chemin: 'qr-codes', cle: 'menu.qrCodes' },
   { chemin: 'utilisateurs', cle: 'menu.utilisateurs' },
   { chemin: 'exports', cle: 'menu.exports' },
 ]
@@ -44,6 +44,7 @@ export default function App() {
           <Route path="avis/:id" element={<PageListeAvis />} />
           <Route path="parametres" element={<PageParametres />} />
           <Route path="sites" element={<PageSites />} />
+          <Route path="qr-codes" element={<PageQrCodes />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route
               key={ecran.chemin}

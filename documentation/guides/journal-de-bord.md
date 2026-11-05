@@ -276,3 +276,32 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 **Points d'attention**
 - Un e-mail refuse par le serveur d'envoi n'est pas retente.
 - Les sauvegardes du jour 28 devront couvrir aussi le dossier des logos.
+
+
+## Jour 17 - jeudi 5 novembre 2026 : sites, points de contact et QR codes (ecrans E12 et E11)
+
+**Fait**
+- Backend : questionnaire associe a chaque point de contact (`questionnaire_id`, avec le titre du questionnaire dans la reponse), reactivation d'un point de contact (`POST /points-contact/:id/activer`) et d'un site (`POST /sites/:id/activer`). Test d'isolation `isolation-sites-points.test.ts` : npm test, 14 fichiers, 202 tests passent.
+- Ecran E12 (sites et tables), dans `frontend/tableau-de-bord/src` : `types/sites-points.ts`, `types/questionnaires.ts`, `services/sites.ts`, `services/points-contact.ts`, `services/questionnaires.ts`, `hooks/utiliser-sites-points.ts`, `composants-sites/` (`formulaire-site`, `liste-points`, `creation-masse`) et `pages/sites-points-de-contact/page-sites.tsx`. Le Responsable cree et modifie ses sites, les active ou les desactive, choisit le questionnaire de chaque point, active ou desactive un point, et cree ses tables en masse (prefixe, type, debut, fin, 500 au plus, message "X crees, Y deja existants").
+- Ecran E11 (QR codes et chevalets) : `types/qr-codes.ts`, `services/qr-codes.ts`, `hooks/utiliser-qr-codes.ts`, `composants-qr/carte-qr.tsx` et `pages/qr-codes/page-qr-codes.tsx`. Chaque carte montre l'apercu PNG (charge au defilement), les liens PNG, SVG, PDF A6 et PDF A5, les scans, les avis et le taux de conversion, avec Revoquer et Regenerer apres confirmation. La page a un filtre par site, 12 cartes par page, le bouton Planche A4 et la consigne d'impression (3 x 3 cm minimum, bon contraste, support mat).
+- `App.tsx` : routes `sites` et `qr-codes` branchees (`qr-codes` retire des ecrans a venir). Textes fr et en : blocs `sites` et `qrCodes`.
+- `tsc -b` sans erreur.
+
+**Decisions**
+- Types de point de contact : liste fixe table, chambre, service, salle, stand (le vocabulaire par secteur viendra au jour 22).
+- Gestionnaire : voit E12 et E11 limites a ses sites, en lecture seule. Les boutons de modification sont caches et le serveur refuse de toute facon (403). Il telecharge les QR codes mais ne les revoque pas.
+- Le questionnaire se choisit point par point. On n'utilise pas `PUT /questionnaires/:id/points-contact` depuis E12 : il remplace toute la liste du questionnaire.
+- Pas de creation d'un point isole : la creation en masse suffit (debut = fin pour un seul point).
+- Un QR code revoque ne se remet en service qu'en le regenerant. Il n'a plus d'apercu ni de lien de telechargement (le serveur repond 409 `QR_REVOQUE`) mais garde ses scans et ses avis.
+- Pas de nouveau fichier CSS : Tailwind seulement, comme E14.
+
+**A faire ensuite**
+- Verifications du soir, a faire a la main : creer les tables 1 a 40 en un clic (E12) puis telecharger la planche PDF (E11) ; revoquer un QR code et le scanner (page "QR code desactive", historique conserve) ; reactiver un point et un site ; changer le questionnaire d'une table ; verifier qu'un Gestionnaire du site A ne voit rien du site B ; test reel du QR de la Table 12 scanne sur telephone via le tunnel.
+- Jour 18 : ecran E13 (utilisateurs, roles et perimetres) et tests de perimetre par site.
+
+**Points d'attention**
+- Les telechargements sont de simples liens : si le serveur refusait la planche, le navigateur telechargerait le message d'erreur. Le bouton Planche A4 est donc inactif, avec un message, quand il n'y a aucun chevalet ou plus de 200 (le serveur verifie aussi : 404 ou 400 `TROP_DE_POINTS`).
+- Regenerer un QR code rend le chevalet deja imprime inutilisable : la confirmation le dit en toutes lettres.
+- Le code public d'un point de contact n'est jamais affiche, seulement le QR.
+- `eslint` sur les fichiers du jour : 45 erreurs, toutes `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...` (26 dans `utiliser-sites-points.ts`, 19 dans `utiliser-qr-codes.ts`), meme cause que les erreurs du jour 15. Aucune autre erreur. A traiter plus tard.
+- Decision de DTS attendue le lundi 9 novembre : service d'e-mails.

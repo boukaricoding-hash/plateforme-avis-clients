@@ -388,3 +388,98 @@
     font-weight: 600;
   }
 }
+/* ---------- Page : colonne du site et colonne des points ---------- */
+
+.sites-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sites-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.sites-colonne .sites-champ select {
+  width: 100%;
+}
+
+.sites-droite {
+  min-width: 0;
+}
+
+.sites-points {
+  min-width: 0;
+}
+
+/* Ecran fixe : colonne du site a gauche, points a droite, un trait vertical fin entre les deux */
+@media (min-width: 1100px) and (min-height: 640px) {
+  /* Le bloc est aussi haut que la zone principale (46 rem au plus) et reste centre */
+  .sites-contenu:has(.sites-corps) {
+    height: min(100%, 46rem);
+  }
+
+  .sites-tete {
+    flex-shrink: 0;
+  }
+
+  .sites-corps {
+    flex: 1 1 0;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .sites-colonne {
+    min-height: 0;
+    padding-right: 32px;
+    /* Filet de securite : elle defile seulement si un formulaire est trop long */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--defilement-pouce) transparent;
+  }
+
+  .sites-colonne .sites-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: -14px;
+  }
+
+  .sites-coordonnees {
+    grid-template-columns: 1fr;
+  }
+
+  .sites-droite {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    padding-left: 32px;
+    border-left: 1px solid var(--s-trait);
+  }
+
+  .sites-points {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .sites-points-titre,
+  .sites-points > nav {
+    flex-shrink: 0;
+  }
+
+  /* La zone prend la hauteur qui reste : on la mesure pour savoir combien de points tiennent */
+  .sites-points-zone {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+}

@@ -53,6 +53,8 @@ docker compose up -d --build
 
 `--build` reconstruit l'image si le code a changé (quasi instantané sinon). Attendre environ 15 secondes.
 
+Pour recevoir aussi les e-mails (mot de passe oublié, alertes, résumé quotidien), ajouter Mailpit, la fausse boîte mail : `docker compose --profile dev up -d --build`. Sa boîte de réception est http://localhost:8025 (sur ton PC seulement, pas depuis le tunnel).
+
 ### 5. Terminal A : vérifier que l'adresse répond
 
 ```powershell
@@ -108,7 +110,7 @@ docker compose up -d
 
 ## Limites connues
 
-- « Mot de passe oublié » n'envoie pas encore d'e-mail : le service d'e-mails n'est pas branché (prévu au jour 16). Le lien généré est déjà le bon (`/tableau-de-bord/reinitialiser-mot-de-passe`).
+- Les e-mails (mot de passe oublié, alertes, résumé quotidien) fonctionnent depuis le jour 16, mais ils arrivent dans Mailpit, une fausse boîte mail qui n'existe que sur ton PC (http://localhost:8025). Les testeurs ne reçoivent aucun vrai e-mail tant que DTS n'a pas choisi son service d'e-mails.
 
 ## Erreurs fréquentes
 

@@ -1,7 +1,13 @@
 import type { Request, Response } from "express";
 import { sitesAutorises } from "../../../utilitaires/perimetre";
 import { repondreDonneesInvalides, repondreNonTrouve } from "../../../utilitaires/reponses";
-import { creerSite, desactiverSite, listerSites, modifierSite } from "../services/sites";
+import {
+  activerSite,
+  creerSite,
+  desactiverSite,
+  listerSites,
+  modifierSite,
+} from "../services/sites";
 import { schemaCreationSite, schemaIdSite, schemaModificationSite } from "../validations/site";
 
 // Les contrôles d'accès ont déjà rempli ces deux valeurs ; on vérifie quand même.
@@ -57,6 +63,18 @@ export async function desactiverUnSite(req: Request, res: Response): Promise<voi
   if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
 
   const site = await desactiverSite(ctx.organisationId, identifiant.data.id);
+  if (!site) return repondreNonTrouve(res, "Site introuvable.");
+  res.status(200).json({ site });
+}
+
+export async function activerUnSite(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdSite.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+
+  const site = await activerSite(ctx.organisationId, identifiant.data.id);
   if (!site) return repondreNonTrouve(res, "Site introuvable.");
   res.status(200).json({ site });
 }

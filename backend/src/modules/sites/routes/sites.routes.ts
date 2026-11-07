@@ -3,6 +3,7 @@ import { exigerConnexion } from "../../../middleware/exiger-connexion";
 import { exigerOrganisation } from "../../../middleware/exiger-organisation";
 import { exigerRole } from "../../../middleware/exiger-role";
 import {
+  activerUnSite,
   creerUnSite,
   desactiverUnSite,
   listerLesSites,
@@ -18,3 +19,4 @@ routesSites.get("/", exigerRole("RESPONSABLE", "GESTIONNAIRE"), listerLesSites);
 routesSites.post("/", exigerRole("RESPONSABLE"), creerUnSite);
 routesSites.patch("/:id", exigerRole("RESPONSABLE"), modifierUnSite);
 routesSites.post("/:id/desactiver", exigerRole("RESPONSABLE"), desactiverUnSite);
+routesSites.post("/:id/activer", exigerRole("RESPONSABLE"), activerUnSite);

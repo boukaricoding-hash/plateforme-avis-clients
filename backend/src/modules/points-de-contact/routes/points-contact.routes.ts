@@ -3,6 +3,7 @@ import { exigerConnexion } from "../../../middleware/exiger-connexion";
 import { exigerOrganisation } from "../../../middleware/exiger-organisation";
 import { exigerRole } from "../../../middleware/exiger-role";
 import {
+  activerUnPointContact,
   creerPointsContactMasse,
   creerUnPointContact,
   desactiverUnPointContact,
@@ -20,3 +21,4 @@ routesPointsContact.post("/", exigerRole("RESPONSABLE"), creerUnPointContact);
 routesPointsContact.post("/masse", exigerRole("RESPONSABLE"), creerPointsContactMasse);
 routesPointsContact.patch("/:id", exigerRole("RESPONSABLE"), modifierUnPointContact);
 routesPointsContact.post("/:id/desactiver", exigerRole("RESPONSABLE"), desactiverUnPointContact);
+routesPointsContact.post("/:id/activer", exigerRole("RESPONSABLE"), activerUnPointContact);

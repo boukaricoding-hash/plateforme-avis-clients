@@ -476,7 +476,8 @@ export const fr = {
         generique: 'La modification n’a pas pu être enregistrée. Merci de réessayer.',
       },
     },
-  },  roles: {
+  },
+  roles: {
     RESPONSABLE: 'Responsable',
     GESTIONNAIRE: 'Gestionnaire',
     ADMINISTRATEUR: 'Administrateur',

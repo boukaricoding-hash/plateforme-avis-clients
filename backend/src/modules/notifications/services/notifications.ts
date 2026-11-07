@@ -19,6 +19,21 @@ const SELECTION_NOTIFICATION = {
 export type NotificationPubliee = Prisma.NotificationGetPayload<{ select: typeof SELECTION_NOTIFICATION }>;
 
 // ------------------------------------------------------------
+// Perimetre du Gestionnaire
+// ------------------------------------------------------------
+
+// perimetre : null = toute l'organisation (Responsable), sinon la liste des sites du Gestionnaire.
+// Une notification liee a un avis n'est visible que si le site de l'avis est dans le perimetre :
+// un site retire a un Gestionnaire fait disparaitre ses anciennes notifications (nom du site,
+// extrait du commentaire). Une notification sans avis reste toujours visible.
+function conditionPerimetre(perimetre: string[] | null): Prisma.NotificationWhereInput {
+  if (perimetre === null) {
+    return {};
+  }
+  return { OR: [{ avis_id: null }, { avis: { site_id: { in: perimetre } } }] };
+}
+
+// ------------------------------------------------------------
 // Lister MES notifications
 // ------------------------------------------------------------
 
@@ -27,9 +42,14 @@ export type NotificationPubliee = Prisma.NotificationGetPayload<{ select: typeof
 export async function listerNotifications(
   organisationId: string,
   utilisateurId: string,
+  perimetre: string[] | null,
   filtres: FiltresNotifications,
 ) {
-  const proprietaire = { organisation_id: organisationId, utilisateur_id: utilisateurId };
+  const proprietaire = {
+    organisation_id: organisationId,
+    utilisateur_id: utilisateurId,
+    ...conditionPerimetre(perimetre),
+  };
 
   const where: Prisma.NotificationWhereInput = {
     ...proprietaire,
@@ -68,14 +88,20 @@ export async function listerNotifications(
 // ------------------------------------------------------------
 
 // Renvoie null si la notification n'existe pas ou n'appartient pas a l'utilisateur
-// (autre utilisateur, autre organisation) : le controleur repond 404 dans tous les cas.
+// (autre utilisateur, autre organisation) ou est hors du perimetre : le controleur repond 404.
 export async function marquerNotificationLue(
   organisationId: string,
   utilisateurId: string,
+  perimetre: string[] | null,
   notificationId: string,
 ): Promise<NotificationPubliee | null> {
   const existante = await prisma.notification.findFirst({
-    where: { id: notificationId, organisation_id: organisationId, utilisateur_id: utilisateurId },
+    where: {
+      id: notificationId,
+      organisation_id: organisationId,
+      utilisateur_id: utilisateurId,
+      ...conditionPerimetre(perimetre),
+    },
     select: SELECTION_NOTIFICATION,
   });
   if (existante === null) {

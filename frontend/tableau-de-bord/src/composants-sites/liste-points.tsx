@@ -1,17 +1,23 @@
 import { useId, useState, type FormEvent } from 'react'
 import { utiliserLangue } from '../hooks/utiliser-langue'
+import { utiliserPages } from '../hooks/utiliser-pages'
 import type { ActionsPoints } from '../hooks/utiliser-sites-points'
 import type { ErreurService } from '../services/api'
+import '../styles/sites.css'
 import type { TexteMultilingue } from '../types/avis'
 import type { ResumeQuestionnaire } from '../types/questionnaires'
 import { TYPES_POINT_CONTACT, type PointContact } from '../types/sites-points'
 
-// Liste des points de contact du site choisi (ecran E12, jour 17).
+// Liste des points de contact du site choisi (ecran E12, design).
+// Plus de tableau : sur ordinateur, des lignes separees par un trait fin ; sur telephone, une
+// grande carte par point qu'on fait glisser de gauche a droite (styles/sites.css).
 // Pour chaque point : nom, type, zone, questionnaire associe, statut.
 // Le Responsable peut changer le nom, le questionnaire et activer ou desactiver le point ;
 // le Gestionnaire lit seulement (aucun bouton, le serveur refuse ses ecritures de toute facon).
 // Ce composant n'appelle pas l'API : les actions viennent de utiliserSitesPoints.
 // Le code public d'un point n'est jamais affiche ici : seul le QR (ecran E11) le contient.
+// Ecran fixe : la page ne defile pas, les points sont donc coupes en pages (utiliserPages).
+// Telephone : tous les points sont dans la meme rangee de cartes.
 
 type Proprietes = {
   points: PointContact[]
@@ -25,6 +31,12 @@ type Proprietes = {
 // Longueur maximale du nom reprise du backend ; le serveur refait toujours la verification.
 const LONGUEUR_NOM = 120
 
+// Hauteur d'une ligne en ecran fixe : 44 px de controle + 2 x 6 px de marge + 1 px de trait.
+// A garder egale a styles/sites.css (.sites-point).
+const HAUTEUR_LIGNE = 57
+// Hauteur de la ligne de libelles : 18 px de texte + 6 px de marge + 1 px de trait.
+const HAUTEUR_ENTETE = 25
+
 // Titre dans la langue choisie, sinon en francais (l'anglais est facultatif).
 function titreDans(titre: TexteMultilingue, langue: string): string {
   return (langue === 'en' ? titre.en : null) ?? titre.fr
@@ -37,7 +49,7 @@ type ProprietesLigne = {
   actions: ActionsPoints
 }
 
-// Une ligne du tableau, avec son propre etat de modification du nom.
+// Un point de contact, avec son propre etat de modification du nom.
 function LignePoint({ point, questionnaires, peutModifier, actions }: ProprietesLigne) {
   const { t, langue } = utiliserLangue()
   const idNom = useId()
@@ -88,13 +100,13 @@ function LignePoint({ point, questionnaires, peutModifier, actions }: Proprietes
     point.questionnaire_id !== null && !liste.some((q) => q.id === point.questionnaire_id)
 
   return (
-    <tr className="border-t border-bordure align-middle">
-      <td className="px-3 py-2 text-sm font-semibold text-texte">
+    <li className="sites-point">
+      <div>
         {enEdition ? (
           <form
             onSubmit={(evenement) => void enregistrerNom(evenement)}
             noValidate
-            className="flex flex-wrap items-start gap-2"
+            className="sites-renommer"
           >
             <div className="flex flex-col gap-1">
               <label htmlFor={idNom} className="sr-only">
@@ -108,10 +120,9 @@ function LignePoint({ point, questionnaires, peutModifier, actions }: Proprietes
                 value={nom}
                 aria-invalid={erreurNom !== null}
                 onChange={(evenement) => setNom(evenement.target.value)}
-                className="min-h-11 w-44 rounded-md border border-bordure-champ bg-fond px-3 text-sm text-texte"
               />
               {erreurNom !== null && (
-                <p role="alert" className="m-0 text-xs font-normal text-erreur">
+                <p role="alert" className="m-0 text-xs text-erreur">
                   {erreurNom}
                 </p>
               )}
@@ -120,7 +131,7 @@ function LignePoint({ point, questionnaires, peutModifier, actions }: Proprietes
               type="submit"
               disabled={actions.enCours}
               aria-busy={actions.enCours}
-              className="min-h-11 rounded-md bg-principale px-3 text-sm font-semibold text-texte-sur-principale transition-colors hover:bg-principale-fonce disabled:cursor-not-allowed disabled:opacity-60"
+              className="sites-bouton sites-bouton--plein"
             >
               {t('sites.liste.enregistrer')}
             </button>
@@ -128,91 +139,96 @@ function LignePoint({ point, questionnaires, peutModifier, actions }: Proprietes
               type="button"
               disabled={actions.enCours}
               onClick={() => setEnEdition(false)}
-              className="min-h-11 rounded-md border border-bordure-champ px-3 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond disabled:cursor-not-allowed disabled:opacity-60"
+              className="sites-bouton"
             >
               {t('sites.liste.annuler')}
             </button>
           </form>
         ) : (
-          point.nom
+          <h3 className="sites-point-nom">{point.nom}</h3>
         )}
-      </td>
+      </div>
 
-      <td className="px-3 py-2 text-sm text-texte-secondaire">{libelleType}</td>
-
-      <td className="px-3 py-2 text-sm text-texte-secondaire">{point.zone ?? '—'}</td>
-
-      <td className="px-3 py-2 text-sm text-texte-secondaire">
-        {peutModifier ? (
-          <>
-            <label htmlFor={idQuestionnaire} className="sr-only">
-              {t('sites.liste.questionnaireDe', { nom: point.nom })}
-            </label>
-            <select
-              id={idQuestionnaire}
-              value={point.questionnaire_id ?? ''}
-              disabled={questionnaires === null || actions.enCours}
-              onChange={(evenement) => void changerQuestionnaire(evenement.target.value)}
-              className="min-h-11 w-full min-w-44 rounded-md border border-bordure-champ bg-fond px-2 text-sm text-texte disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <option value="">{t('sites.liste.aucunQuestionnaire')}</option>
-              {associeAbsent && point.questionnaire_id !== null && titreAssocie !== null && (
-                <option value={point.questionnaire_id}>{titreAssocie}</option>
-              )}
-              {liste.map((questionnaire) => (
-                <option key={questionnaire.id} value={questionnaire.id}>
-                  {titreDans(questionnaire.titre, langue)}
-                </option>
-              ))}
-            </select>
-          </>
-        ) : (
-          (titreAssocie ?? t('sites.liste.aucunQuestionnaire'))
-        )}
-      </td>
-
-      <td className="px-3 py-2 text-sm">
-        <div className="flex flex-wrap items-center gap-1">
-          <span
-            className={`rounded-full border border-bordure px-2 py-0.5 text-xs font-semibold ${
-              point.actif ? 'text-succes' : 'text-texte-secondaire'
-            }`}
-          >
-            {point.actif ? t('sites.liste.actif') : t('sites.liste.desactive')}
-          </span>
-          {point.revoque_le !== null && (
-            <span className="rounded-full border border-bordure px-2 py-0.5 text-xs font-semibold text-erreur">
-              {t('sites.liste.qrRevoque')}
-            </span>
-          )}
+      <dl className="sites-point-infos">
+        <div className="sites-point-info">
+          <dt>{t('sites.liste.colonneType')}</dt>
+          <dd>{libelleType}</dd>
         </div>
-      </td>
+
+        <div className="sites-point-info">
+          <dt>{t('sites.liste.colonneZone')}</dt>
+          <dd>{point.zone ?? '—'}</dd>
+        </div>
+
+        <div className="sites-point-info">
+          <dt>{t('sites.liste.colonneQuestionnaire')}</dt>
+          <dd>
+            {peutModifier ? (
+              <>
+                <label htmlFor={idQuestionnaire} className="sr-only">
+                  {t('sites.liste.questionnaireDe', { nom: point.nom })}
+                </label>
+                <select
+                  id={idQuestionnaire}
+                  value={point.questionnaire_id ?? ''}
+                  disabled={questionnaires === null || actions.enCours}
+                  onChange={(evenement) => void changerQuestionnaire(evenement.target.value)}
+                >
+                  <option value="">{t('sites.liste.aucunQuestionnaire')}</option>
+                  {associeAbsent && point.questionnaire_id !== null && titreAssocie !== null && (
+                    <option value={point.questionnaire_id}>{titreAssocie}</option>
+                  )}
+                  {liste.map((questionnaire) => (
+                    <option key={questionnaire.id} value={questionnaire.id}>
+                      {titreDans(questionnaire.titre, langue)}
+                    </option>
+                  ))}
+                </select>
+              </>
+            ) : (
+              (titreAssocie ?? t('sites.liste.aucunQuestionnaire'))
+            )}
+          </dd>
+        </div>
+
+        <div className="sites-point-info">
+          <dt>{t('sites.liste.colonneStatut')}</dt>
+          <dd className="flex flex-wrap items-center gap-x-3">
+            <span className={`sites-statut ${point.actif ? 'sites-statut--actif' : ''}`}>
+              {point.actif ? t('sites.liste.actif') : t('sites.liste.desactive')}
+            </span>
+            {point.revoque_le !== null && (
+              <span className="sites-statut sites-statut--revoque">
+                {t('sites.liste.qrRevoque')}
+              </span>
+            )}
+          </dd>
+        </div>
+      </dl>
 
       {peutModifier && (
-        <td className="px-3 py-2 text-sm">
-          <div className="flex flex-wrap items-center gap-2">
-            {!enEdition && (
-              <button
-                type="button"
-                disabled={actions.enCours}
-                onClick={commencerEdition}
-                className="min-h-11 rounded-md border border-bordure-champ px-3 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {t('sites.liste.renommer')}
-              </button>
-            )}
+        <div className="sites-point-actions">
+          {!enEdition && (
             <button
               type="button"
               disabled={actions.enCours}
-              onClick={() => void actions.changerStatut(point.id, !point.actif)}
-              className="min-h-11 rounded-md border border-bordure-champ px-3 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={commencerEdition}
+              className="sites-bouton"
             >
-              {point.actif ? t('sites.liste.desactiver') : t('sites.liste.activer')}
+              {t('sites.liste.renommer')}
             </button>
-          </div>
-        </td>
+          )}
+          <button
+            type="button"
+            disabled={actions.enCours}
+            onClick={() => void actions.changerStatut(point.id, !point.actif)}
+            className="sites-bouton"
+          >
+            {point.actif ? t('sites.liste.desactiver') : t('sites.liste.activer')}
+          </button>
+        </div>
       )}
-    </tr>
+    </li>
   )
 }
 
@@ -226,6 +242,14 @@ export function ListePoints({
   const { t } = utiliserLangue()
   const idTitre = useId()
 
+  // Ecran fixe : le nombre de points par page suit la hauteur de la zone.
+  // Telephone : une seule page, tous les points sont dans la rangee de cartes.
+  const { refZone, elementsPage, pageCourante, nbPages, allerA } = utiliserPages(points, {
+    hauteurLigne: HAUTEUR_LIGNE,
+    hauteurEnTete: HAUTEUR_ENTETE,
+    lignesParDefaut: Math.max(points.length, 1),
+  })
+
   // Message d'echec d'une action (changer le nom, le questionnaire ou le statut).
   let messageErreur: string | null = null
   if (actions.erreur !== null) {
@@ -238,61 +262,45 @@ export function ListePoints({
     }
   }
 
+  const textePage = t('tableau.accueil.pageSur', { numero: pageCourante + 1, total: nbPages })
+
   return (
-    <section
-      aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-5 shadow-doux"
-    >
-      <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
+    <section aria-labelledby={idTitre} className="sites-points">
+      <h2 id={idTitre} className="sites-points-titre">
         {t('sites.liste.titre', { nombre: points.length })}
       </h2>
 
       {peutModifier && erreurQuestionnaires !== null && (
-        <p role="alert" className="mt-2 text-sm text-erreur">
+        <p role="alert" className="sites-message sites-message--erreur">
           {t('sites.liste.erreurQuestionnaires')}
         </p>
       )}
 
       {messageErreur !== null && (
-        <p role="alert" className="mt-2 text-sm text-erreur">
+        <p role="alert" className="sites-message sites-message--erreur">
           {messageErreur}
         </p>
       )}
 
       {points.length === 0 ? (
-        <p className="mt-3 text-sm text-texte-secondaire">
+        <p className="m-0 text-sm text-texte-secondaire">
           {peutModifier ? t('sites.liste.videResponsable') : t('sites.liste.vide')}
         </p>
       ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-176 border-collapse text-left">
-            <caption className="sr-only">{t('sites.liste.legende')}</caption>
-            <thead>
-              <tr className="bg-fond-alt">
-                <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                  {t('sites.liste.colonneNom')}
-                </th>
-                <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                  {t('sites.liste.colonneType')}
-                </th>
-                <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                  {t('sites.liste.colonneZone')}
-                </th>
-                <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                  {t('sites.liste.colonneQuestionnaire')}
-                </th>
-                <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                  {t('sites.liste.colonneStatut')}
-                </th>
-                {peutModifier && (
-                  <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                    {t('sites.liste.colonneActions')}
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {points.map((point) => (
+        <>
+          <div ref={refZone} className="sites-points-zone">
+            {/* Libelles des colonnes : seulement sur ordinateur, les lecteurs d'ecran lisent les dt */}
+            <div className="sites-points-entete" aria-hidden="true">
+              <span>{t('sites.liste.colonneNom')}</span>
+              <span>{t('sites.liste.colonneType')}</span>
+              <span>{t('sites.liste.colonneZone')}</span>
+              <span>{t('sites.liste.colonneQuestionnaire')}</span>
+              <span>{t('sites.liste.colonneStatut')}</span>
+              <span>{peutModifier ? t('sites.liste.colonneActions') : ''}</span>
+            </div>
+
+            <ul className="sites-points-liste" aria-label={t('sites.liste.legende')}>
+              {elementsPage.map((point) => (
                 <LignePoint
                   key={point.id}
                   point={point}
@@ -301,9 +309,35 @@ export function ListePoints({
                   actions={actions}
                 />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </ul>
+          </div>
+
+          {nbPages > 1 && (
+            <nav className="mt-2 flex items-center justify-center gap-2" aria-label={textePage}>
+              <button
+                type="button"
+                className="sites-bouton"
+                disabled={pageCourante === 0}
+                onClick={() => allerA(pageCourante - 1)}
+                aria-label={t('tableau.accueil.pagePrecedente')}
+              >
+                ←
+              </button>
+              <span aria-live="polite" className="text-xs text-texte-secondaire">
+                {textePage}
+              </span>
+              <button
+                type="button"
+                className="sites-bouton"
+                disabled={pageCourante === nbPages - 1}
+                onClick={() => allerA(pageCourante + 1)}
+                aria-label={t('tableau.accueil.pageSuivante')}
+              >
+                →
+              </button>
+            </nav>
+          )}
+        </>
       )}
     </section>
   )

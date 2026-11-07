@@ -1,0 +1,390 @@
+/* ------------------------------------------------------------
+   Page Sites et tables (ecran E12, design).
+   Pas de tableau, pas de cadres : des traits de 1 px tres fins
+   et des textes bien disposes. Les couleurs viennent de
+   styles/index.css (theme sombre et theme clair).
+
+   Deux modes :
+   - Ecran fixe (ordinateur, au moins 1100 px de large et 640 px de haut) :
+     la page ne defile pas et le contenu est centre dans la zone
+     principale, en hauteur comme en largeur.
+   - Page normale (tablette, telephone, ecran trop bas) : la page defile
+     et les points de contact deviennent de grandes cartes qu'on fait
+     glisser de gauche a droite.
+   Le bloc "Ecran fixe" est tout en bas du fichier.
+   ------------------------------------------------------------ */
+
+.sites-ecran {
+  --s-trait: var(--bordure);
+  --s-accent: var(--couleur-principale);
+  /* Colonnes d'une ligne de point (ecran fixe) : l'entete et les lignes les partagent */
+  --s-colonnes: minmax(8rem, 1.2fr) minmax(5rem, 0.7fr) minmax(5rem, 0.7fr) minmax(10rem, 1.6fr) minmax(5rem, 0.8fr) auto;
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+  min-height: 100%;
+}
+
+/* Le contenu se centre : marges automatiques en haut et en bas */
+.sites-contenu {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-block: auto;
+  min-height: 0;
+}
+
+.sites-ecran :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Boutons : sans cadre, juste du texte ---------- */
+
+.sites-bouton {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--s-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.sites-bouton:hover:not(:disabled) {
+  background: var(--accent-fond);
+}
+
+.sites-bouton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sites-bouton--plein {
+  background: var(--couleur-principale);
+  color: var(--texte-sur-principale);
+}
+
+.sites-bouton--plein:hover:not(:disabled) {
+  background: var(--couleur-principale-fonce);
+}
+
+/* ---------- Tete : titre et choix du site ---------- */
+
+.sites-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--s-trait);
+}
+
+.sites-champ {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sites-champ label {
+  color: var(--texte-secondaire);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Menu du site : un simple trait en dessous, pas de cadre */
+.sites-champ select {
+  min-height: 44px;
+  min-width: 14rem;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 1px solid var(--s-trait);
+  border-radius: 0;
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.875rem;
+}
+
+.sites-champ select:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--s-accent);
+}
+
+.sites-champ select option {
+  background-color: var(--surface);
+  color: var(--texte);
+}
+
+.sites-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ---------- Coordonnees du site : quatre textes alignes ---------- */
+
+.sites-coordonnees {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+}
+
+.sites-coordonnee dt {
+  color: var(--texte-secondaire);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sites-coordonnee dd {
+  margin: 2px 0 0;
+  color: var(--texte);
+  font-size: 0.875rem;
+}
+
+.sites-message {
+  min-height: 20px;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.sites-message--succes {
+  color: var(--succes);
+}
+
+.sites-message--erreur {
+  color: var(--erreur);
+}
+
+/* ---------- Points de contact ---------- */
+
+.sites-points-titre {
+  margin: 0 0 8px;
+  color: var(--texte);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sites-points-liste {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Telephone : les cartes glissent de gauche a droite */
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.sites-points-liste::-webkit-scrollbar {
+  display: none;
+}
+
+/* Telephone : une grande carte par point, sans cadre, sur un fond un cran au dessus */
+.sites-point {
+  flex: 0 0 88%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: var(--rayon-xl);
+  background: var(--surface);
+  scroll-snap-align: center;
+}
+
+.sites-point-nom {
+  margin: 0;
+  color: var(--texte);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.sites-point-infos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.sites-point-info dt {
+  color: var(--texte-secondaire);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sites-point-info dd {
+  margin: 2px 0 0;
+  color: var(--texte);
+  font-size: 0.875rem;
+}
+
+.sites-point-info select {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-bottom: 1px solid var(--s-trait);
+  border-radius: 0;
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.875rem;
+}
+
+.sites-point-info select:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--s-accent);
+}
+
+.sites-point-info select option {
+  background-color: var(--surface);
+  color: var(--texte);
+}
+
+.sites-point-info select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Statut : du texte, pas de pastille encadree */
+.sites-statut {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--texte-secondaire);
+}
+
+.sites-statut--actif {
+  color: var(--succes);
+}
+
+.sites-statut--revoque {
+  color: var(--erreur);
+}
+
+.sites-point-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: auto;
+}
+
+/* L'entete des colonnes n'existe que sur ordinateur */
+.sites-points-entete {
+  display: none;
+}
+
+/* Petit indicateur sous la liste : quelle carte est affichee */
+.sites-points-compteur {
+  margin: 8px 0 0;
+  color: var(--texte-secondaire);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Renommer : un champ avec un trait en dessous, sans cadre */
+.sites-renommer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 8px;
+}
+
+.sites-renommer input {
+  min-height: 44px;
+  width: 11rem;
+  max-width: 100%;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 1px solid var(--s-trait);
+  border-radius: 0;
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.875rem;
+}
+
+.sites-renommer input:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--s-accent);
+}
+
+/* ---------- Ecran fixe : la page ne defile pas, le contenu est centre ---------- */
+/* Meme seuil que l'accueil et la page des avis. */
+
+@media (min-width: 1100px) and (min-height: 640px) {
+  .sites-ecran {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sites-contenu {
+    max-height: 100%;
+  }
+
+  /* Les points deviennent des lignes separees par un trait fin */
+  .sites-points-liste {
+    display: block;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .sites-point {
+    display: grid;
+    grid-template-columns: var(--s-colonnes);
+    align-items: center;
+    gap: 16px;
+    padding: 6px 0;
+    border-radius: 0;
+    background: transparent;
+    border-top: 1px solid var(--s-trait);
+  }
+
+  .sites-point:first-child {
+    border-top: 0;
+  }
+
+  .sites-point-nom {
+    font-size: 0.875rem;
+  }
+
+  .sites-point-infos {
+    display: contents;
+  }
+
+  .sites-point-info dt {
+    /* Les libelles restent lisibles par les lecteurs d'ecran, mais pas affiches en ligne */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .sites-point-actions {
+    margin-top: 0;
+    justify-content: flex-end;
+  }
+
+  .sites-points-compteur {
+    text-align: left;
+  }
+
+  /* Ligne de libelles au dessus des points : du texte, un trait fin dessous */
+  .sites-points-entete {
+    display: grid;
+    grid-template-columns: var(--s-colonnes);
+    gap: 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--s-trait);
+    color: var(--texte-secondaire);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { sitesAutorises } from "../../../utilitaires/perimetre";
 import { repondreDonneesInvalides, repondreNonTrouve } from "../../../utilitaires/reponses";
 import {
   creerQuestionnaire,
@@ -62,13 +63,15 @@ export async function listerLesQuestionnaires(req: Request, res: Response): Prom
   const ctx = contexte(req);
   if (!ctx) return repondreNonConnecte(res);
 
-  const questionnaires = await listerQuestionnaires(ctx.organisationId);
+  const perimetre = await sitesAutorises(ctx.utilisateur);
+  const questionnaires = await listerQuestionnaires(ctx.organisationId, perimetre);
   res.status(200).json({ questionnaires });
 }
 
 export async function creerUnQuestionnaire(req: Request, res: Response): Promise<void> {
   const ctx = contexte(req);
   if (!ctx) return repondreNonConnecte(res);
+  const perimetre = await sitesAutorises(ctx.utilisateur);
 
   const lecture = schemaQuestionnaire.safeParse(req.body);
   if (!lecture.success) return repondreDonneesInvalides(res, lecture.error);
@@ -77,18 +80,19 @@ export async function creerUnQuestionnaire(req: Request, res: Response): Promise
   }
 
   const id = await creerQuestionnaire(ctx.organisationId, lecture.data);
-  const questionnaire = await lireQuestionnaire(ctx.organisationId, id);
+  const questionnaire = await lireQuestionnaire(ctx.organisationId, perimetre, id);
   res.status(201).json({ questionnaire });
 }
 
 export async function lireUnQuestionnaire(req: Request, res: Response): Promise<void> {
   const ctx = contexte(req);
   if (!ctx) return repondreNonConnecte(res);
+  const perimetre = await sitesAutorises(ctx.utilisateur);
 
   const identifiant = schemaIdQuestionnaire.safeParse(req.params);
   if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
 
-  const questionnaire = await lireQuestionnaire(ctx.organisationId, identifiant.data.id);
+  const questionnaire = await lireQuestionnaire(ctx.organisationId, perimetre, identifiant.data.id);
   if (!questionnaire) return repondreNonTrouve(res, MESSAGE_INTROUVABLE);
   res.status(200).json({ questionnaire });
 }
@@ -96,6 +100,7 @@ export async function lireUnQuestionnaire(req: Request, res: Response): Promise<
 export async function modifierUnQuestionnaire(req: Request, res: Response): Promise<void> {
   const ctx = contexte(req);
   if (!ctx) return repondreNonConnecte(res);
+  const perimetre = await sitesAutorises(ctx.utilisateur);
 
   const identifiant = schemaIdQuestionnaire.safeParse(req.params);
   if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
@@ -108,7 +113,7 @@ export async function modifierUnQuestionnaire(req: Request, res: Response): Prom
   const resultat = await modifierQuestionnaire(ctx.organisationId, identifiant.data.id, lecture.data);
   if (!resultat) return repondreNonTrouve(res, MESSAGE_INTROUVABLE);
 
-  const questionnaire = await lireQuestionnaire(ctx.organisationId, resultat.id);
+  const questionnaire = await lireQuestionnaire(ctx.organisationId, perimetre, resultat.id);
   res.status(200).json({ questionnaire, nouvelle_version: resultat.nouvelle_version });
 }
 
@@ -127,6 +132,7 @@ export async function publierUnQuestionnaire(req: Request, res: Response): Promi
 export async function dupliquerUnQuestionnaire(req: Request, res: Response): Promise<void> {
   const ctx = contexte(req);
   if (!ctx) return repondreNonConnecte(res);
+  const perimetre = await sitesAutorises(ctx.utilisateur);
 
   const identifiant = schemaIdQuestionnaire.safeParse(req.params);
   if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
@@ -134,7 +140,7 @@ export async function dupliquerUnQuestionnaire(req: Request, res: Response): Pro
   const idCopie = await dupliquerQuestionnaire(ctx.organisationId, identifiant.data.id);
   if (!idCopie) return repondreNonTrouve(res, MESSAGE_INTROUVABLE);
 
-  const questionnaire = await lireQuestionnaire(ctx.organisationId, idCopie);
+  const questionnaire = await lireQuestionnaire(ctx.organisationId, perimetre, idCopie);
   res.status(201).json({ questionnaire });
 }
 
@@ -210,6 +216,7 @@ export async function listerLesModeles(req: Request, res: Response): Promise<voi
 export async function clonerUnModele(req: Request, res: Response): Promise<void> {
   const ctx = contexte(req);
   if (!ctx) return repondreNonConnecte(res);
+  const perimetre = await sitesAutorises(ctx.utilisateur);
 
   const identifiant = schemaIdQuestionnaire.safeParse(req.params);
   if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
@@ -217,6 +224,6 @@ export async function clonerUnModele(req: Request, res: Response): Promise<void>
   const idCopie = await clonerModele(ctx.organisationId, identifiant.data.id);
   if (!idCopie) return repondreNonTrouve(res, MESSAGE_MODELE_INTROUVABLE);
 
-  const questionnaire = await lireQuestionnaire(ctx.organisationId, idCopie);
+  const questionnaire = await lireQuestionnaire(ctx.organisationId, perimetre, idCopie);
   res.status(201).json({ questionnaire });
 }

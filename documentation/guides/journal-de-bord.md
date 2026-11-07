@@ -305,3 +305,36 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - Le code public d'un point de contact n'est jamais affiche, seulement le QR.
 - `eslint` sur les fichiers du jour : 45 erreurs, toutes `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...` (26 dans `utiliser-sites-points.ts`, 19 dans `utiliser-qr-codes.ts`), meme cause que les erreurs du jour 15. Aucune autre erreur. A traiter plus tard.
 - Decision de DTS attendue le lundi 9 novembre : service d'e-mails.
+
+
+## Jour 18 - samedi 7 novembre 2026 : utilisateurs, roles et perimetres (ecran E13)
+
+**Fait**
+- Backend, module `modules/utilisateurs` : validations, services (`utilisateurs`, `invitations`), controleurs et routes, branches dans `app.ts` sur `/api/v1/utilisateurs` et `/api/v1/invitations`. Routes de gestion reservees au Responsable : `GET /utilisateurs`, `POST /utilisateurs/inviter`, `PATCH /utilisateurs/:id`, `POST /utilisateurs/:id/desactiver` et `/activer`. Routes publiques : `GET /invitations/verifier` et `POST /invitations/accepter`, avec une limite de requetes par adresse IP (`middleware/limite-invitations.ts`).
+- Perimetre du Gestionnaire (`sitesAutorises`) applique dans les avis, le suivi des avis, les notifications, les points de contact, les QR codes, les sites, les questionnaires et le tableau de bord (indicateurs et graphiques).
+- Correctif : le controleur des questionnaires ne compilait plus depuis le commit `1b38af5` (le service passait a 2 et 3 arguments). C'etait la cause de la liste deroulante des questionnaires vide.
+- Tests : `isolation-utilisateurs.test.ts` (24 tests) et `isolation-questionnaires-perimetre.test.ts` (10 tests : un Gestionnaire du site A ne voit, dans un questionnaire, que les points de contact de son site). `npm test` : 16 fichiers, 236 tests passent.
+- Ecran E13 (utilisateurs), dans `frontend/tableau-de-bord/src` : `types/utilisateurs-admin.ts`, `services/utilisateurs.ts`, `services/invitations.ts`, `hooks/utiliser-utilisateurs.ts`, `composants-utilisateurs/` (`ligne-utilisateur`, `formulaire-invitation`, `formulaire-modification`) et `pages/utilisateurs/page-utilisateurs.tsx`. Le Responsable liste ses utilisateurs et les invitations en attente, invite par e-mail avec un role et des sites, modifie le role et les sites, desactive et reactive un compte.
+- Page publique d'acceptation `pages/invitation/page-accepter-invitation.tsx` (adresse `/invitation?jeton=...`, hors zone connectee) : verification du lien, puis nom et mot de passe avec confirmation. Cas geres : lien invalide ou expire, sites supprimes, mot de passe refuse, trop de tentatives, pas de reseau.
+- `App.tsx` : routes `utilisateurs` (retiree des ecrans a venir) et `invitation` (publique). Textes fr et en : blocs `invitation` et `utilisateurs` (90 cles identiques dans les deux langues).
+- Page QR codes (E11) refaite : liste, carte, ligne, telechargement, apercu recharge apres regeneration, textes fr et en.
+- `tsc -b` sans erreur. Essais a la main : une invitation de bout en bout (e-mail dans Mailpit, lien, mot de passe, connexion) fonctionne, et un utilisateur desactive ne peut plus se connecter.
+
+**Decisions**
+- Invitation valable 7 jours, a usage unique. Une invitation en attente pour la meme adresse est remplacee : cela sert aussi de bouton Renvoyer.
+- L'API attend l'envoi de l'e-mail. En cas d'echec, l'invitation existe et la reponse contient `email_envoye: false`.
+- Apres l'acceptation, l'invite n'est pas connecte : il est renvoye vers la page de connexion.
+- Le lien d'invitation est `TABLEAU_DE_BORD_URL/invitation?jeton=...`.
+- Un Responsable voit toute l'organisation, y compris les sites crees plus tard : la liste des sites n'est proposee que pour un Gestionnaire, qui doit avoir au moins un site (le serveur ignore les sites envoyes pour un Responsable).
+- L'ecran E13 est reserve au Responsable : le Gestionnaire et l'administrateur DTS sont renvoyes a l'accueil, et le serveur refuse aussi (403).
+- Pas d'annulation d'invitation pour l'instant. Un utilisateur ne peut ni se desactiver ni se modifier lui-meme (403 `ACTION_SUR_SOI_INTERDITE`).
+
+**A faire ensuite**
+- Verification a la main pas encore faite : un Gestionnaire du site A ne voit rien du site B. La base locale n'a qu'un seul site, donc a refaire des qu'un deuxieme site existe (ecran E12). Les tests automatiques couvrent ce cas.
+- Jour 19 : ecran E10 (questionnaires, liste et editeur).
+- Decision de DTS attendue le lundi 9 novembre : service d'e-mails. D'ici la, tout part dans Mailpit.
+
+**Points d'attention**
+- `eslint` sur les fichiers du jour : 39 erreurs, toutes `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...`, meme cause que les jours 15 et 17. Aucune autre erreur. A traiter plus tard.
+- En suspens, hors plan du jour 18 : a l'envoi d'un avis public, le message "L'envoi a echoue" apparait. Cause probable : un ancien brouillon reste dans le navigateur (non confirmee). A tester en vidant les cles `brouillon-avis:` du `localStorage`, et sinon en lisant la reponse de la requete rouge dans l'onglet Reseau.
+- La base locale contient deux questionnaires crees par l'API ("Avis restaurant" et "Avis restaurant - Tables"), tous deux actifs. Les modeles du seed n'apparaissent pas dans les listes : il faut les cloner (ecran E10, jour 19).

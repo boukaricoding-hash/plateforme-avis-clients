@@ -187,6 +187,10 @@ export const fr = {
     aucunSite: 'Aucun site ne vous est attribué pour le moment.',
     aucunSiteResponsable: 'Vous n’avez pas encore de site. Créez le premier pour commencer.',
     nouveauSite: 'Nouveau site',
+    gererSite: 'Gérer le site',
+    creerEnMasse: 'Créer en masse',
+    ajouterTable: 'Ajouter une table',
+    rechercher: 'Rechercher une table',
     modifierSite: 'Modifier le site',
     activer: 'Activer le site',
     desactiver: 'Désactiver le site',
@@ -240,6 +244,11 @@ export const fr = {
       activer: 'Activer',
       desactiver: 'Désactiver',
       qrRevoque: 'QR code révoqué',
+      modifierPoint: 'Modifier {nom}',
+      aucunResultat: 'Aucun point de contact ne correspond à votre recherche.',
+      pageNumero: 'Page {numero} sur {total}',
+      compteur: '{nombre} points de contact',
+      indicationGlisser: '{nombre} points de contact · faites glisser',
       erreur: 'La modification n’a pas pu être enregistrée. Merci de réessayer.',
       erreurDroits: 'Seul le Responsable peut modifier les points de contact.',
       erreurQuestionnaires:
@@ -247,6 +256,9 @@ export const fr = {
     },
     masse: {
       titre: 'Créer des points en masse',
+      titreAjout: 'Ajouter une table',
+      descriptionAjout:
+        'Les numéros sont déjà remplis à la suite de vos points actuels. Gardez-les pour ajouter une seule table, ou changez le dernier numéro pour en ajouter plusieurs.',
       description:
         'Créez jusqu’à {max} points d’un coup, par exemple « Table 1 » à « Table 40 ». Un nom qui existe déjà est ignoré.',
       prefixe: 'Début du nom',

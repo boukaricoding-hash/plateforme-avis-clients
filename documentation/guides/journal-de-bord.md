@@ -392,3 +392,29 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 
 **Point d'attention**
 - Meme remarque qu'aux jours 15, 17 et 18 : `eslint` lance sur tout `src` signale des erreurs `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...`. Aucune dans les fichiers du design.
+
+
+## Jour 18 (design Premium) - samedi 7 novembre 2026 : page Sites et tables en cartes a faire glisser
+
+**Fait**
+- Meme branche `design-sites-et-tables`. Cette entree remplace le design de l'entree precedente (colonnes, lignes a traits fins, pages avec fleches) par la maquette Premium.
+- Ecran E12 redessine : en haut le choix du site et ses boutons, puis le titre et les coordonnees, la recherche, et une rangee de grandes cartes (une par point de contact) qu'on fait glisser de gauche a droite. Chaque carte montre le statut, un grand numero, le nom et le questionnaire.
+- Fichiers dans `frontend/tableau-de-bord/src` : `styles/sites.css` (661 lignes, reecrit), `composants-sites/liste-points.tsx` (413 lignes), `composants-sites/creation-masse.tsx` (329 lignes), `pages/sites-points-de-contact/page-sites.tsx` (375 lignes), puis 11 textes ajoutes dans `traductions/fr/textes.ts` et `traductions/en/textes.ts` (+12 lignes chacun).
+- Backend, hooks et `utiliserSitesPoints` non modifies, aucune dependance ajoutee. `tsc -b`, `eslint` sur les 4 fichiers .tsx et les 2 fichiers de textes, et `vite build` sans erreur. Plus aucune cle de texte manquante en francais comme en anglais.
+
+**Decisions**
+- Rond crayon d'une carte (Responsable seulement) : la carte passe en edition sur place (nom, questionnaire, activer ou desactiver, enregistrer ou annuler). Le Gestionnaire lit seulement, sans aucun bouton.
+- Un seul panneau ouvert a la fois sous la barre d'actions : nouveau site, gerer le site (modifier, activer ou desactiver), creer en masse, ajouter une table.
+- Ajouter une table ouvre la creation en masse avec le premier et le dernier numero deja remplis au prochain numero libre. Il n'y a pas de creation d'un point isole dans le backend, donc rien n'a change cote serveur.
+- Recherche : elle filtre les cartes sur l'ecran, par nom ou par zone, sans appel a l'API.
+- Points de pagination : calcules d'apres la largeur visible, ils suivent le defilement et un clic fait defiler. `utiliserPages` n'est plus utilise ici, il reste intact pour l'accueil.
+- La page defile normalement si l'ecran est trop bas (le `<main>` s'en charge). Plus d'ecran fixe pour cette page.
+- Couleurs : uniquement les variables de `index.css`. En theme clair, les cartes et les pastilles prennent le gris doux, car la surface est blanche comme la page.
+
+**A faire ensuite**
+- Controle a l'ecran, a la main : ordinateur et telephone a 390 px, themes sombre et clair, avec 2 puis 40 points (defilement, points de pagination, recherche, message "aucun point ne correspond"), edition sur place d'une carte, panneaux (nouveau site, gerer le site, creer en masse, ajouter une table), Gestionnaire en lecture seule.
+- Jour 19 : ecran E10 (questionnaires, liste et editeur).
+
+**Points d'attention**
+- Le texte `sites.liste.videResponsable` dit encore "le bloc Creer des points en masse ci-dessous" ; avec ce design le bouton est en haut de la page. A corriger plus tard.
+- L'entree "Jour 18 (design)" est presente deux fois dans ce journal, a l'identique. A nettoyer plus tard.

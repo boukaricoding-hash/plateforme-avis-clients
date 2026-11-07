@@ -11,6 +11,7 @@ import {
 
 // Creation en masse de points de contact pour le site choisi (ecran E12, jour 17),
 // Responsable seulement : "Table 1" a "Table 40" en un clic.
+// Design : pas de cadre, des champs avec un trait fin dessous (styles/sites.css, sites-formulaire).
 // - prefixe, type, premier et dernier numero (500 points au plus a la fois) ;
 // - questionnaire facultatif, applique a tous les points crees ;
 // - un nom qui existe deja est ignore (pas de doublon) : le message dit combien.
@@ -57,10 +58,8 @@ function ChampNumero({ id, libelle, valeur, erreur, surChangement }: ProprietesC
   const idErreur = `${id}-erreur`
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-semibold text-texte">
-        {libelle}
-      </label>
+    <div className="sites-champ">
+      <label htmlFor={id}>{libelle}</label>
       <input
         id={id}
         type="number"
@@ -71,10 +70,9 @@ function ChampNumero({ id, libelle, valeur, erreur, surChangement }: ProprietesC
         aria-invalid={erreur !== null}
         aria-describedby={erreur !== null ? idErreur : undefined}
         onChange={(evenement) => surChangement(evenement.target.value)}
-        className="min-h-11 w-28 rounded-md border border-bordure-champ bg-fond px-3 text-sm text-texte"
       />
       {erreur !== null && (
-        <p id={idErreur} role="alert" className="m-0 max-w-56 text-xs text-erreur">
+        <p id={idErreur} role="alert" className="m-0 text-xs text-erreur">
           {erreur}
         </p>
       )}
@@ -180,23 +178,20 @@ export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
   const liste = questionnaires ?? []
 
   return (
-    <section
-      aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-5 shadow-doux"
-    >
-      <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
+    <section aria-labelledby={idTitre} className="sites-formulaire">
+      <h2 id={idTitre} className="sites-formulaire-titre">
         {t('sites.masse.titre')}
       </h2>
-      <p className="mt-1 text-sm text-texte-secondaire">
-        {t('sites.masse.description', { max: MAX_POINTS_EN_MASSE })}
-      </p>
+      <p className="sites-aide">{t('sites.masse.description', { max: MAX_POINTS_EN_MASSE })}</p>
 
-      <form onSubmit={(evenement) => void creer(evenement)} noValidate className="mt-4 flex flex-col gap-5">
-        <div className="flex flex-wrap items-start gap-5">
-          <div className="flex flex-col gap-1">
-            <label htmlFor={idPrefixe} className="text-sm font-semibold text-texte">
-              {t('sites.masse.prefixe')}
-            </label>
+      <form
+        onSubmit={(evenement) => void creer(evenement)}
+        noValidate
+        className="sites-formulaire-corps"
+      >
+        <div className="sites-formulaire-paire sites-formulaire-paire--serree">
+          <div className="sites-champ">
+            <label htmlFor={idPrefixe}>{t('sites.masse.prefixe')}</label>
             <input
               id={idPrefixe}
               type="text"
@@ -205,24 +200,20 @@ export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
               value={prefixe}
               aria-invalid={erreurPrefixe !== null}
               onChange={(evenement) => modifier(setPrefixe)(evenement.target.value)}
-              className="min-h-11 w-44 rounded-md border border-bordure-champ bg-fond px-3 text-sm text-texte"
             />
             {erreurPrefixe !== null && (
-              <p role="alert" className="m-0 max-w-56 text-xs text-erreur">
+              <p role="alert" className="m-0 text-xs text-erreur">
                 {erreurPrefixe}
               </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor={idType} className="text-sm font-semibold text-texte">
-              {t('sites.masse.type')}
-            </label>
+          <div className="sites-champ">
+            <label htmlFor={idType}>{t('sites.masse.type')}</label>
             <select
               id={idType}
               value={type}
               onChange={(evenement) => modifier(setType)(evenement.target.value)}
-              className="min-h-11 w-40 rounded-md border border-bordure-champ bg-fond px-2 text-sm text-texte"
             >
               {TYPES_POINT_CONTACT.map((valeur) => (
                 <option key={valeur} value={valeur}>
@@ -231,7 +222,9 @@ export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
               ))}
             </select>
           </div>
+        </div>
 
+        <div className="sites-formulaire-paire sites-formulaire-paire--serree">
           <ChampNumero
             id={idDebut}
             libelle={t('sites.masse.debut')}
@@ -248,16 +241,13 @@ export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor={idQuestionnaire} className="text-sm font-semibold text-texte">
-            {t('sites.masse.questionnaire')}
-          </label>
+        <div className="sites-champ">
+          <label htmlFor={idQuestionnaire}>{t('sites.masse.questionnaire')}</label>
           <select
             id={idQuestionnaire}
             value={questionnaireId}
             disabled={questionnaires === null}
             onChange={(evenement) => modifier(setQuestionnaireId)(evenement.target.value)}
-            className="min-h-11 w-full max-w-sm rounded-md border border-bordure-champ bg-fond px-2 text-sm text-texte disabled:cursor-not-allowed disabled:opacity-60"
           >
             <option value="">{t('sites.masse.aucunQuestionnaire')}</option>
             {liste.map((questionnaire) => (
@@ -266,11 +256,11 @@ export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
               </option>
             ))}
           </select>
-          <p className="m-0 text-xs text-texte-secondaire">{t('sites.masse.questionnaireAide')}</p>
+          <p className="sites-aide">{t('sites.masse.questionnaireAide')}</p>
         </div>
 
         {saisieValide && nombre !== null && debutLu !== null && finLue !== null && (
-          <p className="m-0 rounded-md bg-fond-alt px-3 py-2 text-sm text-texte-secondaire">
+          <p className="sites-apercu">
             {t('sites.masse.apercu', {
               nombre,
               premier: `${prefixePropre} ${debutLu}`,
@@ -279,18 +269,18 @@ export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
           </p>
         )}
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="sites-formulaire-boutons">
           <button
             type="submit"
             disabled={masse.enCours}
             aria-busy={masse.enCours}
-            className="min-h-11 rounded-md bg-principale px-4 text-sm font-semibold text-texte-sur-principale transition-colors hover:bg-principale-fonce disabled:cursor-not-allowed disabled:opacity-60"
+            className="sites-bouton sites-bouton--plein"
           >
             {masse.enCours ? t('sites.masse.creation') : t('sites.masse.creer')}
           </button>
         </div>
 
-        <p role="status" className="m-0 min-h-5 text-sm text-succes">
+        <p role="status" className="sites-message sites-message--succes">
           {resultatVisible && masse.resultat !== null
             ? t('sites.masse.resultat', {
                 crees: masse.resultat.crees,
@@ -299,7 +289,7 @@ export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
             : ''}
         </p>
         {messageErreur !== null && (
-          <p role="alert" className="m-0 text-sm text-erreur">
+          <p role="alert" className="sites-message sites-message--erreur">
             {messageErreur}
           </p>
         )}

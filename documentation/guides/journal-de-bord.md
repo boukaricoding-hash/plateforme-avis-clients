@@ -338,3 +338,57 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - `eslint` sur les fichiers du jour : 39 erreurs, toutes `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...`, meme cause que les jours 15 et 17. Aucune autre erreur. A traiter plus tard.
 - En suspens, hors plan du jour 18 : a l'envoi d'un avis public, le message "L'envoi a echoue" apparait. Cause probable : un ancien brouillon reste dans le navigateur (non confirmee). A tester en vidant les cles `brouillon-avis:` du `localStorage`, et sinon en lisant la reponse de la requete rouge dans l'onglet Reseau.
 - La base locale contient deux questionnaires crees par l'API ("Avis restaurant" et "Avis restaurant - Tables"), tous deux actifs. Les modeles du seed n'apparaissent pas dans les listes : il faut les cloner (ecran E10, jour 19).
+
+
+## Jour 18 (design) - samedi 7 novembre 2026 : page Sites et tables sans tableau ni cadres
+
+**Fait**
+- Branche `design-sites-et-tables`, creee apres la fusion du jour 18 (PR #24). 4 commits, une etape par fichier.
+- Ecran E12 (Sites et tables) redessine : plus de tableau, plus de cadres, plus d'ombres. Seulement des traits de 1 px tres fins et des textes bien disposes. Les couleurs viennent de `index.css` (theme sombre et theme clair), aucune couleur propre a la page.
+- Ordinateur (au moins 1100 px de large et 640 px de haut, le meme seuil que l'accueil et les avis) : la page ne defile pas et le bloc est centre en hauteur et en largeur (46 rem au plus). A gauche le site (choix, actions, coordonnees), a droite les points de contact en lignes separees par un trait fin, avec une ligne de libelles au dessus. Un trait vertical fin separe les deux colonnes.
+- Telephone et tablette : tout est l'un sous l'autre et la page defile. Chaque point de contact est une grande carte sans cadre ; les cartes se font glisser de gauche a droite (`scroll-snap`), sans barre de defilement visible.
+- Fichiers dans `frontend/tableau-de-bord/src` : `styles/sites.css` (nouveau, 585 lignes), `composants-sites/liste-points.tsx`, `composants-sites/formulaire-site.tsx`, `composants-sites/creation-masse.tsx`, `pages/sites-points-de-contact/page-sites.tsx`.
+- Backend non modifie, aucun texte ajoute (fr et en), aucune dependance ajoutee. `tsc -b`, `eslint` sur les 4 fichiers .tsx et `vite build` sans erreur.
+
+**Decisions**
+- Ecran fixe : les points sont coupes en pages avec `utiliserPages` (le hook de l'accueil). Une ligne fait 57 px et la ligne de libelles 25 px (constantes `HAUTEUR_LIGNE` et `HAUTEUR_ENTETE` de `liste-points.tsx`, a garder egales a `styles/sites.css`). Le nombre de points par page suit la hauteur de l'ecran, avec des fleches et "Page X sur Y".
+- Telephone : une seule page, tous les points sont dans la rangee de cartes (pas de pagination).
+- Un seul bloc a la fois dans la colonne de gauche : les coordonnees, ou le formulaire de creation, ou celui de modification, ou la creation en masse. La creation en masse n'est plus un bloc toujours affiche : c'est une action "Creer des points en masse" qui ouvre et ferme le formulaire. Cela evite le defilement sur ordinateur.
+- Filet de securite : si un formulaire est trop long pour un petit ecran, seule la colonne de gauche defile (barre fine). Rien d'autre ne defile.
+- Champs sans cadre : un trait fin dessous, qui devient vert au clic et rouge en cas d'erreur. Boutons sans cadre, en texte ; le bouton principal garde son fond plein.
+- Pas de barre de recherche pour l'instant (a ajouter plus tard si besoin). Pas d'images sur les cartes : les points de contact n'en ont pas dans les donnees, et le QR reste reserve a l'ecran E11.
+- Le centrage utilise `:has()` (`.sites-contenu:has(.sites-corps)`) pour que la hauteur fixe ne s'applique qu'a la page avec un site choisi, pas aux messages de chargement ou d'erreur.
+
+**A faire ensuite**
+- Controle a l'ecran, a la main : ordinateur (pas de defilement, bloc centre, changement de nombre de points quand on reduit la hauteur de la fenetre), telephone a 390 px (cartes a glisser), themes sombre et clair, formulaires (creation, modification, creation en masse), Gestionnaire (lecture seule, sans boutons).
+- Jour 19 : ecran E10 (questionnaires, liste et editeur).
+
+**Point d'attention**
+- Meme remarque qu'aux jours 15, 17 et 18 : `eslint` lance sur tout `src` signale des erreurs `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...`. Aucune dans les fichiers du design.
+
+
+## Jour 18 (design) - samedi 7 novembre 2026 : page Sites et tables sans tableau ni cadres
+
+**Fait**
+- Branche `design-sites-et-tables`, creee apres la fusion du jour 18 (PR #24). 4 commits, une etape par fichier.
+- Ecran E12 (Sites et tables) redessine : plus de tableau, plus de cadres, plus d'ombres. Seulement des traits de 1 px tres fins et des textes bien disposes. Les couleurs viennent de `index.css` (theme sombre et theme clair), aucune couleur propre a la page.
+- Ordinateur (au moins 1100 px de large et 640 px de haut, le meme seuil que l'accueil et les avis) : la page ne defile pas et le bloc est centre en hauteur et en largeur (46 rem au plus). A gauche le site (choix, actions, coordonnees), a droite les points de contact en lignes separees par un trait fin, avec une ligne de libelles au dessus. Un trait vertical fin separe les deux colonnes.
+- Telephone et tablette : tout est l'un sous l'autre et la page defile. Chaque point de contact est une grande carte sans cadre ; les cartes se font glisser de gauche a droite (`scroll-snap`), sans barre de defilement visible.
+- Fichiers dans `frontend/tableau-de-bord/src` : `styles/sites.css` (nouveau, 585 lignes), `composants-sites/liste-points.tsx`, `composants-sites/formulaire-site.tsx`, `composants-sites/creation-masse.tsx`, `pages/sites-points-de-contact/page-sites.tsx`.
+- Backend non modifie, aucun texte ajoute (fr et en), aucune dependance ajoutee. `tsc -b`, `eslint` sur les 4 fichiers .tsx et `vite build` sans erreur.
+
+**Decisions**
+- Ecran fixe : les points sont coupes en pages avec `utiliserPages` (le hook de l'accueil). Une ligne fait 57 px et la ligne de libelles 25 px (constantes `HAUTEUR_LIGNE` et `HAUTEUR_ENTETE` de `liste-points.tsx`, a garder egales a `styles/sites.css`). Le nombre de points par page suit la hauteur de l'ecran, avec des fleches et "Page X sur Y".
+- Telephone : une seule page, tous les points sont dans la rangee de cartes (pas de pagination).
+- Un seul bloc a la fois dans la colonne de gauche : les coordonnees, ou le formulaire de creation, ou celui de modification, ou la creation en masse. La creation en masse n'est plus un bloc toujours affiche : c'est une action "Creer des points en masse" qui ouvre et ferme le formulaire. Cela evite le defilement sur ordinateur.
+- Filet de securite : si un formulaire est trop long pour un petit ecran, seule la colonne de gauche defile (barre fine). Rien d'autre ne defile.
+- Champs sans cadre : un trait fin dessous, qui devient vert au clic et rouge en cas d'erreur. Boutons sans cadre, en texte ; le bouton principal garde son fond plein.
+- Pas de barre de recherche pour l'instant (a ajouter plus tard si besoin). Pas d'images sur les cartes : les points de contact n'en ont pas dans les donnees, et le QR reste reserve a l'ecran E11.
+- Le centrage utilise `:has()` (`.sites-contenu:has(.sites-corps)`) pour que la hauteur fixe ne s'applique qu'a la page avec un site choisi, pas aux messages de chargement ou d'erreur.
+
+**A faire ensuite**
+- Controle a l'ecran, a la main : ordinateur (pas de defilement, bloc centre, changement de nombre de points quand on reduit la hauteur de la fenetre), telephone a 390 px (cartes a glisser), themes sombre et clair, formulaires (creation, modification, creation en masse), Gestionnaire (lecture seule, sans boutons).
+- Jour 19 : ecran E10 (questionnaires, liste et editeur).
+
+**Point d'attention**
+- Meme remarque qu'aux jours 15, 17 et 18 : `eslint` lance sur tout `src` signale des erreurs `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...`. Aucune dans les fichiers du design.

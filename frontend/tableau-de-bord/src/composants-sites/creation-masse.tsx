@@ -24,6 +24,8 @@ type Proprietes = {
   // null tant que les questionnaires ne sont pas charges.
   questionnaires: ResumeQuestionnaire[] | null
   masse: ActionMasse
+  // Appele au clic sur "Annuler" : la page ferme le formulaire.
+  surFermer: () => void
 }
 
 // Longueur maximale du prefixe reprise du backend ; le serveur refait toujours la verification.
@@ -80,7 +82,7 @@ function ChampNumero({ id, libelle, valeur, erreur, surChangement }: ProprietesC
   )
 }
 
-export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
+export function CreationMasse({ siteId, questionnaires, masse, surFermer }: Proprietes) {
   const { t, langue } = utiliserLangue()
   const idTitre = useId()
   const idPrefixe = useId()
@@ -277,6 +279,14 @@ export function CreationMasse({ siteId, questionnaires, masse }: Proprietes) {
             className="sites-bouton sites-bouton--plein"
           >
             {masse.enCours ? t('sites.masse.creation') : t('sites.masse.creer')}
+          </button>
+          <button
+            type="button"
+            disabled={masse.enCours}
+            onClick={surFermer}
+            className="sites-bouton"
+          >
+            {t('sites.formulaire.annuler')}
           </button>
         </div>
 

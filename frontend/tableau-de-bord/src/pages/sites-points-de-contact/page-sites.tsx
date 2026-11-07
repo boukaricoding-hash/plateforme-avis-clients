@@ -6,14 +6,20 @@ import { ListePoints } from '../../composants-sites/liste-points'
 import { utiliserLangue } from '../../hooks/utiliser-langue'
 import { utiliserSitesPoints } from '../../hooks/utiliser-sites-points'
 import type { ErreurService } from '../../services/api'
+import '../../styles/sites.css'
 
-// Ecran E12 : sites et points de contact (jour 17).
+// Ecran E12 : sites et points de contact (jour 17, design).
 // - Le Responsable cree et modifie ses sites, active ou desactive un site, cree ses tables en masse
 //   et regle le questionnaire de chaque point.
 // - Le Gestionnaire voit seulement les sites de son perimetre, en lecture seule.
 // - L'administrateur DTS n'a pas d'organisation : il est renvoye a l'accueil.
 // La page n'appelle pas l'API : tout vient de utiliserSitesPoints. Chaque bloc a son propre
 // chargement et sa propre erreur, avec un bouton "Reessayer".
+// Design (styles/sites.css) : ni tableau ni cadres, des traits de 1 px tres fins.
+// - Ordinateur : la page ne defile pas, le contenu est centre. A gauche le site (choix,
+//   coordonnees, actions), a droite les points de contact. Quand un formulaire est ouvert,
+//   il prend toute la colonne de gauche (le choix du site et les actions se cachent).
+// - Telephone : tout est l'un sous l'autre et la page defile.
 
 type PropsEchec = {
   erreur: ErreurService
@@ -26,23 +32,20 @@ function BlocEchec({ erreur, cleGenerale, surReessayer }: PropsEchec) {
   const { t } = utiliserLangue()
 
   return (
-    <div className="rounded-lg border border-bordure bg-surface p-5 shadow-doux">
+    <div className="flex flex-col items-start gap-1">
       <p role="alert" className="m-0 text-sm text-erreur">
         {erreur.statut === 0 ? t('commun.erreurReseau') : t(cleGenerale)}
       </p>
-      <button
-        type="button"
-        onClick={surReessayer}
-        className="mt-3 min-h-11 rounded-md border border-bordure-champ px-4 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond"
-      >
+      <button type="button" onClick={surReessayer} className="sites-bouton">
         {t('commun.reessayer')}
       </button>
     </div>
   )
 }
 
-// Ce que montre le bloc du site : rien, le formulaire de creation ou celui de modification.
-type Formulaire = 'aucun' | 'creation' | 'modification'
+// Ce que montre la colonne du site : les coordonnees, le formulaire de creation,
+// celui de modification ou la creation de points en masse (un seul a la fois).
+type Formulaire = 'aucun' | 'creation' | 'modification' | 'masse'
 
 type PropsCoordonnee = {
   libelle: string
@@ -54,9 +57,9 @@ function Coordonnee({ libelle, valeur }: PropsCoordonnee) {
   const { t } = utiliserLangue()
 
   return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-semibold text-texte-secondaire">{libelle}</dt>
-      <dd className="m-0 text-sm text-texte">{valeur ?? t('sites.nonRenseigne')}</dd>
+    <div className="sites-coordonnee">
+      <dt>{libelle}</dt>
+      <dd>{valeur ?? t('sites.nonRenseigne')}</dd>
     </div>
   )
 }
@@ -109,48 +112,46 @@ export function PageSites() {
   const aucunSite = sites !== null && sites.length === 0
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-      <header>
-        <h1 className="font-titre text-2xl font-bold text-texte">{t('sites.titre')}</h1>
-        <p className="mt-1 text-texte-secondaire">
-          {peutModifier ? t('sites.sousTitre') : t('sites.sousTitreGestionnaire')}
-        </p>
-      </header>
+    <div className="sites-ecran">
+      <div className="sites-contenu">
+        <header className="sites-tete">
+          <div>
+            <h1 className="font-titre text-2xl font-bold text-texte">{t('sites.titre')}</h1>
+            <p className="mt-1 text-texte-secondaire">
+              {peutModifier ? t('sites.sousTitre') : t('sites.sousTitreGestionnaire')}
+            </p>
+          </div>
+        </header>
 
-      {chargementSites && (
-        <p role="status" className="m-0 text-sm text-texte-secondaire">
-          {t('sites.chargement')}
-        </p>
-      )}
-      {erreurSites !== null && sites === null && (
-        <BlocEchec erreur={erreurSites} cleGenerale="sites.erreur" surReessayer={recharger} />
-      )}
+        {chargementSites && (
+          <p role="status" className="m-0 text-sm text-texte-secondaire">
+            {t('sites.chargement')}
+          </p>
+        )}
+        {erreurSites !== null && sites === null && (
+          <BlocEchec erreur={erreurSites} cleGenerale="sites.erreur" surReessayer={recharger} />
+        )}
 
-      {/* Aucun site : le Responsable cree le premier, le Gestionnaire attend qu'on lui en donne un */}
-      {aucunSite && !peutModifier && (
-        <p className="m-0 rounded-lg border border-bordure bg-surface p-5 text-sm text-texte-secondaire shadow-doux">
-          {t('sites.aucunSite')}
-        </p>
-      )}
-      {aucunSite && peutModifier && (
-        <>
-          <p className="m-0 text-sm text-texte-secondaire">{t('sites.aucunSiteResponsable')}</p>
-          <FormulaireSite site={null} actions={actionsSites} surFermer={fermerFormulaire} />
-        </>
-      )}
+        {/* Aucun site : le Responsable cree le premier, le Gestionnaire attend qu'on lui en donne un */}
+        {aucunSite && !peutModifier && (
+          <p className="m-0 text-sm text-texte-secondaire">{t('sites.aucunSite')}</p>
+        )}
+        {aucunSite && peutModifier && (
+          <>
+            <p className="m-0 text-sm text-texte-secondaire">{t('sites.aucunSiteResponsable')}</p>
+            <FormulaireSite site={null} actions={actionsSites} surFermer={fermerFormulaire} />
+          </>
+        )}
 
-      {sites !== null && sites.length > 0 && siteChoisi !== null && (
-        <>
-          {/* Choix du site et ses coordonnees */}
-          <section
-            aria-label={t('sites.choisirSite')}
-            className="rounded-lg border border-bordure bg-surface p-5 shadow-doux"
-          >
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div className="flex flex-col gap-1">
-                <label htmlFor={idChoixSite} className="text-sm font-semibold text-texte">
-                  {t('sites.choisirSite')}
-                </label>
+        {sites !== null && sites.length > 0 && siteChoisi !== null && (
+          <div className="sites-corps">
+            {/* Colonne du site : choix, actions, coordonnees ou formulaire */}
+            <section
+              aria-label={t('sites.choisirSite')}
+              className={`sites-colonne ${formulaire !== 'aucun' ? 'sites-colonne--formulaire' : ''}`}
+            >
+              <div className="sites-champ">
+                <label htmlFor={idChoixSite}>{t('sites.choisirSite')}</label>
                 <select
                   id={idChoixSite}
                   value={siteChoisi.id}
@@ -158,7 +159,6 @@ export function PageSites() {
                     setFormulaire('aucun')
                     choisirSite(evenement.target.value)
                   }}
-                  className="min-h-11 w-full min-w-56 rounded-md border border-bordure-champ bg-fond px-2 text-sm text-texte"
                 >
                   {sites.map((site) => (
                     <option key={site.id} value={site.id}>
@@ -169,18 +169,18 @@ export function PageSites() {
               </div>
 
               {peutModifier && (
-                <div className="flex flex-wrap gap-2">
+                <div className="sites-actions">
                   <button
                     type="button"
                     onClick={() => setFormulaire('creation')}
-                    className="min-h-11 rounded-md border border-bordure-champ px-4 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond"
+                    className="sites-bouton"
                   >
                     {t('sites.nouveauSite')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormulaire('modification')}
-                    className="min-h-11 rounded-md border border-bordure-champ px-4 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond"
+                    className="sites-bouton"
                   >
                     {t('sites.modifierSite')}
                   </button>
@@ -188,95 +188,105 @@ export function PageSites() {
                     type="button"
                     disabled={actionsSites.enCours}
                     aria-busy={actionsSites.enCours}
-                    onClick={() =>
-                      void actionsSites.changerStatut(siteChoisi.id, !siteChoisi.actif)
-                    }
-                    className="min-h-11 rounded-md border border-bordure-champ px-4 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={() => void actionsSites.changerStatut(siteChoisi.id, !siteChoisi.actif)}
+                    className="sites-bouton"
                   >
                     {siteChoisi.actif ? t('sites.desactiver') : t('sites.activer')}
                   </button>
+                  <button
+                    type="button"
+                    aria-expanded={formulaire === 'masse'}
+                    onClick={() => setFormulaire(formulaire === 'masse' ? 'aucun' : 'masse')}
+                    className="sites-bouton"
+                  >
+                    {t('sites.masse.titre')}
+                  </button>
                 </div>
               )}
-            </div>
 
-            <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Coordonnee libelle={t('sites.adresse')} valeur={siteChoisi.adresse} />
-              <Coordonnee libelle={t('sites.ville')} valeur={siteChoisi.ville} />
-              <Coordonnee libelle={t('sites.telephone')} valeur={siteChoisi.telephone} />
-              <div className="flex flex-col gap-0.5">
-                <dt className="text-xs font-semibold text-texte-secondaire">{t('sites.statut')}</dt>
-                <dd
-                  className={`m-0 text-sm font-semibold ${
-                    siteChoisi.actif ? 'text-succes' : 'text-texte-secondaire'
-                  }`}
-                >
-                  {siteChoisi.actif ? t('sites.statutActif') : t('sites.statutInactif')}
-                </dd>
-              </div>
-            </dl>
+              {/* Les coordonnees laissent la place au formulaire quand il est ouvert */}
+              {formulaire === 'aucun' && (
+                <dl className="sites-coordonnees">
+                  <Coordonnee libelle={t('sites.adresse')} valeur={siteChoisi.adresse} />
+                  <Coordonnee libelle={t('sites.ville')} valeur={siteChoisi.ville} />
+                  <Coordonnee libelle={t('sites.telephone')} valeur={siteChoisi.telephone} />
+                  <div className="sites-coordonnee">
+                    <dt>{t('sites.statut')}</dt>
+                    <dd
+                      className={`sites-statut ${siteChoisi.actif ? 'sites-statut--actif' : ''}`}
+                    >
+                      {siteChoisi.actif ? t('sites.statutActif') : t('sites.statutInactif')}
+                    </dd>
+                  </div>
+                </dl>
+              )}
 
-            <p role="status" className="m-0 mt-3 min-h-5 text-sm text-succes">
-              {formulaire === 'aucun' && actionsSites.succes ? t('sites.statutEnregistre') : ''}
-            </p>
-            {messageStatut !== null && (
-              <p role="alert" className="m-0 mt-1 text-sm text-erreur">
-                {messageStatut}
+              <p role="status" className="sites-message sites-message--succes">
+                {formulaire === 'aucun' && actionsSites.succes ? t('sites.statutEnregistre') : ''}
               </p>
-            )}
-          </section>
+              {messageStatut !== null && (
+                <p role="alert" className="sites-message sites-message--erreur">
+                  {messageStatut}
+                </p>
+              )}
 
-          {/* Formulaire de creation ou de modification : Responsable seulement */}
-          {peutModifier && formulaire === 'creation' && (
-            <FormulaireSite
-              key="nouveau"
-              site={null}
-              actions={actionsSites}
-              surFermer={fermerFormulaire}
-            />
-          )}
-          {peutModifier && formulaire === 'modification' && (
-            <FormulaireSite
-              key={siteChoisi.id}
-              site={siteChoisi}
-              actions={actionsSites}
-              surFermer={fermerFormulaire}
-            />
-          )}
+              {/* Formulaires : Responsable seulement */}
+              {peutModifier && formulaire === 'creation' && (
+                <FormulaireSite
+                  key="nouveau"
+                  site={null}
+                  actions={actionsSites}
+                  surFermer={fermerFormulaire}
+                />
+              )}
+              {peutModifier && formulaire === 'modification' && (
+                <FormulaireSite
+                  key={siteChoisi.id}
+                  site={siteChoisi}
+                  actions={actionsSites}
+                  surFermer={fermerFormulaire}
+                />
+              )}
 
-          {/* Points de contact du site choisi */}
-          {chargementPoints && (
-            <p role="status" className="m-0 text-sm text-texte-secondaire">
-              {t('sites.chargementPoints')}
-            </p>
-          )}
-          {erreurPoints !== null && points === null && (
-            <BlocEchec
-              erreur={erreurPoints}
-              cleGenerale="sites.erreurPoints"
-              surReessayer={recharger}
-            />
-          )}
-          {points !== null && (
-            <ListePoints
-              points={points}
-              questionnaires={questionnaires}
-              erreurQuestionnaires={erreurQuestionnaires}
-              peutModifier={peutModifier}
-              actions={actionsPoints}
-            />
-          )}
+              {/* Creation en masse : Responsable seulement, on repart de zero a chaque site */}
+              {peutModifier && formulaire === 'masse' && (
+                <CreationMasse
+                  key={siteChoisi.id}
+                  siteId={siteChoisi.id}
+                  questionnaires={questionnaires}
+                  masse={masse}
+                  surFermer={fermerFormulaire}
+                />
+              )}
+            </section>
 
-          {/* Creation en masse : Responsable seulement, on repart de zero a chaque site */}
-          {peutModifier && (
-            <CreationMasse
-              key={siteChoisi.id}
-              siteId={siteChoisi.id}
-              questionnaires={questionnaires}
-              masse={masse}
-            />
-          )}
-        </>
-      )}
+            {/* Points de contact du site choisi */}
+            <div className="sites-droite">
+              {chargementPoints && (
+                <p role="status" className="m-0 text-sm text-texte-secondaire">
+                  {t('sites.chargementPoints')}
+                </p>
+              )}
+              {erreurPoints !== null && points === null && (
+                <BlocEchec
+                  erreur={erreurPoints}
+                  cleGenerale="sites.erreurPoints"
+                  surReessayer={recharger}
+                />
+              )}
+              {points !== null && (
+                <ListePoints
+                  points={points}
+                  questionnaires={questionnaires}
+                  erreurQuestionnaires={erreurQuestionnaires}
+                  peutModifier={peutModifier}
+                  actions={actionsPoints}
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

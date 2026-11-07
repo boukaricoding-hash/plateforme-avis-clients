@@ -36,6 +36,8 @@ const LONGUEUR_NOM = 120
 const HAUTEUR_LIGNE = 57
 // Hauteur de la ligne de libelles : 18 px de texte + 6 px de marge + 1 px de trait.
 const HAUTEUR_ENTETE = 25
+// Doit rester egale a la requete de l'ecran fixe dans styles/sites.css
+const REQUETE_ECRAN_FIXE = '(min-width: 900px) and (min-height: 480px)'
 
 // Titre dans la langue choisie, sinon en francais (l'anglais est facultatif).
 function titreDans(titre: TexteMultilingue, langue: string): string {
@@ -145,17 +147,23 @@ function LignePoint({ point, questionnaires, peutModifier, actions }: Proprietes
             </button>
           </form>
         ) : (
-          <h3 className="sites-point-nom">{point.nom}</h3>
+          <>
+            <h3 className="sites-point-nom">{point.nom}</h3>
+            {/* Ordinateur : le type et la zone passent sous le nom, sur une seule ligne */}
+            <p className="sites-point-sous">
+              {point.zone !== null ? `${libelleType} · ${point.zone}` : libelleType}
+            </p>
+          </>
         )}
       </div>
 
       <dl className="sites-point-infos">
-        <div className="sites-point-info">
+        <div className="sites-point-info sites-point-info--detail">
           <dt>{t('sites.liste.colonneType')}</dt>
           <dd>{libelleType}</dd>
         </div>
 
-        <div className="sites-point-info">
+        <div className="sites-point-info sites-point-info--detail">
           <dt>{t('sites.liste.colonneZone')}</dt>
           <dd>{point.zone ?? '—'}</dd>
         </div>
@@ -248,6 +256,7 @@ export function ListePoints({
     hauteurLigne: HAUTEUR_LIGNE,
     hauteurEnTete: HAUTEUR_ENTETE,
     lignesParDefaut: Math.max(points.length, 1),
+    requeteEcranFixe: REQUETE_ECRAN_FIXE,
   })
 
   // Message d'echec d'une action (changer le nom, le questionnaire ou le statut).
@@ -292,8 +301,6 @@ export function ListePoints({
             {/* Libelles des colonnes : seulement sur ordinateur, les lecteurs d'ecran lisent les dt */}
             <div className="sites-points-entete" aria-hidden="true">
               <span>{t('sites.liste.colonneNom')}</span>
-              <span>{t('sites.liste.colonneType')}</span>
-              <span>{t('sites.liste.colonneZone')}</span>
               <span>{t('sites.liste.colonneQuestionnaire')}</span>
               <span>{t('sites.liste.colonneStatut')}</span>
               <span>{peutModifier ? t('sites.liste.colonneActions') : ''}</span>

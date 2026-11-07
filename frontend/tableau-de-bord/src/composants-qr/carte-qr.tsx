@@ -224,7 +224,7 @@ export function CarteQr({
       ) : (
         <ApercuQr
           key={`${point.id}-${versionQr}`}
-          adresse={adresseQr(point.id, 'png', { largeur: LARGEUR_APERCU })}
+          adresse={`${adresseQr(point.id, 'png', { largeur: LARGEUR_APERCU })}&v=${versionQr}`}
           texteAlternatif={t('qrCodes.carte.apercu', { nom: point.nom })}
           textePasDImage={t('qrCodes.carte.qrIndisponible')}
           libelleVoile={libelleVoile}

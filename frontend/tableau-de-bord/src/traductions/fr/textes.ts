@@ -299,6 +299,25 @@ export const fr = {
     pagePrecedente: 'Page précédente',
     pageSuivante: 'Page suivante',
     pageSur: 'Page {page} sur {pages}',
+    liste: 'Points de contact',
+    ligne: {
+      valide: 'Valide',
+      revoque: 'Révoqué',
+      actions: 'Actions pour {nom}',
+    },
+    telechargement: {
+      bouton: 'Télécharger',
+      detailImage: 'Image',
+      detailVectoriel: 'Vectoriel',
+      detailChevalet: 'Impression',
+      encours: 'Téléchargement…',
+      termine: 'Téléchargé',
+      formats: 'Formats de téléchargement',
+      succes: '{nom} téléchargé.',
+      erreur: 'Le téléchargement a échoué. Merci de réessayer.',
+      erreurRevoque:
+        'Ce QR code est révoqué : il ne peut plus être téléchargé. Régénérez-le d’abord.',
+    },
     consigne: {
       titre: 'Avant d’imprimer',
       taille: 'Taille minimale du QR code : 3 × 3 cm.',
@@ -307,6 +326,9 @@ export const fr = {
       support: 'Préférez un support mat : les reflets d’un papier brillant gênent le scan.',
     },
     carte: {
+      tauxCourt: 'Conversion',
+      generation: 'Génération…',
+      revocation: 'Révocation…',
       statutValide: 'QR code valide',
       statutRevoque: 'QR code révoqué',
       pointDesactive: 'Point désactivé',

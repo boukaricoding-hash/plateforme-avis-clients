@@ -1,580 +1,331 @@
 /* ------------------------------------------------------------
-   Page Sites et tables (ecran E12, design).
-   Pas de tableau, pas de cadres : des traits de 1 px tres fins
-   et des textes bien disposes. Les couleurs viennent de
-   styles/index.css (theme sombre et theme clair).
-
-   Deux modes :
-   - Ecran fixe (ordinateur, au moins 900 px de large et 480 px de haut) :
-     la page ne defile pas et le contenu est centre dans la zone
-     principale, en hauteur comme en largeur.
-   - Page normale (tablette, telephone, ecran trop bas) : la page defile
-     et les points de contact deviennent de grandes cartes qu'on fait
-     glisser de gauche a droite.
-   Le bloc "Ecran fixe" est tout en bas du fichier.
-   ------------------------------------------------------------ */
+   ECRAN E12 : SITES ET TABLES (design Premium)
+   Maquette : Premium.dc.html. Pastilles arrondies, grandes cartes
+   que l'on fait glisser de gauche a droite, titre en Georgia.
+   Les couleurs viennent de index.css (theme sombre et theme clair).
+   Les variables --s-* ci-dessous donnent a chaque theme le bon
+   fond pour les cartes et les pastilles : en theme clair, la
+   surface est blanche comme la page, on prend donc le gris doux.
+   Les marges de la page s'ajoutent a celles de <main> (24 px en
+   grand ecran, 16 px sur telephone) pour retrouver 48 px et 20 px.
+------------------------------------------------------------ */
 
 .sites-ecran {
-  --s-trait: var(--bordure);
-  --s-accent: var(--couleur-principale);
-  /* Colonnes d'une ligne de point (ecran fixe) : l'entete et les lignes les partagent */
-  --s-colonnes: minmax(6rem, 1.2fr) minmax(8.5rem, 1.5fr) 5.5rem 13rem;
+  --sites-marge: 4px;
+  --s-fond: var(--surface);
+  --s-survol: var(--surface-douce);
+  --s-rond: var(--accent-fond);
+  --s-champ: var(--accent-fond);
+  --s-texte-doux: color-mix(in srgb, var(--texte) 85%, var(--fond));
 
-  display: flex;
-  flex-direction: column;
+  box-sizing: border-box;
   width: 100%;
-  max-width: 72rem;
+  max-width: 1232px;
   margin: 0 auto;
-  min-height: 100%;
+  padding: 8px var(--sites-marge) 24px;
 }
 
-/* Le contenu se centre : marges automatiques en haut et en bas */
-.sites-contenu {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  margin-block: auto;
-  min-height: 0;
+:root[data-theme='clair'] .sites-ecran {
+  --s-fond: var(--surface-douce);
+  --s-survol: var(--accent-fond);
+  --s-rond: var(--bordure-forte);
+  --s-champ: var(--surface);
 }
 
-.sites-ecran :focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
+@media (min-width: 701px) {
+  .sites-ecran {
+    --sites-marge: 24px;
+    padding-top: 16px;
+    padding-bottom: 32px;
+  }
 }
 
-/* ---------- Boutons : sans cadre, juste du texte ---------- */
+/* ---------- Pastilles : boutons arrondis ---------- */
 
 .sites-bouton {
-  min-height: 44px;
-  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 24px;
   border: 0;
   border-radius: 999px;
-  background: transparent;
-  color: var(--s-accent);
-  font-size: 0.875rem;
+  background: var(--s-fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: 15px;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background 0.2s;
 }
 
-.sites-bouton:hover:not(:disabled) {
-  background: var(--accent-fond);
-}
-
-.sites-bouton:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.sites-bouton:hover {
+  background: var(--s-survol);
 }
 
 .sites-bouton--plein {
   background: var(--couleur-principale);
   color: var(--texte-sur-principale);
-}
-
-.sites-bouton--plein:hover:not(:disabled) {
-  background: var(--couleur-principale-fonce);
-}
-
-/* ---------- Tete : titre et choix du site ---------- */
-
-.sites-tete {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--s-trait);
-}
-
-.sites-champ {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.sites-champ label {
-  color: var(--texte-secondaire);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* Menu du site : un simple trait en dessous, pas de cadre */
-.sites-champ select {
-  min-height: 44px;
-  min-width: 14rem;
-  padding: 0 4px;
-  border: 0;
-  border-bottom: 1px solid var(--s-trait);
-  border-radius: 0;
-  background: transparent;
-  color: var(--texte);
-  font-size: 0.875rem;
-}
-
-.sites-champ select:focus-visible {
-  outline: 0;
-  border-bottom-color: var(--s-accent);
-}
-
-.sites-champ select option {
-  background-color: var(--surface);
-  color: var(--texte);
-}
-
-.sites-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-/* ---------- Coordonnees du site : quatre textes alignes ---------- */
-
-.sites-coordonnees {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: 16px 24px;
-  margin: 0;
-}
-
-.sites-coordonnee dt {
-  color: var(--texte-secondaire);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.sites-coordonnee dd {
-  margin: 2px 0 0;
-  color: var(--texte);
-  font-size: 0.875rem;
-}
-
-.sites-message {
-  min-height: 20px;
-  margin: 0;
-  font-size: 0.875rem;
-}
-
-.sites-message--succes {
-  color: var(--succes);
-}
-
-.sites-message--erreur {
-  color: var(--erreur);
-}
-
-/* ---------- Points de contact ---------- */
-
-.sites-points-titre {
-  margin: 0 0 8px;
-  color: var(--texte);
-  font-size: 1rem;
   font-weight: 700;
 }
 
-.sites-points-liste {
-  display: flex;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  /* Telephone : les cartes glissent de gauche a droite */
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
+.sites-bouton--plein:hover {
+  background: var(--couleur-decor);
 }
 
-.sites-points-liste::-webkit-scrollbar {
-  display: none;
+.sites-bouton--petit {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
 }
 
-/* Le type et la zone sous le nom : seulement sur ordinateur */
-.sites-point-sous {
-  display: none;
-  margin: 0;
-  color: var(--texte-secondaire);
-  font-size: 0.75rem;
-}
-
-/* Telephone : une grande carte par point, sans cadre, sur un fond un cran au dessus */
-.sites-point {
-  flex: 0 0 88%;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 20px;
-  border-radius: var(--rayon-xl);
-  background: var(--surface-douce);
-  scroll-snap-align: center;
-}
-
-.sites-point-nom {
-  margin: 0;
-  color: var(--texte);
-  font-size: 1.125rem;
-  font-weight: 700;
-}
-
-.sites-point-infos {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0;
-}
-
-.sites-point-info dt {
-  color: var(--texte-secondaire);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.sites-point-info dd {
-  margin: 2px 0 0;
-  color: var(--texte);
-  font-size: 0.875rem;
-}
-
-.sites-point-info select {
-  width: 100%;
-  min-height: 44px;
-  border: 0;
-  border-bottom: 1px solid var(--s-trait);
-  border-radius: 0;
-  background: transparent;
-  color: var(--texte);
-  font-size: 0.875rem;
-}
-
-.sites-point-info select:focus-visible {
-  outline: 0;
-  border-bottom-color: var(--s-accent);
-}
-
-.sites-point-info select option {
-  background-color: var(--surface);
-  color: var(--texte);
-}
-
-.sites-point-info select:disabled {
+.sites-bouton:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
-/* Statut : du texte, pas de pastille encadree */
-.sites-statut {
-  font-size: 0.8125rem;
+/* Dans un panneau ou une carte, la pastille douce prend le gris des ronds */
+.sites-panneau .sites-bouton:not(.sites-bouton--plein),
+.sites-carte .sites-bouton:not(.sites-bouton--plein) {
+  background: var(--s-rond);
+}
+
+.sites-panneau .sites-bouton:not(.sites-bouton--plein):hover,
+.sites-carte .sites-bouton:not(.sites-bouton--plein):hover {
+  background: color-mix(in srgb, var(--s-rond) 85%, var(--texte));
+}
+
+.sites-groupe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ---------- Haut de page : choix du site et boutons ---------- */
+
+.sites-haut {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sites-choix {
+  position: relative;
+  width: 300px;
+  max-width: 100%;
+}
+
+.sites-choix select {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--s-fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: 15px;
   font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sites-choix select:hover {
+  background: var(--s-survol);
+}
+
+.sites-ecran select option {
+  background: var(--fond);
+  color: var(--texte);
+}
+
+/* ---------- Titre, phrase et coordonnees ---------- */
+
+.sites-titre {
+  margin: 72px 0 16px;
+  font-family: var(--font-titre, Georgia, 'Iowan Old Style', 'Palatino Linotype', Charter, serif);
+  font-size: 64px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--texte);
+}
+
+.sites-sous {
+  margin: 0;
+  max-width: 600px;
   color: var(--texte-secondaire);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.sites-infos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin-top: 28px;
+  color: var(--s-texte-doux);
+  font-size: 15px;
+}
+
+/* Statut : un point et un texte (le texte dit toujours l'etat, la couleur ne suffit pas) */
+.sites-statut {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--texte-secondaire);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sites-statut::before {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--texte-discret);
 }
 
 .sites-statut--actif {
   color: var(--succes);
 }
 
+.sites-statut--actif::before {
+  background: var(--succes);
+}
+
 .sites-statut--revoque {
   color: var(--erreur);
 }
 
-.sites-point-actions {
+.sites-statut--revoque::before {
+  background: var(--erreur);
+}
+
+.sites-infos .sites-statut {
+  font-size: 13px;
+}
+
+/* ---------- Messages ---------- */
+
+.sites-message {
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+
+.sites-message--succes {
+  min-height: 20px;
+  color: var(--succes);
+}
+
+.sites-message--succes:empty {
+  min-height: 0;
+  margin: 0;
+}
+
+.sites-message--erreur {
+  color: var(--erreur);
+}
+
+/* ---------- Barre d'actions : recherche et boutons ---------- */
+
+.sites-barre {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: auto;
-}
-
-/* L'entete des colonnes n'existe que sur ordinateur */
-.sites-points-entete {
-  display: none;
-}
-
-/* Petit indicateur sous la liste : quelle carte est affichee */
-.sites-points-compteur {
-  margin: 8px 0 0;
-  color: var(--texte-secondaire);
-  font-size: 0.75rem;
-  text-align: center;
-}
-
-/* Renommer : un champ avec un trait en dessous, sans cadre */
-.sites-renommer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 4px 8px;
-}
-
-.sites-renommer input {
-  min-height: 44px;
-  width: 11rem;
-  max-width: 100%;
-  padding: 0 4px;
-  border: 0;
-  border-bottom: 1px solid var(--s-trait);
-  border-radius: 0;
-  background: transparent;
-  color: var(--texte);
-  font-size: 0.875rem;
-}
-
-.sites-renommer input:focus-visible {
-  outline: 0;
-  border-bottom-color: var(--s-accent);
-}
-
-/* ---------- Ecran fixe : la page ne defile pas, le contenu est centre ---------- */
-/* Seuil plus bas que l'accueil (1100 x 640) pour que les portables en profitent aussi. */
-
-@media (min-width: 900px) and (min-height: 480px) {
-  .sites-ecran {
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .sites-contenu {
-    max-height: 100%;
-  }
-
-  /* Les points deviennent des lignes separees par un trait fin */
-  .sites-points-liste {
-    display: block;
-    overflow: visible;
-    scroll-snap-type: none;
-  }
-
-  .sites-point {
-    display: grid;
-    grid-template-columns: var(--s-colonnes);
-    align-items: center;
-    gap: 16px;
-    padding: 6px 0;
-    border-radius: 0;
-    background: transparent;
-    border-top: 1px solid var(--s-trait);
-  }
-
-  .sites-point:first-child {
-    border-top: 0;
-  }
-
-  .sites-point-nom {
-    font-size: 0.875rem;
-    line-height: 1.3;
-  }
-
-  .sites-point-infos {
-    display: contents;
-  }
-
-  .sites-point-info dt {
-    /* Les libelles restent lisibles par les lecteurs d'ecran, mais pas affiches en ligne */
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  .sites-point-actions {
-    margin-top: 0;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    white-space: nowrap;
-  }
-
-  .sites-point .sites-bouton {
-    padding: 0 10px;
-  }
-
-  .sites-point-sous {
-    display: block;
-    margin-top: 1px;
-  }
-
-  /* Le type et la zone sont deja sous le nom */
-  .sites-point-info--detail {
-    display: none;
-  }
-
-  .sites-points-compteur {
-    text-align: left;
-  }
-
-  /* Ligne de libelles au dessus des points : du texte, un trait fin dessous */
-  .sites-points-entete {
-    display: grid;
-    grid-template-columns: var(--s-colonnes);
-    gap: 16px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--s-trait);
-    color: var(--texte-secondaire);
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-}
-
-/* ---------- Page : colonne du site et colonne des points ---------- */
-
-.sites-corps {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-.sites-colonne {
-  display: flex;
-  flex-direction: column;
   gap: 16px;
-  min-width: 0;
+  justify-content: space-between;
+  align-items: center;
+  margin: 64px 0 32px;
 }
 
-.sites-colonne .sites-champ select {
+.sites-recherche {
+  position: relative;
+  flex: 1 1 360px;
+  max-width: 520px;
+}
+
+.sites-recherche svg {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texte-secondaire);
+  pointer-events: none;
+}
+
+.sites-recherche input {
   width: 100%;
-}
-
-.sites-droite {
-  min-width: 0;
-}
-
-.sites-points {
-  min-width: 0;
-}
-
-/* Ecran fixe : colonne du site a gauche, points a droite, un trait vertical fin entre les deux */
-@media (min-width: 900px) and (min-height: 480px) {
-  /* Le bloc est aussi haut que la zone principale (46 rem au plus) et reste centre */
-  .sites-contenu:has(.sites-corps) {
-    height: min(100%, 46rem);
-  }
-
-  .sites-tete {
-    flex-shrink: 0;
-  }
-
-  .sites-corps {
-    flex: 1 1 0;
-    min-height: 0;
-    display: grid;
-    grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    gap: 0;
-  }
-
-  .sites-colonne {
-    min-height: 0;
-    padding-right: 24px;
-    /* Filet de securite : elle defile seulement si un formulaire est trop long */
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
-    scrollbar-color: var(--defilement-pouce) transparent;
-  }
-
-  /* Les actions se rangent en texte sur deux ou trois lignes, pour laisser la place aux coordonnees */
-  .sites-colonne .sites-actions {
-    gap: 0;
-    margin-left: -14px;
-  }
-
-  .sites-coordonnees {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px 16px;
-  }
-
-  /* Un formulaire est ouvert : il prend toute la colonne, le choix du site et les actions se cachent */
-  .sites-colonne--formulaire > .sites-champ,
-  .sites-colonne--formulaire > .sites-actions {
-    display: none;
-  }
-
-  .sites-colonne--formulaire .sites-formulaire {
-    padding-top: 0;
-    border-top: 0;
-  }
-
-  .sites-droite {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-height: 0;
-    padding-left: 24px;
-    border-left: 1px solid var(--s-trait);
-  }
-
-  .sites-points {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;
-    min-height: 0;
-  }
-
-  .sites-points-titre,
-  .sites-points > nav {
-    flex-shrink: 0;
-  }
-
-  /* La zone prend la hauteur qui reste : on la mesure pour savoir combien de points tiennent */
-  .sites-points-zone {
-    flex: 1 1 0;
-    min-height: 0;
-    overflow: hidden;
-  }
-}
-
-/* ---------- Formulaires du site (creation, modification, points en masse) ---------- */
-
-/* Un champ de saisie : un trait fin dessous, pas de cadre */
-.sites-champ input {
-  min-height: 44px;
-  width: 100%;
-  padding: 0 4px;
+  box-sizing: border-box;
+  min-height: 56px;
+  padding: 0 24px 0 52px;
   border: 0;
-  border-bottom: 1px solid var(--s-trait);
-  border-radius: 0;
-  background: transparent;
+  border-radius: 999px;
+  background: var(--s-fond);
   color: var(--texte);
-  font-size: 0.875rem;
+  font: inherit;
+  font-size: 16px;
+  transition: background 0.2s;
 }
 
-.sites-champ input:focus-visible {
-  outline: 0;
-  border-bottom-color: var(--s-accent);
+.sites-recherche input::placeholder {
+  color: var(--texte-secondaire);
+  opacity: 1;
 }
 
-.sites-champ input[aria-invalid='true'] {
-  border-bottom-color: var(--erreur);
+.sites-recherche input:hover,
+.sites-recherche input:focus {
+  background: var(--s-survol);
 }
 
-/* Le formulaire s'ouvre sous les actions, separe par un trait fin */
-.sites-formulaire {
-  padding-top: 16px;
-  border-top: 1px solid var(--s-trait);
+/* ---------- Panneau : formulaires du site et creation en masse ---------- */
+
+.sites-panneau {
+  box-sizing: border-box;
+  max-width: 720px;
+  margin: -8px 0 32px;
+  padding: 28px;
+  border-radius: 28px;
+  background: var(--s-fond);
+}
+
+.sites-panneau-pied {
+  margin-top: 20px;
 }
 
 .sites-formulaire-titre {
-  margin: 0;
-  color: var(--texte);
-  font-size: 1rem;
+  margin: 0 0 8px;
+  font-family: var(--font-titre, Georgia, 'Iowan Old Style', 'Palatino Linotype', Charter, serif);
+  font-size: 26px;
   font-weight: 700;
+  color: var(--texte);
 }
 
 .sites-formulaire-corps {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 12px;
+  display: grid;
+  gap: 20px;
+  margin-top: 20px;
 }
 
 .sites-formulaire-paire {
   display: grid;
-  gap: 14px;
+  gap: 20px;
+}
+
+.sites-formulaire-paire--serree {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .sites-formulaire-boutons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 @media (min-width: 640px) {
@@ -583,52 +334,329 @@
   }
 }
 
-/* Ecran fixe : la colonne du site est etroite, les champs restent l'un sous l'autre */
-@media (min-width: 900px) and (min-height: 480px) {
-  .sites-formulaire-paire {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ---------- Creation de points en masse ---------- */
-
-/* Deux champs cote a cote, meme dans la colonne etroite de l'ecran fixe */
-.sites-formulaire-paire--serree {
-  grid-template-columns: 1fr 1fr;
-}
-
-/* Dans un formulaire, un menu prend la largeur de sa colonne */
-.sites-formulaire .sites-champ select {
-  width: 100%;
+/* Un champ : libelle au dessus, saisie en pastille */
+.sites-champ {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-width: 0;
 }
 
-.sites-champ select:disabled {
-  cursor: not-allowed;
+.sites-champ label {
+  padding: 0 20px;
+  color: var(--texte-secondaire);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sites-champ input,
+.sites-champ select,
+.sites-carte-form input,
+.sites-carte-form select {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--s-champ);
+  box-shadow: inset 0 0 0 1px var(--bordure);
+  color: var(--texte);
+  font: inherit;
+  font-size: 15px;
+}
+
+.sites-champ input::placeholder,
+.sites-carte-form input::placeholder {
+  color: var(--texte-secondaire);
+  opacity: 1;
+}
+
+.sites-champ input[aria-invalid='true'],
+.sites-carte-form input[aria-invalid='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--erreur);
+}
+
+.sites-champ select:disabled,
+.sites-carte-form select:disabled {
   opacity: 0.6;
 }
 
 /* Textes d'aide et apercu : du texte, pas de bloc */
 .sites-aide {
-  margin: 4px 0 0;
+  margin: 0;
+  padding: 0 20px;
   color: var(--texte-secondaire);
-  font-size: 0.8125rem;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.sites-formulaire-titre + .sites-aide {
+  padding: 0;
 }
 
 .sites-apercu {
   margin: 0;
-  color: var(--texte-secondaire);
-  font-size: 0.875rem;
+  color: var(--s-texte-doux);
+  font-size: 14px;
 }
 
-/* Ecran fixe bas (portables) : formulaires plus serres pour tenir sans defilement */
-@media (min-width: 900px) and (min-height: 480px) and (max-height: 760px) {
-  .sites-formulaire .sites-aide {
-    display: none;
+/* ---------- Rangee de cartes qu'on fait glisser ---------- */
+
+.sites-points-titre {
+  margin: 0;
+}
+
+/* Les marges de la rangee debordent dans celles de la page : les cartes glissent bord a bord.
+   Les 6 px du haut et du bas laissent la place au soulevement d'une carte au survol. */
+.sites-piste {
+  display: flex;
+  gap: 20px;
+  margin: -6px calc(-1 * var(--sites-marge));
+  padding: 6px var(--sites-marge);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scroll-padding-left: var(--sites-marge);
+  scrollbar-width: none;
+}
+
+.sites-piste::-webkit-scrollbar {
+  display: none;
+}
+
+.sites-carte {
+  box-sizing: border-box;
+  flex: 0 0 250px;
+  height: 310px;
+  padding: 26px;
+  border-radius: 28px;
+  background: var(--s-fond);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  scroll-snap-align: start;
+  transition:
+    background 0.25s,
+    transform 0.25s;
+}
+
+.sites-carte:hover {
+  background: var(--s-survol);
+  transform: translateY(-4px);
+}
+
+.sites-carte-haut {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.sites-carte-num {
+  font-family: var(--font-titre, Georgia, 'Iowan Old Style', 'Palatino Linotype', Charter, serif);
+  font-size: 96px;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  color: var(--texte);
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Quatre chiffres ou plus : le numero reste dans la carte */
+.sites-carte-num--long {
+  font-size: 68px;
+}
+
+.sites-carte-nom {
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--s-texte-doux);
+  overflow-wrap: anywhere;
+}
+
+.sites-carte--off .sites-carte-num {
+  color: var(--texte-discret);
+}
+
+.sites-carte--off .sites-carte-nom {
+  color: var(--texte-secondaire);
+}
+
+.sites-carte-bas {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.sites-carte-q {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--texte-secondaire);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Rond d'edition (crayon) */
+.sites-rond {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--s-rond);
+  color: var(--texte);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.sites-rond:hover {
+  background: var(--texte);
+  color: var(--fond);
+}
+
+/* Carte en edition : le formulaire prend la place du numero */
+.sites-carte--edition {
+  justify-content: flex-start;
+  gap: 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sites-carte--edition:hover {
+  transform: none;
+}
+
+.sites-carte-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.sites-carte-form input,
+.sites-carte-form select {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.sites-carte-form-boutons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Pied : points de pagination et indication ---------- */
+
+.sites-pied {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.sites-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Un point : petit a l'oeil, mais la zone du doigt est agrandie par le ::before */
+.sites-dot {
+  position: relative;
+  display: block;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bordure-forte);
+  cursor: pointer;
+  transition:
+    width 0.25s,
+    background 0.25s;
+}
+
+.sites-dot::before {
+  content: '';
+  position: absolute;
+  inset: -12px -4px;
+}
+
+.sites-dot--actif {
+  width: 28px;
+  background: var(--texte);
+}
+
+.sites-indication {
+  color: var(--texte-secondaire);
+  font-size: 14px;
+}
+
+.sites-vide {
+  margin: 0;
+  color: var(--texte-secondaire);
+  font-size: 16px;
+}
+
+/* ---------- Telephone ---------- */
+
+@media (max-width: 700px) {
+  .sites-titre {
+    margin-top: 48px;
+    font-size: 44px;
   }
 
-  .sites-formulaire-corps {
-    gap: 8px;
-    margin-top: 8px;
+  .sites-barre {
+    margin-top: 48px;
+  }
+
+  .sites-panneau {
+    padding: 22px 18px;
+  }
+
+  .sites-carte {
+    flex-basis: 220px;
+    height: 280px;
+  }
+
+  .sites-carte-num {
+    font-size: 80px;
+  }
+
+  .sites-carte-num--long {
+    font-size: 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sites-piste {
+    scroll-behavior: auto;
+  }
+
+  .sites-carte,
+  .sites-dot {
+    transition: none;
+  }
+
+  .sites-carte:hover {
+    transform: none;
   }
 }

@@ -14,6 +14,9 @@ import {
 // Design : pas de cadre, des champs avec un trait fin dessous (styles/sites.css, sites-formulaire).
 // - prefixe, type, premier et dernier numero (500 points au plus a la fois) ;
 // - questionnaire facultatif, applique a tous les points crees ;
+// - numeroInitial (facultatif) : mode "Ajouter une table". Le premier et le dernier numero
+//   sont deja remplis avec ce numero (une seule table) et, apres chaque creation reussie,
+//   passent au numero suivant pour en ajouter une autre tout de suite ;
 // - un nom qui existe deja est ignore (pas de doublon) : le message dit combien.
 // Ce composant n'appelle pas l'API : la creation vient de utiliserSitesPoints, qui recharge
 // ensuite la liste des points. Ici on garde ce que la personne tape et on verifie avant l'envoi.
@@ -26,6 +29,8 @@ type Proprietes = {
   masse: ActionMasse
   // Appele au clic sur "Annuler" : la page ferme le formulaire.
   surFermer: () => void
+  // Mode "Ajouter une table" : premier et dernier numero deja remplis avec ce numero.
+  numeroInitial?: number
 }
 
 // Longueur maximale du prefixe reprise du backend ; le serveur refait toujours la verification.
@@ -82,7 +87,13 @@ function ChampNumero({ id, libelle, valeur, erreur, surChangement }: ProprietesC
   )
 }
 
-export function CreationMasse({ siteId, questionnaires, masse, surFermer }: Proprietes) {
+export function CreationMasse({
+  siteId,
+  questionnaires,
+  masse,
+  surFermer,
+  numeroInitial,
+}: Proprietes) {
   const { t, langue } = utiliserLangue()
   const idTitre = useId()
   const idPrefixe = useId()
@@ -90,12 +101,13 @@ export function CreationMasse({ siteId, questionnaires, masse, surFermer }: Prop
   const idDebut = useId()
   const idFin = useId()
   const idQuestionnaire = useId()
+  const ajoutUneTable = numeroInitial !== undefined
 
   // Ce que la personne tape.
   const [prefixe, setPrefixe] = useState(PREFIXE_DEFAUT)
   const [type, setType] = useState<string>(TYPES_POINT_CONTACT[0])
-  const [debut, setDebut] = useState('1')
-  const [fin, setFin] = useState('')
+  const [debut, setDebut] = useState(numeroInitial !== undefined ? String(numeroInitial) : '1')
+  const [fin, setFin] = useState(numeroInitial !== undefined ? String(numeroInitial) : '')
   const [questionnaireId, setQuestionnaireId] = useState('')
   // Les messages d'erreur de saisie apparaissent apres le premier essai.
   const [tentative, setTentative] = useState(false)
@@ -159,6 +171,11 @@ export function CreationMasse({ siteId, questionnaires, masse, surFermer }: Prop
     const reussi = await masse.creer(corps)
     if (reussi) {
       setTentative(false)
+      if (ajoutUneTable) {
+        // On prepare la table suivante : le message "1 cree" reste visible.
+        setDebut(String(finLue + 1))
+        setFin(String(finLue + 1))
+      }
     }
   }
 
@@ -182,9 +199,13 @@ export function CreationMasse({ siteId, questionnaires, masse, surFermer }: Prop
   return (
     <section aria-labelledby={idTitre} className="sites-formulaire">
       <h2 id={idTitre} className="sites-formulaire-titre">
-        {t('sites.masse.titre')}
+        {ajoutUneTable ? t('sites.masse.titreAjout') : t('sites.masse.titre')}
       </h2>
-      <p className="sites-aide">{t('sites.masse.description', { max: MAX_POINTS_EN_MASSE })}</p>
+      <p className="sites-aide">
+        {ajoutUneTable
+          ? t('sites.masse.descriptionAjout')
+          : t('sites.masse.description', { max: MAX_POINTS_EN_MASSE })}
+      </p>
 
       <form
         onSubmit={(evenement) => void creer(evenement)}

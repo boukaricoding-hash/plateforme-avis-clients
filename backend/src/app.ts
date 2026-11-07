@@ -16,6 +16,8 @@ import { routesNotifications } from "./modules/notifications/routes/notification
 import { routesParametres } from "./modules/organisations/routes/parametres.routes";
 import { dossierLogos } from "./modules/organisations/services/logo";
 import { routesDashboard } from "./modules/tableaux-de-bord/routes/dashboard.routes";
+import { routesUtilisateurs } from "./modules/utilisateurs/routes/utilisateurs.routes";
+import { routesInvitations } from "./modules/utilisateurs/routes/invitations.routes";
 
 export const app = express();
 // Nombre d'intermediaires (tunnel, Nginx) entre le client et le serveur.
@@ -99,6 +101,9 @@ app.use("/api/v1/public", routesAvisPublic);
 app.use("/api/v1/avis", routesAvis);
 app.use("/api/v1/notifications", routesNotifications);
 app.use("/api/v1/organisation", routesParametres);
+app.use("/api/v1/utilisateurs", routesUtilisateurs);
+// Invitations : routes publiques (verification du lien, acceptation)
+app.use("/api/v1/invitations", routesInvitations);
 
 // Logos des organisations : adresse publique (la page d'avis et les chevalets les affichent).
 // Les noms de fichiers sont des identifiants aleatoires. Un logo absent donne le 404 JSON habituel.

@@ -3,6 +3,7 @@ import { utiliserLangue } from './hooks/utiliser-langue'
 import { CadreApplication } from './mise-en-page/cadre-application'
 import { CadreProtege } from './mise-en-page/cadre-protege'
 import { PageConnexion } from './pages/connexion/page-connexion'
+import { PageAccepterInvitation } from './pages/invitation/page-accepter-invitation'
 import { PageMotDePasseOublie } from './pages/connexion/page-mot-de-passe-oublie'
 import { PageReinitialisation } from './pages/connexion/page-reinitialisation'
 import { PageListeAvis } from './pages/liste-avis/page-liste-avis'
@@ -10,11 +11,11 @@ import { PageParametres } from './pages/parametres-organisation/page-parametres'
 import { PageQrCodes } from './pages/qr-codes/page-qr-codes'
 import { PageSites } from './pages/sites-points-de-contact/page-sites'
 import { PageAccueil } from './pages/tableau-de-bord/page-accueil'
+import { PageUtilisateurs } from './pages/utilisateurs/page-utilisateurs'
 
 // Ecrans prevus mais pas encore construits : chacun est remplace par son vrai ecran le jour venu.
 const ECRANS_A_VENIR = [
   { chemin: 'questionnaires', cle: 'menu.questionnaires' },
-  { chemin: 'utilisateurs', cle: 'menu.utilisateurs' },
   { chemin: 'exports', cle: 'menu.exports' },
 ]
 
@@ -35,6 +36,7 @@ export default function App() {
       <Route path="/connexion" element={<PageConnexion />} />
       <Route path="/mot-de-passe-oublie" element={<PageMotDePasseOublie />} />
       <Route path="/reinitialiser-mot-de-passe" element={<PageReinitialisation />} />
+      <Route path="/invitation" element={<PageAccepterInvitation />} />
 
       {/* Ecrans reserves aux utilisateurs connectes */}
       <Route element={<CadreProtege />}>
@@ -45,6 +47,7 @@ export default function App() {
           <Route path="parametres" element={<PageParametres />} />
           <Route path="sites" element={<PageSites />} />
           <Route path="qr-codes" element={<PageQrCodes />} />
+          <Route path="utilisateurs" element={<PageUtilisateurs />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route
               key={ecran.chemin}

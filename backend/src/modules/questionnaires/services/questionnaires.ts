@@ -102,7 +102,18 @@ export async function creerQuestionnaire(
   });
 }
 
-export async function listerQuestionnaires(organisationId: string) {
+// Points de contact visibles : non supprimes et, pour un Gestionnaire, seulement ceux de ses sites.
+// perimetre : null = toute l'organisation (Responsable), sinon la liste des sites du Gestionnaire.
+// Les questionnaires eux-memes ne sont pas rattaches a un site : ils restent visibles dans toute
+// l'organisation, mais leurs points de contact (noms, nombre) respectent le perimetre.
+function conditionPointsContact(perimetre: string[] | null): Prisma.PointContactWhereInput {
+  return {
+    supprime_le: null,
+    ...(perimetre !== null ? { site_id: { in: perimetre } } : {}),
+  };
+}
+
+export async function listerQuestionnaires(organisationId: string, perimetre: string[] | null) {
   const questionnaires = await prisma.questionnaire.findMany({
     where: { organisation_id: organisationId, supprime_le: null },
     select: {
@@ -119,7 +130,7 @@ export async function listerQuestionnaires(organisationId: string) {
         orderBy: { numero: "desc" },
         take: 1,
       },
-      _count: { select: { points_contact: { where: { supprime_le: null } } } },
+      _count: { select: { points_contact: { where: conditionPointsContact(perimetre) } } },
     },
     orderBy: { modifie_le: "desc" },
   });
@@ -132,7 +143,11 @@ export async function listerQuestionnaires(organisationId: string) {
 }
 
 // Renvoie null si le questionnaire n'existe pas dans CETTE organisation.
-export async function lireQuestionnaire(organisationId: string, questionnaireId: string) {
+export async function lireQuestionnaire(
+  organisationId: string,
+  perimetre: string[] | null,
+  questionnaireId: string,
+) {
   const questionnaire = await prisma.questionnaire.findFirst({
     where: { id: questionnaireId, organisation_id: organisationId, supprime_le: null },
     select: {
@@ -171,7 +186,7 @@ export async function lireQuestionnaire(organisationId: string, questionnaireId:
           },
         },
       },
-      points_contact: { where: { supprime_le: null }, select: { id: true, nom: true } },
+      points_contact: { where: conditionPointsContact(perimetre), select: { id: true, nom: true } },
     },
   });
 

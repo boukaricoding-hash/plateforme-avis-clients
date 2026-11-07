@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { sitesAutorises } from "../../../utilitaires/perimetre";
 import { repondreDonneesInvalides, repondreNonTrouve } from "../../../utilitaires/reponses";
 import {
   lirePreferencesNotifications,
@@ -24,7 +25,7 @@ function repondreNonConnecte(res: Response): void {
 }
 
 // GET /api/v1/notifications?non_lues=true&page=1&limite=20
-// Chaque utilisateur ne voit que SES notifications.
+// Chaque utilisateur ne voit que SES notifications ; un Gestionnaire, seulement celles de ses sites.
 export async function listerMesNotifications(req: Request, res: Response): Promise<void> {
   const ctx = contexte(req);
   if (!ctx) return repondreNonConnecte(res);
@@ -32,7 +33,8 @@ export async function listerMesNotifications(req: Request, res: Response): Promi
   const lecture = schemaFiltresNotifications.safeParse(req.query);
   if (!lecture.success) return repondreDonneesInvalides(res, lecture.error);
 
-  const resultat = await listerNotifications(ctx.organisationId, ctx.utilisateur.id, lecture.data);
+  const perimetre = await sitesAutorises(ctx.utilisateur);
+  const resultat = await listerNotifications(ctx.organisationId, ctx.utilisateur.id, perimetre, lecture.data);
   res.status(200).json(resultat);
 }
 
@@ -44,8 +46,14 @@ export async function marquerUneNotificationLue(req: Request, res: Response): Pr
   const identifiant = schemaIdNotification.safeParse(req.params);
   if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
 
-  const notification = await marquerNotificationLue(ctx.organisationId, ctx.utilisateur.id, identifiant.data.id);
-  // Meme reponse si la notification n'existe pas ou appartient a quelqu'un d'autre.
+  const perimetre = await sitesAutorises(ctx.utilisateur);
+  const notification = await marquerNotificationLue(
+    ctx.organisationId,
+    ctx.utilisateur.id,
+    perimetre,
+    identifiant.data.id,
+  );
+  // Meme reponse si la notification n'existe pas, appartient a quelqu'un d'autre ou est hors perimetre.
   if (!notification) return repondreNonTrouve(res, "Notification introuvable.");
 
   res.status(200).json({ notification });

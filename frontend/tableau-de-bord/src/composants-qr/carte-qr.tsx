@@ -1,50 +1,83 @@
 import { useId, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { utiliserLangue } from '../hooks/utiliser-langue'
-import type { ActionRevocation } from '../hooks/utiliser-qr-codes'
+import type { ErreurService } from '../services/api'
 import { adresseQr } from '../services/qr-codes'
 import type { FormatQr, LigneQr, TailleChevalet } from '../types/qr-codes'
 import { TYPES_POINT_CONTACT } from '../types/sites-points'
+import { BoutonTelecharger } from './bouton-telecharger'
+import type { OptionTelechargement } from './bouton-telecharger'
 
-// Carte d'un QR code (ecran E11, jour 17) : apercu, chiffres, telechargements et, pour le
-// Responsable, revocation ou regeneration avec confirmation.
-// - Un QR valide : apercu PNG (charge au defilement), liens PNG, SVG, PDF A6 et PDF A5.
-// - Un QR revoque : plus d'apercu ni de lien (le serveur repond 409 QR_REVOQUE), mais l'historique
-//   (scans, avis) reste visible. Seule la regeneration le remet en service.
-// - Revoquer : le chevalet deja imprime affiche "QR code desactive".
-//   Regenerer : un nouveau code remplace l'ancien, le chevalet deja imprime n'est plus reconnu.
-// Ce composant n'appelle pas l'API : l'action vient de utiliserQrCodes. Ici on garde seulement
-// la confirmation en cours. Le code public du point n'est jamais affiche.
+// Carte d'honneur de l'ecran E11 (QR codes et chevalets) : le QR code du point selectionne.
+// - Un QR valide : apercu PNG (squelette qui brille puis fondu a l'arrivee de l'image), chiffres,
+//   bouton Telecharger (menu des formats a la demande) et, pour le Responsable, Regenerer.
+// - Un QR revoque : plus d'apercu ni de telechargement (le serveur repond 409 QR_REVOQUE), mais
+//   l'historique (scans, avis) reste visible. Seule la regeneration le remet en service.
+// - Pendant une revocation ou une regeneration : l'apercu est voile, un cercle tourne et une
+//   ligne balaie le QR. La confirmation et l'action elles-memes se font depuis la page.
+// Ce composant n'appelle pas l'API. Le code public du point n'est jamais affiche.
+
+type ActionEnCours = 'revoquer' | 'regenerer' | null
 
 type Proprietes = {
   ligne: LigneQr
-  // Vrai pour le Responsable : lui seul voit les boutons Revoquer et Regenerer.
+  // Vrai pour le Responsable : lui seul voit le bouton Regenerer.
   peutModifier: boolean
   // Augmente a chaque regeneration du QR de ce point : l'apercu se recharge.
   versionQr: number
-  revocation: ActionRevocation
+  // Action en cours sur ce point (voile sur l'apercu), sinon null.
+  actionEnCours: ActionEnCours
+  surRegenerer: () => void
+  surTelecharge: (nomFichier: string) => void
+  surEchecTelechargement: (erreur: ErreurService) => void
 }
 
 // Largeur de l'apercu en pixels : assez net pour un ecran, leger a charger.
 const LARGEUR_APERCU = 256
 
-type Telechargement = {
+// Formats proposes dans le menu de telechargement : le menu est construit depuis cette liste.
+type FormatTelechargement = {
   cle: string
   format: FormatQr
   taille?: TailleChevalet
   libelle: string
+  // Cle de traduction de la precision affichee a droite du libelle.
+  cleDetail: string
+  extension: string
 }
 
-const TELECHARGEMENTS: Telechargement[] = [
-  { cle: 'png', format: 'png', libelle: 'PNG' },
-  { cle: 'svg', format: 'svg', libelle: 'SVG' },
-  { cle: 'pdf-a6', format: 'pdf', taille: 'A6', libelle: 'PDF A6' },
-  { cle: 'pdf-a5', format: 'pdf', taille: 'A5', libelle: 'PDF A5' },
+const FORMATS_TELECHARGEMENT: FormatTelechargement[] = [
+  {
+    cle: 'png',
+    format: 'png',
+    libelle: 'PNG',
+    cleDetail: 'qrCodes.telechargement.detailImage',
+    extension: 'png',
+  },
+  {
+    cle: 'svg',
+    format: 'svg',
+    libelle: 'SVG',
+    cleDetail: 'qrCodes.telechargement.detailVectoriel',
+    extension: 'svg',
+  },
+  {
+    cle: 'pdf-a6',
+    format: 'pdf',
+    taille: 'A6',
+    libelle: 'PDF A6',
+    cleDetail: 'qrCodes.telechargement.detailChevalet',
+    extension: 'pdf',
+  },
+  {
+    cle: 'pdf-a5',
+    format: 'pdf',
+    taille: 'A5',
+    libelle: 'PDF A5',
+    cleDetail: 'qrCodes.telechargement.detailChevalet',
+    extension: 'pdf',
+  },
 ]
-
-type Confirmation = 'aucune' | 'revoquer' | 'regenerer'
-
-const CLASSE_BOUTON =
-  'min-h-11 rounded-md border border-bordure-champ px-3 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond disabled:cursor-not-allowed disabled:opacity-60'
 
 // Un chiffre des statistiques : le nombre, ou "—" si on n'a pas de donnee (jamais 0 a la place).
 function texteChiffre(valeur: number | null | undefined, langue: string): string {
@@ -54,11 +87,87 @@ function texteChiffre(valeur: number | null | undefined, langue: string): string
   return valeur.toLocaleString(langue === 'en' ? 'en-US' : 'fr-FR')
 }
 
-export function CarteQr({ ligne, peutModifier, versionQr, revocation }: Proprietes) {
+function IconeRegenerer() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 11a8 8 0 0 0-14.5-4.5L4 8" />
+      <polyline points="4 3 4 8 9 8" />
+      <path d="M4 13a8 8 0 0 0 14.5 4.5L20 16" />
+      <polyline points="20 21 20 16 15 16" />
+    </svg>
+  )
+}
+
+// Voile pose sur l'apercu pendant une action : on sent que quelque chose se passe.
+function VoileAction({ libelle }: { libelle: string }) {
+  return (
+    <div className="qr-apercu-voile" role="status">
+      <span className="qr-apercu-balayage" aria-hidden="true" />
+      <span className="qr-spinner qr-spinner--grand" aria-hidden="true" />
+      {libelle}
+    </div>
+  )
+}
+
+type ProprietesApercu = {
+  adresse: string
+  texteAlternatif: string
+  textePasDImage: string
+  libelleVoile: string | null
+}
+
+// Apercu du QR : l'etat de chargement de l'image vit ici. Le composant est recree (cle) quand
+// le point ou la version du QR change, donc chaque nouvelle image repart du squelette.
+function ApercuQr({ adresse, texteAlternatif, textePasDImage, libelleVoile }: ProprietesApercu) {
+  const [etat, setEtat] = useState<'chargement' | 'charge' | 'echec'>('chargement')
+
+  if (etat === 'echec') {
+    return (
+      <div className="qr-apercu-cadre qr-apercu-cadre--revoque">
+        {textePasDImage}
+        {libelleVoile !== null && <VoileAction libelle={libelleVoile} />}
+      </div>
+    )
+  }
+
+  return (
+    <div className="qr-apercu-cadre">
+      {etat === 'chargement' && <span className="qr-apercu-squelette" aria-hidden="true" />}
+      <img
+        src={adresse}
+        alt={texteAlternatif}
+        width={156}
+        height={156}
+        onLoad={() => setEtat('charge')}
+        onError={() => setEtat('echec')}
+        className={`qr-apercu-img${etat === 'charge' ? ' qr-apercu-img--charge' : ''}`}
+      />
+      {libelleVoile !== null && <VoileAction libelle={libelleVoile} />}
+    </div>
+  )
+}
+
+export function CarteQr({
+  ligne,
+  peutModifier,
+  versionQr,
+  actionEnCours,
+  surRegenerer,
+  surTelecharge,
+  surEchecTelechargement,
+}: Proprietes) {
   const { t, langue } = utiliserLangue()
   const idTitre = useId()
-  const idConfirmation = useId()
-  const [confirmation, setConfirmation] = useState<Confirmation>('aucune')
 
   const { point, statistiques } = ligne
   const revoque = point.revoque_le !== null
@@ -73,198 +182,99 @@ export function CarteQr({ ligne, peutModifier, versionQr, revocation }: Propriet
       ? `${texteChiffre(statistiques.taux_conversion, langue)} %`
       : '—'
 
-  async function confirmer(regenerer: boolean): Promise<void> {
-    const reussi = await revocation.changer(point.id, regenerer)
-    if (reussi) {
-      setConfirmation('aucune')
-    }
+  const chiffres = [
+    { cle: 'scans', libelle: t('qrCodes.carte.scans'), valeur: texteChiffre(statistiques?.nb_scans, langue) },
+    { cle: 'avis', libelle: t('qrCodes.carte.avis'), valeur: texteChiffre(statistiques?.nb_avis, langue) },
+    { cle: 'taux', libelle: t('qrCodes.carte.tauxCourt'), valeur: tauxConversion },
+  ]
+
+  let libelleVoile: string | null = null
+  if (actionEnCours === 'regenerer') {
+    libelleVoile = t('qrCodes.carte.generation')
+  } else if (actionEnCours === 'revoquer') {
+    libelleVoile = t('qrCodes.carte.revocation')
   }
 
-  // Le resultat de la derniere action ne s'affiche que sur la carte concernee.
-  const concerne = revocation.pointId === point.id
-  let messageErreur: string | null = null
-  if (concerne && revocation.erreur !== null) {
-    if (revocation.erreur.statut === 0) {
-      messageErreur = t('commun.erreurReseau')
-    } else if (revocation.erreur.statut === 403) {
-      messageErreur = t('qrCodes.carte.erreurDroits')
-    } else if (revocation.erreur.statut === 404) {
-      messageErreur = t('qrCodes.carte.erreurIntrouvable')
-    } else {
-      messageErreur = t('qrCodes.carte.erreur')
-    }
-  }
-  let messageSucces = ''
-  if (concerne && revocation.succes && revocation.resultat !== null) {
-    messageSucces =
-      revocation.resultat.action === 'regenere'
-        ? t('qrCodes.carte.succesRegenere')
-        : t('qrCodes.carte.succesRevoque')
-  }
+  // Les formats de telechargement, construits a partir de la liste ci-dessus.
+  const options: OptionTelechargement[] = FORMATS_TELECHARGEMENT.map((fichier) => ({
+    cle: fichier.cle,
+    libelle: fichier.libelle,
+    detail: t(fichier.cleDetail),
+    libelleAccessible: t('qrCodes.carte.telecharger', { nom: point.nom, format: fichier.libelle }),
+    adresse: adresseQr(point.id, fichier.format, { taille: fichier.taille }),
+    nomParDefaut: `${point.nom}.${fichier.extension}`,
+  }))
+
+  const occupe = actionEnCours !== null
+  const libelleRuban = (revoque ? t('qrCodes.ligne.revoque') : t('qrCodes.ligne.valide')).toLocaleUpperCase(
+    langue,
+  )
 
   return (
-    <article
-      aria-labelledby={idTitre}
-      className="flex flex-col gap-4 rounded-lg border border-bordure bg-surface p-5 shadow-doux"
-    >
-      <header className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h3 id={idTitre} className="m-0 font-titre text-lg font-bold text-texte">
-            {point.nom}
-          </h3>
-          <p className="m-0 text-sm text-texte-secondaire">{soustitre}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-1">
-          <span
-            className={`rounded-full border border-bordure px-2 py-0.5 text-xs font-semibold ${
-              revoque ? 'text-erreur' : 'text-succes'
-            }`}
-          >
-            {revoque ? t('qrCodes.carte.statutRevoque') : t('qrCodes.carte.statutValide')}
-          </span>
-          {!point.actif && (
-            <span className="rounded-full border border-bordure px-2 py-0.5 text-xs font-semibold text-texte-secondaire">
-              {t('qrCodes.carte.pointDesactive')}
-            </span>
-          )}
-        </div>
-      </header>
+    <article className="qr-carte-principale" aria-labelledby={idTitre}>
+      <span className="qr-ruban-zone">
+        <span className={`qr-ruban${revoque ? ' qr-ruban--revoque' : ''}`}>{libelleRuban}</span>
+      </span>
 
-      <div className="flex flex-wrap items-start gap-4">
-        {/* Apercu : fond blanc pour que le QR reste lisible en theme sombre */}
-        {revoque ? (
-          <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-md border border-bordure bg-fond-alt p-2 text-center text-xs font-semibold text-texte-secondaire">
-            {t('qrCodes.carte.qrIndisponible')}
-          </div>
-        ) : (
-          <img
-            key={`${point.id}-${versionQr}`}
-            src={adresseQr(point.id, 'png', { largeur: LARGEUR_APERCU })}
-            alt={t('qrCodes.carte.apercu', { nom: point.nom })}
-            loading="lazy"
-            width={128}
-            height={128}
-            className="h-32 w-32 shrink-0 rounded-md border border-bordure bg-white p-1"
-          />
-        )}
+      {revoque ? (
+        <div className="qr-apercu-cadre qr-apercu-cadre--revoque">
+          {t('qrCodes.carte.qrIndisponible')}
+          {libelleVoile !== null && <VoileAction libelle={libelleVoile} />}
+        </div>
+      ) : (
+        <ApercuQr
+          key={`${point.id}-${versionQr}`}
+          adresse={adresseQr(point.id, 'png', { largeur: LARGEUR_APERCU })}
+          texteAlternatif={t('qrCodes.carte.apercu', { nom: point.nom })}
+          textePasDImage={t('qrCodes.carte.qrIndisponible')}
+          libelleVoile={libelleVoile}
+        />
+      )}
 
-        <dl className="m-0 grid min-w-56 flex-1 grid-cols-3 gap-3">
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-xs font-semibold text-texte-secondaire">
-              {t('qrCodes.carte.scans')}
-            </dt>
-            <dd className="m-0 text-lg font-bold text-texte">
-              {texteChiffre(statistiques?.nb_scans, langue)}
-            </dd>
+      <h3 id={idTitre} className="qr-carte-nom">
+        {point.nom}
+      </h3>
+      <p className="qr-carte-soustitre">{soustitre}</p>
+
+      {!point.actif && (
+        <div className="qr-carte-badges">
+          <span className="qr-badge qr-badge--inactif">{t('qrCodes.carte.pointDesactive')}</span>
+        </div>
+      )}
+
+      <div className="qr-stats">
+        {chiffres.map((chiffre, index) => (
+          <div key={chiffre.cle} className="qr-stat" style={{ '--i': index } as CSSProperties}>
+            <span className="qr-stat-valeur">{chiffre.valeur}</span>
+            <span className="qr-stat-libelle">{chiffre.libelle}</span>
           </div>
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-xs font-semibold text-texte-secondaire">
-              {t('qrCodes.carte.avis')}
-            </dt>
-            <dd className="m-0 text-lg font-bold text-texte">
-              {texteChiffre(statistiques?.nb_avis, langue)}
-            </dd>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-xs font-semibold text-texte-secondaire">
-              {t('qrCodes.carte.tauxConversion')}
-            </dt>
-            <dd className="m-0 text-lg font-bold text-texte">{tauxConversion}</dd>
-          </div>
-        </dl>
+        ))}
       </div>
 
-      {/* Telechargements : seulement pour un QR valide */}
-      {revoque ? (
-        <p className="m-0 text-sm text-texte-secondaire">{t('qrCodes.carte.revoqueExplication')}</p>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          {TELECHARGEMENTS.map((fichier) => (
-            <a
-              key={fichier.cle}
-              href={adresseQr(point.id, fichier.format, { taille: fichier.taille })}
-              download
-              aria-label={t('qrCodes.carte.telecharger', {
-                nom: point.nom,
-                format: fichier.libelle,
-              })}
-              className="inline-flex min-h-11 items-center rounded-md border border-bordure-champ px-3 text-sm font-semibold text-texte no-underline transition-colors hover:bg-accent-fond"
-            >
-              {fichier.libelle}
-            </a>
-          ))}
-        </div>
-      )}
+      {revoque && <p className="qr-carte-explication">{t('qrCodes.carte.revoqueExplication')}</p>}
 
-      {/* Revoquer ou regenerer : Responsable seulement */}
-      {peutModifier && confirmation === 'aucune' && (
-        <div className="flex flex-wrap gap-2">
-          {!revoque && (
-            <button
-              type="button"
-              disabled={revocation.enCours}
-              onClick={() => setConfirmation('revoquer')}
-              className={CLASSE_BOUTON}
-            >
-              {t('qrCodes.carte.revoquer')}
-            </button>
-          )}
+      <div className="qr-carte-actions">
+        {!revoque && (
+          <BoutonTelecharger
+            libelle={t('qrCodes.telechargement.bouton')}
+            options={options}
+            desactive={occupe}
+            surSucces={surTelecharge}
+            surEchec={surEchecTelechargement}
+          />
+        )}
+        {peutModifier && (
           <button
             type="button"
-            disabled={revocation.enCours}
-            onClick={() => setConfirmation('regenerer')}
-            className={CLASSE_BOUTON}
+            disabled={occupe}
+            onClick={surRegenerer}
+            className={revoque ? 'qr-bouton-principal' : 'qr-bouton-secondaire'}
           >
+            <IconeRegenerer />
             {t('qrCodes.carte.regenerer')}
           </button>
-        </div>
-      )}
-
-      {peutModifier && confirmation !== 'aucune' && (
-        <div
-          role="group"
-          aria-labelledby={idConfirmation}
-          className="flex flex-col gap-3 rounded-md border border-erreur bg-fond-alt p-3"
-        >
-          <p id={idConfirmation} className="m-0 text-sm text-texte">
-            {confirmation === 'regenerer'
-              ? t('qrCodes.carte.confirmationRegenerer', { nom: point.nom })
-              : t('qrCodes.carte.confirmationRevoquer', { nom: point.nom })}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={revocation.enCours}
-              aria-busy={revocation.enCours}
-              onClick={() => void confirmer(confirmation === 'regenerer')}
-              className="min-h-11 rounded-md bg-erreur px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {revocation.enCours
-                ? t('qrCodes.carte.enCours')
-                : confirmation === 'regenerer'
-                  ? t('qrCodes.carte.confirmerRegenerer')
-                  : t('qrCodes.carte.confirmerRevoquer')}
-            </button>
-            <button
-              type="button"
-              disabled={revocation.enCours}
-              onClick={() => setConfirmation('aucune')}
-              className={CLASSE_BOUTON}
-            >
-              {t('qrCodes.carte.annuler')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      <p role="status" className="m-0 min-h-5 text-sm text-succes">
-        {messageSucces}
-      </p>
-      {messageErreur !== null && (
-        <p role="alert" className="m-0 text-sm text-erreur">
-          {messageErreur}
-        </p>
-      )}
+        )}
+      </div>
     </article>
   )
 }

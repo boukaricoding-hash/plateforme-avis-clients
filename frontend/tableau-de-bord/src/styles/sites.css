@@ -483,3 +483,70 @@
     overflow: hidden;
   }
 }
+/* ---------- Formulaires du site (creation, modification, points en masse) ---------- */
+
+/* Un champ de saisie : un trait fin dessous, pas de cadre */
+.sites-champ input {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 1px solid var(--s-trait);
+  border-radius: 0;
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.875rem;
+}
+
+.sites-champ input:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--s-accent);
+}
+
+.sites-champ input[aria-invalid='true'] {
+  border-bottom-color: var(--erreur);
+}
+
+/* Le formulaire s'ouvre sous les actions, separe par un trait fin */
+.sites-formulaire {
+  padding-top: 16px;
+  border-top: 1px solid var(--s-trait);
+}
+
+.sites-formulaire-titre {
+  margin: 0;
+  color: var(--texte);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sites-formulaire-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.sites-formulaire-paire {
+  display: grid;
+  gap: 14px;
+}
+
+.sites-formulaire-boutons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .sites-formulaire-paire {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Ecran fixe : la colonne du site est etroite, les champs restent l'un sous l'autre */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .sites-formulaire-paire {
+    grid-template-columns: 1fr;
+  }
+}

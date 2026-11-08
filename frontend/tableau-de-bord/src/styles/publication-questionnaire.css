@@ -1,0 +1,599 @@
+/* ============================================================
+   JOUR 20 : APERCU, PUBLICATION, VERSIONS ET SUPPRESSION D'UN QUESTIONNAIRE
+   Feuille de style des composants du jour 20 :
+   - apercu-telephone.tsx        (classes apercu-telephone-*)
+   - panneau-publication.tsx     (classes publication-*)
+   - historique-versions.tsx     (classes publication-* du cadre, versions-* de la liste)
+   - page-editeur-questionnaire.tsx : disposition a deux colonnes et bouton Supprimer
+   - detail-questionnaire.tsx    : option Supprimer du menu ...
+   Ordre : disposition de l'editeur, bouton Supprimer, apercu telephone,
+   panneau de publication, versions, responsive.
+   Les couleurs, rayons et ombres viennent de index.css (theme sombre et
+   theme clair) : cette feuille n'a aucune couleur ecrite en dur.
+   Elle est importee par la page de l'editeur et par la page Questionnaires.
+============================================================ */
+
+/* ==============================
+   1. DISPOSITION DE L'EDITEUR AVEC APERCU
+   Deux colonnes sur grand ecran : le formulaire a gauche, l'apercu
+   telephone a droite (il reste visible pendant qu'on defile).
+   Sur petit ecran : une seule colonne, l'apercu sous le formulaire.
+============================== */
+
+.editeur-questionnaire.editeur-questionnaire--avec-apercu {
+  max-width: 1240px;
+}
+
+.editeur-questionnaire-disposition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.editeur-questionnaire-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (min-width: 1100px) {
+  .editeur-questionnaire-disposition {
+    grid-template-columns: minmax(0, 1fr) 420px;
+  }
+
+  .editeur-questionnaire-colonne-apercu {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+/* ==============================
+   2. BOUTON SUPPRIMER (editeur) ET OPTION SUPPRIMER (menu de la liste)
+   Rouge discret : il ne prend toute sa couleur qu'au survol.
+============================== */
+
+.editeur-questionnaire-supprimer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--erreur) 40%, transparent);
+  border-radius: 999px;
+  color: var(--erreur);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.editeur-questionnaire-supprimer:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--erreur) 12%, transparent);
+  border-color: var(--erreur);
+}
+
+.editeur-questionnaire-supprimer:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.editeur-questionnaire-supprimer:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.editeur-questionnaire-supprimer svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.questionnaires-detail-menu-option--danger {
+  color: var(--erreur);
+}
+
+.questionnaires-detail-menu-option--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--erreur) 12%, transparent);
+  color: var(--erreur);
+}
+
+/* ==============================
+   3. APERCU TELEPHONE
+   La page /apercu de l'application publique, dans un cadre de telephone
+   (375 x 667 pixels, plus l'epaisseur du cadre).
+============================== */
+
+.apercu-telephone {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-sm);
+}
+
+.apercu-telephone-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.apercu-telephone-titre {
+  margin: 0;
+  font-family: var(--font-titre, Georgia, serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--texte);
+}
+
+.apercu-telephone-bouton {
+  padding: 6px 14px;
+  background: var(--surface-douce);
+  border: 1px solid var(--bordure);
+  border-radius: 999px;
+  color: var(--texte-secondaire);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.apercu-telephone-bouton:hover:not(:disabled) {
+  background: var(--accent-fond);
+  border-color: var(--bordure-forte);
+  color: var(--texte);
+}
+
+.apercu-telephone-bouton:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.apercu-telephone-bouton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.apercu-telephone-cadre {
+  align-self: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 391px;
+  aspect-ratio: 391 / 683;
+  overflow: hidden;
+  background: var(--fond);
+  border: 8px solid var(--bordure-forte);
+  border-radius: 36px;
+  box-shadow: var(--ombre-md);
+}
+
+.apercu-telephone-ecran {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--fond);
+}
+
+.apercu-telephone-note {
+  margin: 0;
+  color: var(--texte-secondaire);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ==============================
+   4. PANNEAU DE PUBLICATION (publication, dates, points de contact)
+   Le meme cadre sert a la section Versions.
+============================== */
+
+.publication-panneau {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-sm);
+}
+
+.publication-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Une fine ligne separe les sections du meme panneau */
+.publication-section + .publication-section {
+  padding-top: 20px;
+  border-top: 1px solid var(--bordure);
+}
+
+.publication-section-titre {
+  margin: 0;
+  font-family: var(--font-titre, Georgia, serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--texte);
+}
+
+.publication-ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.publication-version {
+  color: var(--texte-secondaire);
+  font-size: 13px;
+}
+
+.publication-aide {
+  margin: 0;
+  color: var(--texte-secondaire);
+  font-size: 13px;
+}
+
+/* --- Statut (brouillon, actif, inactif) --- */
+
+.publication-statut {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: var(--surface-douce);
+  border: 1px solid var(--bordure-forte);
+  border-radius: 999px;
+  color: var(--texte-secondaire);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.publication-statut--actif {
+  background: color-mix(in srgb, var(--succes) 12%, transparent);
+  border-color: color-mix(in srgb, var(--succes) 40%, transparent);
+  color: var(--succes);
+}
+
+.publication-statut--brouillon {
+  background: color-mix(in srgb, var(--note-moyenne) 12%, transparent);
+  border-color: color-mix(in srgb, var(--note-moyenne) 40%, transparent);
+  color: var(--note-moyenne);
+}
+
+/* --- Messages (alerte, erreur, reussite) --- */
+
+.publication-message {
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-sm);
+  font-size: 13px;
+}
+
+.publication-message--alerte {
+  background: color-mix(in srgb, var(--note-moyenne) 12%, transparent);
+  border-color: color-mix(in srgb, var(--note-moyenne) 40%, transparent);
+  color: var(--note-moyenne);
+}
+
+.publication-message--erreur {
+  background: color-mix(in srgb, var(--erreur) 12%, transparent);
+  border-color: color-mix(in srgb, var(--erreur) 40%, transparent);
+  color: var(--erreur);
+}
+
+.publication-message--succes {
+  background: color-mix(in srgb, var(--succes) 12%, transparent);
+  border-color: color-mix(in srgb, var(--succes) 40%, transparent);
+  color: var(--succes);
+}
+
+/* --- Boutons --- */
+
+.publication-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.publication-bouton {
+  padding: 8px 16px;
+  background: var(--surface-douce);
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-md);
+  color: var(--texte);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+}
+
+.publication-bouton:hover:not(:disabled) {
+  background: var(--accent-fond);
+}
+
+.publication-bouton:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.publication-bouton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.publication-bouton--principal {
+  background: var(--couleur-principale);
+  border-color: var(--couleur-principale);
+  color: var(--texte-sur-principale);
+  font-weight: 600;
+}
+
+.publication-bouton--principal:hover:not(:disabled) {
+  background: var(--couleur-principale-fonce);
+  border-color: var(--couleur-principale-fonce);
+}
+
+/* Bouton qui ressemble a un lien (tout selectionner, tout deselectionner) */
+.publication-lien {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--couleur-principale);
+  font-family: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.publication-lien:hover:not(:disabled) {
+  text-decoration-thickness: 2px;
+}
+
+.publication-lien:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.publication-lien:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* --- Dates --- */
+
+.publication-champs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.publication-champ {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.publication-etiquette {
+  color: var(--texte-secondaire);
+  font-size: 13px;
+}
+
+.publication-saisie {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 16px;
+  background: var(--surface-douce);
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-md);
+  color: var(--texte);
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.publication-saisie:focus-visible {
+  outline: none;
+  border-color: var(--bordure-champ-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bordure-champ-focus) 25%, transparent);
+}
+
+.publication-saisie[aria-invalid='true'] {
+  border-color: var(--erreur);
+}
+
+.publication-saisie:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* --- Points de contact --- */
+
+.publication-points {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  max-height: 260px;
+  margin: 0;
+  padding: 8px;
+  overflow-y: auto;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+}
+
+/* Le titre de la liste existe pour les lecteurs d'ecran : on ne le voit pas */
+.publication-points-legende {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.publication-point {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--rayon-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.publication-point:hover {
+  background: var(--accent-fond);
+}
+
+.publication-point input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--couleur-principale);
+  cursor: pointer;
+}
+
+.publication-point-nom {
+  min-width: 0;
+  color: var(--texte);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.publication-point-etiquette {
+  padding: 2px 8px;
+  background: var(--surface-douce);
+  border: 1px solid var(--bordure);
+  border-radius: 999px;
+  color: var(--texte-secondaire);
+  font-size: 11px;
+}
+
+.publication-points:disabled .publication-point {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.publication-points:disabled .publication-point:hover {
+  background: transparent;
+}
+
+/* ==============================
+   5. VERSIONS (liste sous le panneau de publication)
+============================== */
+
+.versions-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.versions-ligne {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  background: var(--surface-douce);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+}
+
+/* La version la plus recente ressort avec la couleur principale */
+.versions-ligne--actuelle {
+  background: color-mix(in srgb, var(--couleur-principale) 6%, var(--surface-douce));
+  border-color: color-mix(in srgb, var(--couleur-principale) 45%, transparent);
+}
+
+.versions-ligne-entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.versions-numero {
+  color: var(--texte);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.versions-etiquette {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  background: var(--surface);
+  border: 1px solid var(--bordure-forte);
+  border-radius: 999px;
+  color: var(--texte-secondaire);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.versions-etiquette--actuelle {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--couleur-principale) 55%, transparent);
+  color: var(--couleur-principale);
+}
+
+.versions-etiquette--publiee {
+  background: color-mix(in srgb, var(--succes) 12%, transparent);
+  border-color: color-mix(in srgb, var(--succes) 40%, transparent);
+  color: var(--succes);
+}
+
+.versions-etiquette--non-publiee {
+  background: color-mix(in srgb, var(--note-moyenne) 12%, transparent);
+  border-color: color-mix(in srgb, var(--note-moyenne) 40%, transparent);
+  color: var(--note-moyenne);
+}
+
+.versions-ligne-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--texte-secondaire);
+  font-size: 13px;
+}
+
+/* ==============================
+   6. RESPONSIVE ET MOUVEMENT REDUIT
+============================== */
+
+@media (max-width: 640px) {
+  .publication-panneau,
+  .apercu-telephone {
+    padding: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editeur-questionnaire-supprimer,
+  .apercu-telephone-bouton,
+  .publication-bouton,
+  .publication-saisie,
+  .publication-point {
+    transition: none;
+  }
+}

@@ -50,7 +50,7 @@ function BlocEchec({ erreur, surReessayer }: PropsEchec) {
 // Ce que montre le panneau sous l'en-tete : rien, l'invitation ou la modification d'un utilisateur.
 type Panneau = { type: 'aucun' } | { type: 'invitation' } | { type: 'modification'; id: string }
 
-const CLASSE_GRILLE = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
+const CLASSE_GRILLE = 'grid gap-4 grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]'
 
 const CODES_INVITATION_CONNUS = [
   'SITES_INVALIDES',
@@ -237,7 +237,7 @@ export function PageUtilisateurs() {
             <button
               type="button"
               onClick={ouvrirInvitation}
-              className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-bordure-forte p-6 text-texte-secondaire transition-colors hover:border-principale hover:bg-surface hover:text-principale"
+              className="flex min-h-44 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-bordure-forte p-6 text-texte-secondaire transition-colors hover:border-principale hover:bg-surface hover:text-principale"
             >
               <span
                 aria-hidden="true"

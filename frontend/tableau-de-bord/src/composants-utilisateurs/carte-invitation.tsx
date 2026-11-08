@@ -70,14 +70,14 @@ export function CarteInvitation({ enAttente, enCours, surRenvoyer }: Proprietes)
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-dashed border-bordure-forte bg-surface/60">
-      <div className="flex flex-1 flex-col items-center px-5 pb-5 pt-6 text-center">
+      <div className="flex flex-1 flex-col items-center px-4 pb-4 pt-5 text-center">
         <div
           aria-hidden="true"
-          className="flex size-14 items-center justify-center rounded-full border-2 border-dashed border-bordure-forte bg-surface-douce text-texte-secondaire"
+          className="flex size-11 items-center justify-center rounded-full border-2 border-dashed border-bordure-forte bg-surface-douce text-texte-secondaire"
         >
           <svg
             viewBox="0 0 24 24"
-            className="size-6"
+            className="size-5"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.6"
@@ -89,13 +89,13 @@ export function CarteInvitation({ enAttente, enCours, surRenvoyer }: Proprietes)
           </svg>
         </div>
 
-        <h3 className="m-0 mt-3 break-all text-base font-semibold text-texte">{enAttente.email}</h3>
+        <h3 className="m-0 mt-2 break-all text-base font-semibold text-texte">{enAttente.email}</h3>
 
-        <span className="mt-3 rounded-full border border-bordure-forte px-3 py-1 text-xs font-semibold text-texte-secondaire">
+        <span className="mt-2 rounded-full border border-bordure-forte px-3 py-1 text-xs font-semibold text-texte-secondaire">
           {t(`utilisateurs.roles.${enAttente.role}`)}
         </span>
 
-        <p className="m-0 mt-3 line-clamp-2 text-sm text-texte-secondaire">{perimetre}</p>
+        <p className="m-0 mt-2 line-clamp-2 text-sm text-texte-secondaire">{perimetre}</p>
 
         {enAttente.invite_par_nom !== null && (
           <p className="m-0 mt-1 text-xs text-texte-secondaire">
@@ -103,7 +103,7 @@ export function CarteInvitation({ enAttente, enCours, surRenvoyer }: Proprietes)
           </p>
         )}
 
-        <p className="m-0 mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-texte-secondaire">
+        <p className="m-0 mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-texte-secondaire">
           <span>
             {t('utilisateurs.invitations.expire')} {formaterDate(enAttente.expire_le, langue)}
           </span>
@@ -117,7 +117,7 @@ export function CarteInvitation({ enAttente, enCours, surRenvoyer }: Proprietes)
         </p>
       </div>
 
-      <div className="border-t border-dashed border-bordure-forte px-4 py-3">
+      <div className="border-t border-dashed border-bordure-forte px-4 py-2">
         <button
           type="button"
           disabled={enCours}

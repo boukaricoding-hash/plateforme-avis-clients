@@ -121,7 +121,7 @@ export function CarteUtilisateur({ utilisateur, estMoi, actions, surModifier }: 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-bordure bg-surface shadow-doux transition-shadow duration-300 hover:shadow-moyen motion-reduce:transition-none">
       <div
-        className={`relative h-20 ${utilisateur.actif ? '' : 'bg-surface-douce'}`}
+        className={`relative h-14 ${utilisateur.actif ? '' : 'bg-surface-douce'}`}
         style={utilisateur.actif ? { background: degrade } : undefined}
       >
         <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-surface/80 px-2.5 py-1 text-xs font-semibold backdrop-blur-sm">
@@ -135,10 +135,10 @@ export function CarteUtilisateur({ utilisateur, estMoi, actions, surModifier }: 
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col items-center px-5 pb-5 text-center">
+      <div className="flex flex-1 flex-col items-center px-4 pb-4 text-center">
         <div
           aria-hidden="true"
-          className={`-mt-8 flex size-16 items-center justify-center rounded-full font-titre text-xl font-bold ring-4 ring-surface ${
+          className={`relative -mt-6 flex size-12 items-center justify-center rounded-full font-titre text-lg font-bold ring-4 ring-surface ${
             utilisateur.actif
               ? 'bg-principale text-texte-sur-principale'
               : 'bg-accent-fond text-texte-secondaire'
@@ -147,8 +147,8 @@ export function CarteUtilisateur({ utilisateur, estMoi, actions, surModifier }: 
           {initiales(utilisateur.nom)}
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-          <h3 className="m-0 font-titre text-lg font-bold text-texte">{utilisateur.nom}</h3>
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+          <h3 className="m-0 font-titre text-base font-bold text-texte">{utilisateur.nom}</h3>
           {estMoi && (
             <span className="rounded-full border border-bordure px-2 py-0.5 text-xs font-semibold text-texte-secondaire">
               {t('utilisateurs.liste.moi')}
@@ -157,11 +157,11 @@ export function CarteUtilisateur({ utilisateur, estMoi, actions, surModifier }: 
         </div>
         <p className="m-0 mt-0.5 break-all text-xs text-texte-secondaire">{utilisateur.email}</p>
 
-        <span className="mt-3 rounded-full bg-accent-fond px-3 py-1 text-xs font-semibold text-principale">
+        <span className="mt-2 rounded-full bg-accent-fond px-3 py-1 text-xs font-semibold text-principale">
           {t(`utilisateurs.roles.${utilisateur.role}`)}
         </span>
 
-        <ul className="m-0 mt-4 flex list-none flex-col gap-2 p-0 text-sm text-texte-secondaire">
+        <ul className="m-0 mt-3 flex list-none flex-col gap-1.5 p-0 text-sm text-texte-secondaire">
           <li className="flex items-start justify-center gap-2">
             <svg
               aria-hidden="true"
@@ -199,7 +199,7 @@ export function CarteUtilisateur({ utilisateur, estMoi, actions, surModifier }: 
       </div>
 
       {!estMoi && !confirmation && (
-        <div className={`flex gap-2 border-t border-bordure px-4 py-3 ${CLASSE_SURVOL}`}>
+        <div className={`flex gap-2 border-t border-bordure px-4 py-2 ${CLASSE_SURVOL}`}>
           <button
             type="button"
             disabled={actions.enCours}

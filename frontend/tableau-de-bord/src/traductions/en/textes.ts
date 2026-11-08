@@ -536,6 +536,7 @@ export const en = {
         options: 'Options',
         modifier: 'Edit the questionnaire',
         dupliquer: 'Duplicate the questionnaire',
+        supprimer: 'Delete the questionnaire',
         sansPointContact: 'No contact point',
         chargement: 'Loading details…',
         erreur: 'Unable to load the details. Please try again.',
@@ -702,6 +703,113 @@ export const en = {
         introuvable: 'This questionnaire no longer exists.',
         generique: 'Saving failed. Please try again.',
       },
+      // Deleting a questionnaire (day 20)
+      suppression: {
+        supprimer: 'Delete',
+        enCours: 'Deleting…',
+        confirmer: 'Delete this questionnaire? It will disappear from the list.',
+        confirmerPointUn:
+          'Delete this questionnaire? 1 contact point is linked to it: it will be detached.',
+        confirmerPointsMultiple:
+          'Delete this questionnaire? {nombre} contact points are linked to it: they will be detached.',
+        reussie: 'Questionnaire deleted.',
+        erreurAvis:
+          'This questionnaire has reviews ({nombre}), so it cannot be deleted. Deactivate it to keep its reviews and statistics.',
+        erreurInterdit: 'Only a Manager can delete a questionnaire.',
+        erreurIntrouvable: 'This questionnaire no longer exists.',
+        erreurGenerique: 'Deleting failed. Please try again.',
+      },
+    },
+    // Phone preview in the editor (day 20)
+    apercu: {
+      titre: 'Phone preview',
+      recommencer: 'Start over',
+      cadre: 'Preview of the questionnaire as the customer will see it',
+      note:
+        'The preview shows your draft after every change, even before you save. Nothing is sent to the server.',
+    },
+    // Publication panel in the editor (day 20)
+    publication: {
+      titre: 'Publication',
+      statuts: {
+        BROUILLON: 'Draft',
+        ACTIF: 'Active',
+        INACTIF: 'Inactive',
+      },
+      chargement: 'Loading the publication…',
+      erreurChargement: 'Unable to load the publication. Please try again.',
+      aucuneVersion: 'No version saved',
+      versionPubliee: 'Version {numero} published on {date}',
+      versionNonPubliee: 'Version {numero} not published',
+      sansPoint: 'Active questionnaire with no contact point: nobody can answer it.',
+      nonEnregistre: 'Some changes are not saved.',
+      publierAide:
+        'Save the questionnaire before publishing it: publishing uses the last saved version.',
+      publier: 'Publish',
+      publicationEnCours: 'Publishing…',
+      desactiver: 'Deactivate',
+      activer: 'Activate',
+      enregistrement: 'Saving…',
+      succes: {
+        publie: 'Questionnaire published.',
+        statut: 'Status updated.',
+        dates: 'Dates saved.',
+        points: 'Contact points saved.',
+      },
+      dates: {
+        titre: 'Start and end dates',
+        aide:
+          'For an event: the questionnaire only accepts reviews between these two dates. Leave empty for no limit.',
+        debut: 'Start',
+        fin: 'End',
+        fuseau: 'Lomé time (UTC+0).',
+        enregistrer: 'Save the dates',
+        effacer: 'Clear the dates',
+      },
+      points: {
+        titre: 'Contact points',
+        aide:
+          'Tick the contact points (tables, rooms, halls…) whose QR code opens this questionnaire. The whole list is saved at once.',
+        erreurListe: 'Unable to load the contact points. Please try again.',
+        chargement: 'Loading the contact points…',
+        aucun: 'No contact point yet. Create them in the Sites and tables page.',
+        selection: 'Selected: {nombre}',
+        toutSelectionner: 'Select all',
+        toutDeselectionner: 'Deselect all',
+        inactif: 'Inactive',
+        revoque: 'QR code revoked',
+        autreQuestionnaire: 'Currently uses: {titre}',
+        enregistrer: 'Save the contact points',
+      },
+      erreurs: {
+        datesInversees: 'The end date must be after the start date.',
+        interdit: 'Only a Manager can manage publication.',
+        introuvable: 'This questionnaire no longer exists.',
+        nonPublie: 'This questionnaire has never been published: publish it first.',
+        donneesInvalides: 'The data sent is not valid. Check the dates and try again.',
+        generique: 'The operation failed. Please try again.',
+      },
+    },
+    // Version history in the editor (day 20)
+    versions: {
+      titre: 'Versions',
+      aide:
+        'Every change to a questionnaire that has already received reviews creates a new version. Older reviews stay linked to the version they were received with.',
+      chargement: 'Loading the versions…',
+      aucune: 'No version saved yet.',
+      version: 'Version {numero}',
+      actuelle: 'Current',
+      publiee: 'Published',
+      nonPubliee: 'Not published',
+      publieeLe: 'Published on {date}',
+      creeeLe: 'Created on {date}',
+      questionsUn: '{nombre} question',
+      questionsMultiple: '{nombre} questions',
+      avisZero: 'No reviews',
+      avisUn: '{nombre} review',
+      avisMultiple: '{nombre} reviews',
+      erreur: 'Unable to load the versions. Please try again.',
+      erreurIntrouvable: 'This questionnaire no longer exists.',
     },
   },
   // Screens E8 (reviews list) and E9 (review details), day 15

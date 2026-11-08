@@ -187,6 +187,7 @@ export const fr = {
     aucunSite: 'Aucun site ne vous est attribué pour le moment.',
     aucunSiteResponsable: 'Vous n’avez pas encore de site. Créez le premier pour commencer.',
     nouveauSite: 'Nouveau site',
+    fermer: 'Fermer',
     gererSite: 'Gérer le site',
     creerEnMasse: 'Créer en masse',
     ajouterTable: 'Ajouter une table',

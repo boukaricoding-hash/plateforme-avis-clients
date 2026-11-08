@@ -94,13 +94,17 @@
   cursor: not-allowed;
 }
 
-/* Dans un panneau ou une carte, la pastille douce prend le gris des ronds */
+/* Dans un panneau, un tiroir, un pop-up ou une carte, la pastille douce prend le gris des ronds */
 .sites-panneau .sites-bouton:not(.sites-bouton--plein),
+.sites-tiroir .sites-bouton:not(.sites-bouton--plein),
+.sites-fenetre .sites-bouton:not(.sites-bouton--plein),
 .sites-carte .sites-bouton:not(.sites-bouton--plein) {
   background: var(--s-rond);
 }
 
 .sites-panneau .sites-bouton:not(.sites-bouton--plein):hover,
+.sites-tiroir .sites-bouton:not(.sites-bouton--plein):hover,
+.sites-fenetre .sites-bouton:not(.sites-bouton--plein):hover,
 .sites-carte .sites-bouton:not(.sites-bouton--plein):hover {
   background: color-mix(in srgb, var(--s-rond) 85%, var(--texte));
 }
@@ -540,18 +544,6 @@
   color: var(--fond);
 }
 
-/* Carte en edition : le formulaire prend la place du numero */
-.sites-carte--edition {
-  justify-content: flex-start;
-  gap: 12px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-
-.sites-carte--edition:hover {
-  transform: none;
-}
-
 .sites-carte-form {
   display: flex;
   flex-direction: column;
@@ -572,6 +564,139 @@
   gap: 8px;
 }
 
+/* ---------- Calque : tiroir qui glisse de la droite et pop-up de modification ---------- */
+
+/* Le calque est affiche dans <body> avec la classe sites-ecran (memes couleurs) :
+   on annule ici la mise en page de l'ecran. */
+.sites-calque {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sites-fond {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.55);
+  animation: sites-fondu 0.25s ease both;
+}
+
+.sites-croix {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: var(--s-rond);
+  color: var(--texte);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.sites-croix:hover {
+  background: var(--texte);
+  color: var(--fond);
+}
+
+/* Le titre laisse la place a la croix */
+.sites-tiroir .sites-formulaire-titre,
+.sites-fenetre .sites-formulaire-titre {
+  padding-right: 48px;
+}
+
+/* Tiroir : colle au bord droit, sur toute la hauteur, glisse de la droite vers la gauche */
+.sites-tiroir {
+  position: relative;
+  box-sizing: border-box;
+  width: min(480px, 100%);
+  height: 100%;
+  margin-left: auto;
+  padding: 24px 24px 32px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: var(--s-fond);
+  box-shadow: -12px 0 40px rgb(0 0 0 / 0.25);
+  animation: sites-glisser 0.3s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+.sites-tiroir:focus,
+.sites-fenetre:focus {
+  outline: none;
+}
+
+/* Pop-up de modification d'un point de contact : petit, au centre de la page */
+.sites-calque--fenetre {
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.sites-fenetre {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(400px, 100%);
+  max-height: 100%;
+  padding: 24px 22px 22px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  border-radius: 14px;
+  background: var(--s-fond);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+  animation: sites-apparaitre 0.22s ease both;
+}
+
+.sites-fenetre .sites-formulaire-titre {
+  margin: 0;
+}
+
+.sites-fenetre .sites-bouton {
+  align-self: flex-start;
+}
+
+@keyframes sites-glisser {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sites-apparaitre {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sites-fondu {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 /* ---------- Pied : points de pagination et indication ---------- */
 
 .sites-pied {
@@ -662,8 +787,15 @@
   }
 
   .sites-carte,
-  .sites-dot {
+  .sites-dot,
+  .sites-croix {
     transition: none;
+  }
+
+  .sites-fond,
+  .sites-tiroir,
+  .sites-fenetre {
+    animation: none;
   }
 
   .sites-carte:hover {

@@ -184,6 +184,7 @@ export const en = {
     aucunSite: 'No site is assigned to you yet.',
     aucunSiteResponsable: 'You have no site yet. Create the first one to get started.',
     nouveauSite: 'New site',
+    fermer: 'Close',
     modifierSite: 'Edit site',
     activer: 'Activate site',
     desactiver: 'Deactivate site',

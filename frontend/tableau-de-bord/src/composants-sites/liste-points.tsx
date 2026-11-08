@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { CalqueSites } from './calque-sites'
 import { utiliserLangue } from '../hooks/utiliser-langue'
 import type { ActionsPoints } from '../hooks/utiliser-sites-points'
 import type { ErreurService } from '../services/api'
@@ -11,9 +12,9 @@ import type { PointContact } from '../types/sites-points'
 // Une rangee de grandes cartes que l'on fait glisser de gauche a droite (styles/sites.css),
 // avec des points de pagination qui suivent le defilement.
 // Chaque carte montre : le statut, un grand numero, le nom, le questionnaire associe.
-// Le Responsable a un rond avec un crayon : la carte passe en edition sur place (nom,
-// questionnaire, activer ou desactiver). Le Gestionnaire lit seulement (aucun bouton,
-// le serveur refuse ses ecritures de toute facon).
+// Le Responsable a un rond avec un crayon : il ouvre un petit pop-up au-dessus de la page (nom,
+// questionnaire, activer ou desactiver), avec une croix pour le fermer. La carte ne change pas.
+// Le Gestionnaire lit seulement (aucun bouton, le serveur refuse ses ecritures de toute facon).
 // Ce composant n'appelle pas l'API : les actions viennent de utiliserSitesPoints.
 // Le code public d'un point n'est jamais affiche ici : seul le QR (ecran E11) le contient.
 // La recherche (champ de la page) filtre les cartes par nom ou par zone, sans appel API.
@@ -91,10 +92,18 @@ type ProprietesCarte = {
   questionnaires: ResumeQuestionnaire[] | null
   peutModifier: boolean
   actions: ActionsPoints
+  // Message d'echec d'une action, repete dans le pop-up (le fond de page est assombri).
+  messageErreur: string | null
 }
 
 // Un point de contact, avec son propre etat de modification.
-function CartePoint({ point, questionnaires, peutModifier, actions }: ProprietesCarte) {
+function CartePoint({
+  point,
+  questionnaires,
+  peutModifier,
+  actions,
+  messageErreur,
+}: ProprietesCarte) {
   const { t, langue } = utiliserLangue()
   const idNom = useId()
   const idQuestionnaire = useId()
@@ -134,92 +143,10 @@ function CartePoint({ point, questionnaires, peutModifier, actions }: Proprietes
     await actions.modifier(point.id, { questionnaire_id: valeur === '' ? null : valeur })
   }
 
-  if (enEdition) {
-    // Le questionnaire associe est propose meme s'il n'est pas dans la liste chargee.
-    const liste = questionnaires ?? []
-    const associeAbsent =
-      point.questionnaire_id !== null && !liste.some((q) => q.id === point.questionnaire_id)
-
-    return (
-      <li className="sites-carte sites-carte--edition">
-        <div className="sites-carte-haut">
-          <EtatPoint point={point} />
-        </div>
-
-        <form
-          onSubmit={(evenement) => void enregistrerNom(evenement)}
-          noValidate
-          className="sites-carte-form"
-        >
-          <label htmlFor={idNom} className="sr-only">
-            {t('sites.liste.nomDuPoint')}
-          </label>
-          <input
-            id={idNom}
-            type="text"
-            autoComplete="off"
-            maxLength={LONGUEUR_NOM}
-            value={nom}
-            aria-invalid={erreurNom !== null}
-            onChange={(evenement) => setNom(evenement.target.value)}
-          />
-          {erreurNom !== null && (
-            <p role="alert" className="m-0 text-xs text-erreur">
-              {erreurNom}
-            </p>
-          )}
-
-          <label htmlFor={idQuestionnaire} className="sr-only">
-            {t('sites.liste.questionnaireDe', { nom: point.nom })}
-          </label>
-          <select
-            id={idQuestionnaire}
-            value={point.questionnaire_id ?? ''}
-            disabled={questionnaires === null || actions.enCours}
-            onChange={(evenement) => void changerQuestionnaire(evenement.target.value)}
-          >
-            <option value="">{t('sites.liste.aucunQuestionnaire')}</option>
-            {associeAbsent && point.questionnaire_id !== null && titreAssocie !== null && (
-              <option value={point.questionnaire_id}>{titreAssocie}</option>
-            )}
-            {liste.map((questionnaire) => (
-              <option key={questionnaire.id} value={questionnaire.id}>
-                {titreDans(questionnaire.titre, langue)}
-              </option>
-            ))}
-          </select>
-
-          <div className="sites-carte-form-boutons">
-            <button
-              type="submit"
-              disabled={actions.enCours}
-              aria-busy={actions.enCours}
-              className="sites-bouton sites-bouton--plein sites-bouton--petit"
-            >
-              {t('sites.liste.enregistrer')}
-            </button>
-            <button
-              type="button"
-              disabled={actions.enCours}
-              onClick={() => setEnEdition(false)}
-              className="sites-bouton sites-bouton--petit"
-            >
-              {t('sites.liste.annuler')}
-            </button>
-          </div>
-        </form>
-
-        <button
-          type="button"
-          disabled={actions.enCours}
-          onClick={() => void actions.changerStatut(point.id, !point.actif)}
-          className="sites-bouton sites-bouton--petit"
-        >
-          {point.actif ? t('sites.liste.desactiver') : t('sites.liste.activer')}
-        </button>
-      </li>
-    )
-  }
+  // Le questionnaire associe est propose meme s'il n'est pas dans la liste chargee.
+  const liste = questionnaires ?? []
+  const associeAbsent =
+    point.questionnaire_id !== null && !liste.some((q) => q.id === point.questionnaire_id)
 
   const chiffre = grosChiffre(point.nom)
 
@@ -268,6 +195,100 @@ function CartePoint({ point, questionnaires, peutModifier, actions }: Proprietes
           </button>
         )}
       </div>
+
+      {enEdition && (
+        <CalqueSites
+          forme="fenetre"
+          libelle={t('sites.liste.modifierPoint', { nom: point.nom })}
+          surFermer={() => setEnEdition(false)}
+        >
+          <h3 className="sites-formulaire-titre">
+            {t('sites.liste.modifierPoint', { nom: point.nom })}
+          </h3>
+
+          <div className="sites-carte-haut">
+            <EtatPoint point={point} />
+          </div>
+
+          <form
+            onSubmit={(evenement) => void enregistrerNom(evenement)}
+            noValidate
+            className="sites-carte-form"
+          >
+            <label htmlFor={idNom} className="sr-only">
+              {t('sites.liste.nomDuPoint')}
+            </label>
+            <input
+              id={idNom}
+              type="text"
+              autoComplete="off"
+              maxLength={LONGUEUR_NOM}
+              value={nom}
+              aria-invalid={erreurNom !== null}
+              onChange={(evenement) => setNom(evenement.target.value)}
+            />
+            {erreurNom !== null && (
+              <p role="alert" className="m-0 text-xs text-erreur">
+                {erreurNom}
+              </p>
+            )}
+
+            <label htmlFor={idQuestionnaire} className="sr-only">
+              {t('sites.liste.questionnaireDe', { nom: point.nom })}
+            </label>
+            <select
+              id={idQuestionnaire}
+              value={point.questionnaire_id ?? ''}
+              disabled={questionnaires === null || actions.enCours}
+              onChange={(evenement) => void changerQuestionnaire(evenement.target.value)}
+            >
+              <option value="">{t('sites.liste.aucunQuestionnaire')}</option>
+              {associeAbsent && point.questionnaire_id !== null && titreAssocie !== null && (
+                <option value={point.questionnaire_id}>{titreAssocie}</option>
+              )}
+              {liste.map((questionnaire) => (
+                <option key={questionnaire.id} value={questionnaire.id}>
+                  {titreDans(questionnaire.titre, langue)}
+                </option>
+              ))}
+            </select>
+
+            <div className="sites-carte-form-boutons">
+              <button
+                type="submit"
+                disabled={actions.enCours}
+                aria-busy={actions.enCours}
+                className="sites-bouton sites-bouton--plein sites-bouton--petit"
+              >
+                {t('sites.liste.enregistrer')}
+              </button>
+              <button
+                type="button"
+                disabled={actions.enCours}
+                onClick={() => setEnEdition(false)}
+                className="sites-bouton sites-bouton--petit"
+              >
+                {t('sites.liste.annuler')}
+              </button>
+            </div>
+          </form>
+
+          <button
+            type="button"
+            disabled={actions.enCours}
+            onClick={() => void actions.changerStatut(point.id, !point.actif)}
+            className="sites-bouton sites-bouton--petit"
+          >
+            {point.actif ? t('sites.liste.desactiver') : t('sites.liste.activer')}
+          </button>
+
+          {messageErreur !== null && (
+            <p role="alert" className="sites-message sites-message--erreur">
+              {messageErreur}
+            </p>
+          )}
+        </CalqueSites>
+      )}
     </li>
   )
 }
@@ -383,6 +404,7 @@ export function ListePoints({
                 questionnaires={questionnaires}
                 peutModifier={peutModifier}
                 actions={actions}
+                messageErreur={messageErreur}
               />
             ))}
           </ul>

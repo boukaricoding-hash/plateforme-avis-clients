@@ -5,6 +5,7 @@ import {
   dupliquerQuestionnaire,
   listerModeles,
   listerQuestionnaires,
+  supprimerQuestionnaire,
 } from '../services/questionnaires'
 import type { ModeleQuestionnaire, ResumeQuestionnaire } from '../types/questionnaires'
 import type { EtatAction } from './utiliser-sites-points'
@@ -13,9 +14,9 @@ import { utiliserUtilisateur } from './utiliser-utilisateur'
 // Toutes les donnees de la liste des questionnaires (ecran E10, jour 19), au meme endroit :
 // - les questionnaires de l'organisation ;
 // - les modeles sectoriels, pour le Responsable seulement (lui seul peut les cloner) ;
-// - les actions cloner un modele et dupliquer un questionnaire, avec leur etat.
-// Le Responsable et le Gestionnaire lisent la liste ; seul le Responsable cree, clone et duplique
-// (le serveur refuse le Gestionnaire avec une erreur 403). L'administrateur DTS n'a pas
+// - les actions cloner un modele, dupliquer et supprimer un questionnaire, avec leur etat.
+// Le Responsable et le Gestionnaire lisent la liste ; seul le Responsable cree, clone, duplique
+// et supprime (le serveur refuse le Gestionnaire avec une erreur 403). L'administrateur DTS n'a pas
 // d'organisation : le hook ne fait alors aucun appel et la page doit le renvoyer ailleurs
 // (acces = 'aucun').
 // Une session expiree (401) renvoie a la page de connexion.
@@ -31,6 +32,15 @@ export type ActionDuplication = EtatAction & {
   // Copie le questionnaire en nouveau brouillon et recharge la liste.
   // Renvoie l'identifiant de la copie, ou null si ca a echoue.
   dupliquer: (id: string) => Promise<string | null>
+}
+
+export type ActionSuppressionListe = EtatAction & {
+  // Nombre d'avis recus quand la suppression est refusee (409) ; sinon null.
+  // Le questionnaire doit alors etre desactive au lieu d'etre supprime.
+  nombreAvis: number | null
+  // Suppression douce, seulement sans avis, puis rechargement de la liste.
+  // Renvoie true si c'est fait, false si ca a echoue.
+  supprimer: (id: string) => Promise<boolean>
 }
 
 export type ResultatListeQuestionnaires = {
@@ -51,6 +61,7 @@ export type ResultatListeQuestionnaires = {
   recharger: () => void
   clonage: ActionClonage
   duplication: ActionDuplication
+  suppression: ActionSuppressionListe
 }
 
 function versErreurService(erreur: unknown): ErreurService {
@@ -58,6 +69,19 @@ function versErreurService(erreur: unknown): ErreurService {
     return erreur
   }
   return new ErreurService(0, 'ERREUR_INCONNUE', 'Une erreur est survenue.', null)
+}
+
+// Le serveur refuse la suppression avec un 409 dont les details donnent le nombre d'avis.
+function nombreAvisDepuisErreur(erreur: ErreurService | null): number | null {
+  if (erreur === null || erreur.code !== 'QUESTIONNAIRE_AVEC_AVIS') {
+    return null
+  }
+  const details: unknown = erreur.details
+  if (typeof details !== 'object' || details === null) {
+    return null
+  }
+  const { nombre_avis: nombre } = details as { nombre_avis?: unknown }
+  return typeof nombre === 'number' ? nombre : null
 }
 
 // Etat commun d'une action (en cours, succes, erreur) et son execution.
@@ -105,12 +129,14 @@ export function utiliserListeQuestionnaires(): ResultatListeQuestionnaires {
   const [erreur, setErreur] = useState<ErreurService | null>(null)
   const [modeles, setModeles] = useState<ModeleQuestionnaire[] | null>(null)
   const [erreurModeles, setErreurModeles] = useState<ErreurService | null>(null)
-  // Augmentent a chaque clic sur "Reessayer" (les deux) ou apres une duplication (la liste seule).
+  // Augmentent a chaque clic sur "Reessayer" (les deux), ou apres une duplication
+  // ou une suppression (la liste seule).
   const [relance, setRelance] = useState(0)
   const [relanceModeles, setRelanceModeles] = useState(0)
 
   const actionClonage = utiliserAction(seDeconnecter)
   const actionDuplication = utiliserAction(seDeconnecter)
+  const actionSuppression = utiliserAction(seDeconnecter)
 
   const recharger = useCallback(() => {
     setErreur(null)
@@ -194,10 +220,11 @@ export function utiliserListeQuestionnaires(): ResultatListeQuestionnaires {
     }
   }, [acces, relanceModeles, seDeconnecter])
 
-  // --- Cloner un modele et dupliquer un questionnaire -----------------------------------------
+  // --- Cloner, dupliquer et supprimer un questionnaire -----------------------------------------
 
   const { executer: executerClonage } = actionClonage
   const { executer: executerDuplication } = actionDuplication
+  const { executer: executerSuppression } = actionSuppression
 
   const cloner = useCallback(
     async (modeleId: string): Promise<string | null> => {
@@ -218,6 +245,19 @@ export function utiliserListeQuestionnaires(): ResultatListeQuestionnaires {
       return copie.id
     },
     [executerDuplication],
+  )
+
+  const supprimer = useCallback(
+    async (id: string): Promise<boolean> => {
+      const resultat = await executerSuppression(() => supprimerQuestionnaire(id))
+      if (resultat === null) {
+        return false
+      }
+      // Le questionnaire a disparu de la liste : on la relit plutot que de la deviner.
+      setRelance((valeur) => valeur + 1)
+      return true
+    },
+    [executerSuppression],
   )
 
   return {
@@ -241,6 +281,13 @@ export function utiliserListeQuestionnaires(): ResultatListeQuestionnaires {
       succes: actionDuplication.succes,
       erreur: actionDuplication.erreur,
       dupliquer,
+    },
+    suppression: {
+      enCours: actionSuppression.enCours,
+      succes: actionSuppression.succes,
+      erreur: actionSuppression.erreur,
+      nombreAvis: nombreAvisDepuisErreur(actionSuppression.erreur),
+      supprimer,
     },
   }
 }

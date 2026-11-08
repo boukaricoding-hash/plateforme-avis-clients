@@ -552,6 +552,7 @@ export const fr = {
         options: 'Options',
         modifier: 'Modifier le questionnaire',
         dupliquer: 'Dupliquer le questionnaire',
+        supprimer: 'Supprimer le questionnaire',
         sansPointContact: 'Aucun point de contact',
         chargement: 'Chargement du détail…',
         erreur: 'Impossible de charger le détail. Merci de réessayer.',
@@ -720,6 +721,114 @@ export const fr = {
         introuvable: 'Ce questionnaire n’existe plus.',
         generique: 'L’enregistrement a échoué. Merci de réessayer.',
       },
+      // Suppression d'un questionnaire (jour 20)
+      suppression: {
+        supprimer: 'Supprimer',
+        enCours: 'Suppression…',
+        confirmer: 'Supprimer ce questionnaire ? Il disparaîtra de la liste.',
+        confirmerPointUn:
+          'Supprimer ce questionnaire ? 1 point de contact lui est associé : il sera détaché.',
+        confirmerPointsMultiple:
+          'Supprimer ce questionnaire ? {nombre} points de contact lui sont associés : ils seront détachés.',
+        reussie: 'Questionnaire supprimé.',
+        erreurAvis:
+          'Ce questionnaire a reçu {nombre} avis : il ne peut pas être supprimé. Désactivez-le pour garder ses avis et ses statistiques.',
+        erreurInterdit: 'Seul un responsable peut supprimer un questionnaire.',
+        erreurIntrouvable: 'Ce questionnaire n’existe plus.',
+        erreurGenerique: 'La suppression a échoué. Merci de réessayer.',
+      },
+    },
+    // Apercu sur telephone de l'editeur (jour 20)
+    apercu: {
+      titre: 'Aperçu sur téléphone',
+      recommencer: 'Recommencer',
+      cadre: 'Aperçu du questionnaire tel que le client le verra',
+      note:
+        'L’aperçu montre votre brouillon à chaque modification, même avant l’enregistrement. Rien n’est envoyé au serveur.',
+    },
+    // Panneau de publication de l'editeur (jour 20)
+    publication: {
+      titre: 'Publication',
+      statuts: {
+        BROUILLON: 'Brouillon',
+        ACTIF: 'Actif',
+        INACTIF: 'Inactif',
+      },
+      chargement: 'Chargement de la publication…',
+      erreurChargement: 'Impossible de charger la publication. Merci de réessayer.',
+      aucuneVersion: 'Aucune version enregistrée',
+      versionPubliee: 'Version {numero} publiée le {date}',
+      versionNonPubliee: 'Version {numero} non publiée',
+      sansPoint: 'Questionnaire actif sans point de contact : personne ne peut y répondre.',
+      nonEnregistre: 'Des modifications ne sont pas enregistrées.',
+      publierAide:
+        'Enregistrez le questionnaire avant de le publier : la publication utilise la dernière version enregistrée.',
+      publier: 'Publier',
+      publicationEnCours: 'Publication…',
+      desactiver: 'Désactiver',
+      activer: 'Activer',
+      enregistrement: 'Enregistrement…',
+      succes: {
+        publie: 'Questionnaire publié.',
+        statut: 'Statut mis à jour.',
+        dates: 'Dates enregistrées.',
+        points: 'Points de contact enregistrés.',
+      },
+      dates: {
+        titre: 'Dates de début et de fin',
+        aide:
+          'Pour un événement : le questionnaire n’accepte des avis qu’entre ces deux dates. Laissez vide pour ne pas limiter.',
+        debut: 'Début',
+        fin: 'Fin',
+        fuseau: 'Heures de Lomé (UTC+0).',
+        enregistrer: 'Enregistrer les dates',
+        effacer: 'Effacer les dates',
+      },
+      points: {
+        titre: 'Points de contact',
+        aide:
+          'Cochez les points de contact (tables, chambres, salles…) dont le QR code ouvre ce questionnaire. La liste complète est enregistrée d’un coup.',
+        erreurListe: 'Impossible de charger les points de contact. Merci de réessayer.',
+        chargement: 'Chargement des points de contact…',
+        aucun: 'Aucun point de contact pour le moment. Créez-les dans la page Sites et tables.',
+        selection: 'Sélection : {nombre}',
+        toutSelectionner: 'Tout sélectionner',
+        toutDeselectionner: 'Tout désélectionner',
+        inactif: 'Inactif',
+        revoque: 'QR code révoqué',
+        autreQuestionnaire: 'Utilise actuellement : {titre}',
+        enregistrer: 'Enregistrer les points de contact',
+      },
+      erreurs: {
+        datesInversees: 'La date de fin doit être après la date de début.',
+        interdit: 'Seul un responsable peut gérer la publication.',
+        introuvable: 'Ce questionnaire n’existe plus.',
+        nonPublie: 'Ce questionnaire n’a jamais été publié : publiez-le d’abord.',
+        donneesInvalides:
+          'Les données envoyées ne sont pas valides. Vérifiez les dates et réessayez.',
+        generique: 'L’opération a échoué. Merci de réessayer.',
+      },
+    },
+    // Historique des versions de l'editeur (jour 20)
+    versions: {
+      titre: 'Versions',
+      aide:
+        'Chaque modification d’un questionnaire qui a déjà reçu des avis crée une nouvelle version. Les anciens avis restent liés à la version avec laquelle ils ont été reçus.',
+      chargement: 'Chargement des versions…',
+      aucune: 'Aucune version enregistrée pour le moment.',
+      version: 'Version {numero}',
+      actuelle: 'Actuelle',
+      publiee: 'Publiée',
+      nonPubliee: 'Non publiée',
+      publieeLe: 'Publiée le {date}',
+      creeeLe: 'Créée le {date}',
+      questionsUn: '{nombre} question',
+      questionsMultiple: '{nombre} questions',
+      avisZero: 'Aucun avis',
+      avisUn: '{nombre} avis',
+      avisMultiple: '{nombre} avis',
+      erreur: 'Impossible de charger les versions. Merci de réessayer.',
+      erreurIntrouvable: 'Ce questionnaire n’existe plus.',
     },
   },
   // Ecrans E8 (liste des avis) et E9 (fiche d'un avis), jour 15

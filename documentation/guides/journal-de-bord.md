@@ -418,3 +418,35 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 **Points d'attention**
 - Le texte `sites.liste.videResponsable` dit encore "le bloc Creer des points en masse ci-dessous" ; avec ce design le bouton est en haut de la page. A corriger plus tard.
 - L'entree "Jour 18 (design)" est presente deux fois dans ce journal, a l'identique. A nettoyer plus tard.
+
+
+## Jour 20 - dimanche 8 novembre 2026 : questionnaires (2), apercu, versions et suppression (ecran E10)
+
+**Fait**
+- Backend, module `modules/questionnaires` : `services/versions.ts` (historique d'un questionnaire : numero, publiee ou non, dates, nombre de questions et d'avis par version) et `services/suppression.ts` (suppression douce). Deux routes reservees au Responsable dans `questionnaires.routes.ts` : `GET /questionnaires/:id/versions` et `DELETE /questionnaires/:id` (controleurs `listerLesVersions` et `supprimerUnQuestionnaire`).
+- Suppression : un questionnaire sans avis est supprime (`supprime_le` rempli) et ses points de contact sont detaches (la reponse donne `points_contact_detaches`). Avec au moins un avis : 409 `QUESTIONNAIRE_AVEC_AVIS` (avec `nombre_avis`), rien ne change, il faut le desactiver. Questionnaire d'une autre organisation : 404. Gestionnaire : 403.
+- Test `backend/tests/integration/questionnaires-versions-suppression.test.ts` (10 tests) : scenario 9 (modifier un questionnaire qui a des avis cree la version 2, l'ancien avis et sa reponse restent sur la version 1), historique des versions, suppression refusee avec avis et acceptee sans avis, acces refuse au Gestionnaire (403) et isolation entre organisations (404).
+- Page d'avis (`frontend/application-avis-public/src`) : page `/apercu` (`pages/6-apercu/page-apercu.tsx`, route ajoutee dans `App.tsx`). Elle rejoue le parcours avec les vrais ecrans (accueil, questions, commentaire, remerciement), sans appel a l'API, sans scan, sans avis envoye et sans brouillon garde.
+- Tableau de bord (`frontend/tableau-de-bord/src`) : `utilitaires/vers-apercu-public.ts` (brouillon de l'editeur vers le format de la page d'avis), `composants-questionnaires/apercu-telephone.tsx` (cadre de telephone), `hooks/utiliser-gestion-questionnaire.ts`, `composants-questionnaires/panneau-publication.tsx` (publier, activer ou desactiver, dates de debut et de fin, choix de plusieurs points de contact), `hooks/utiliser-versions-questionnaire.ts`, `composants-questionnaires/historique-versions.tsx` et `styles/publication-questionnaire.css`. Types et services (`types/questionnaires.ts`, `services/questionnaires.ts`) : versions, dates, points de contact, publier, activer, desactiver, supprimer.
+- Editeur (`pages/questionnaires/page-editeur-questionnaire.tsx`) : apercu en direct a droite, sections Publication, Dates, Points de contact et Versions sous le formulaire, bouton Supprimer. Liste (`page-questionnaires.tsx`, `utiliser-liste-questionnaires.ts`, `detail-questionnaire.tsx`) : Supprimer dans le menu ... du panneau de detail, avec confirmation.
+- Textes fr et en : blocs `suppression` (dans `editeur`), `apercu`, `publication` et `versions`, plus `supprimer` dans le detail (78 textes, memes cles dans les deux langues).
+- `tsc -b` sans erreur dans le tableau de bord et dans la page d'avis.
+
+**Decisions**
+- Apercu : les vrais ecrans de la page d'avis, affiches dans un cadre de telephone (iframe) et alimentes par le brouillon de l'editeur a chaque modification (postMessage). Le tableau de bord et la page d'avis sont deux applications separees : on ne copie aucun composant, et le client voit exactement la meme chose. Rien n'est envoye au serveur.
+- Suppression : douce, reservee au Responsable, refusee des qu'un avis existe (on desactive alors le questionnaire, ce qui garde les avis et les statistiques). La confirmation du navigateur indique combien de points de contact seront detaches.
+- Versions : modifier un questionnaire qui a des avis cree la version suivante (comportement deja en place). Si la version precedente etait publiee, la nouvelle l'est aussi des l'enregistrement, pour que les clients ne voient pas une page d'erreur pendant la modification.
+- Publier utilise la derniere version enregistree : le bouton Publier est bloque tant que le brouillon n'est pas enregistre.
+- Les sections Publication, Dates, Points de contact et Versions n'apparaissent qu'une fois le questionnaire cree (pas en mode nouveau), pour le Responsable.
+- Dates de debut et de fin saisies et affichees a l'heure de Lome (UTC+0), sans conversion de fuseau.
+- Points de contact : la liste complete est enregistree d'un coup.
+
+**A faire ensuite**
+- Verifications du soir, a faire a la main : modifier un questionnaire qui a deja des reponses (version 2 creee, anciens avis intacts, historique des versions correct) ; mettre des dates de debut et de fin dans le passe puis scanner le QR code (bonne page cote client) ; associer un questionnaire a plusieurs points de contact ; supprimer un questionnaire sans avis (points detaches) et essayer d'en supprimer un qui a des avis (message, il reste dans la liste) ; ouvrir l'apercu en francais puis en anglais.
+- Lancer `npm test` dans backend et noter le resultat.
+- Jour 21 : exports et rapports (`POST /exports` en csv, xlsx et pdf, ecran E16).
+
+**Points d'attention**
+- `eslint` sur les fichiers du jour : 38 erreurs, toutes `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...` (18 dans `utiliser-gestion-questionnaire.ts`, 16 dans `utiliser-liste-questionnaires.ts`, 4 dans `utiliser-versions-questionnaire.ts`), meme cause que les jours 15, 17 et 18. Aucune autre erreur. A traiter plus tard.
+- En developpement, l'apercu a besoin que la page d'avis tourne (port 5173 du meme ordinateur) : sinon le cadre reste vide. En production il utilise la meme adresse que le tableau de bord : a verifier a la mise en ligne.
+- Onze textes `sites.*` manquent encore en anglais (hors jour 20).

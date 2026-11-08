@@ -1,0 +1,729 @@
+/* ============================================================
+   PAGE EDITEUR DE QUESTIONNAIRE (ecran E10, editeur) : FEUILLE DE STYLE
+   Meme style que la page Questionnaires (questionnaires.css), adapte de
+   la page Classes : cartes arrondies, accent unique, animations d'entree.
+   Ordre : page, en-tete, messages, sections, champ bilingue, carte de
+   question, responsive.
+   Les couleurs viennent de index.css (theme sombre et theme clair).
+   Les marges de la page s'ajoutent a celles de <main> : la page n'ajoute
+   pas les siennes.
+============================================================ */
+
+/* ==============================
+   0. VARIABLES LOCALES
+   Meme bloc que questionnaires.css : les noms de Classes.css sont
+   relies a ceux de index.css.
+============================== */
+
+.editeur-questionnaire {
+  /* Espaces et textes */
+  --espace-xxs: 2px;
+  --espace-xs: 4px;
+  --espace-sm: 8px;
+  --espace-md: 16px;
+  --espace-lg: 24px;
+  --espace-xl: 32px;
+
+  --texte-sm: 13px;
+  --texte-md: 15px;
+  --texte-lg: 18px;
+  --gras-moyen: 500;
+  --gras-semi: 600;
+  --police-titre: var(--font-titre, Georgia, serif);
+
+  /* Fonds */
+  --fond-carte: var(--surface);
+  --fond-eleve: var(--surface-douce);
+  --fond-survol: var(--accent-fond);
+  --fond-actif: var(--bordure);
+
+  /* Accent (indigo en theme clair, gris clair en theme sombre) */
+  --accent: var(--couleur-principale);
+  --accent-texte: var(--texte-sur-principale);
+  --accent-lueur: color-mix(in srgb, var(--couleur-principale) 35%, transparent);
+
+  /* Textes : le texte a lire reste lisible dans les deux themes */
+  --texte-principal: var(--texte);
+  --texte-tertiaire: var(--texte-secondaire);
+  --texte-desactive: var(--texte-discret);
+
+  --bordure-focus: var(--bordure-champ-focus);
+
+  /* Etats : succes, erreur, attention (brouillon, alerte) */
+  --succes-fond: color-mix(in srgb, var(--succes) 12%, transparent);
+  --succes-bordure: color-mix(in srgb, var(--succes) 40%, transparent);
+  --erreur-fond: color-mix(in srgb, var(--erreur) 12%, transparent);
+  --erreur-bordure: color-mix(in srgb, var(--erreur) 40%, transparent);
+  --attention: var(--note-moyenne);
+  --attention-fond: color-mix(in srgb, var(--note-moyenne) 12%, transparent);
+  --attention-bordure: color-mix(in srgb, var(--note-moyenne) 40%, transparent);
+
+  /* Formes, ombres et vitesses */
+  --rayon-xs: 4px;
+  --rayon-rond: 999px;
+  --ombre-xs: 0 1px 2px color-mix(in srgb, var(--texte) 12%, transparent);
+  --transition: 0.25s ease;
+  --transition-rapide: 0.15s ease;
+}
+
+/* ==============================
+   1. CONTENEUR PRINCIPAL
+============================== */
+
+.editeur-questionnaire {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding-bottom: var(--espace-xl);
+  font-family: inherit;
+  color: var(--texte-principal);
+  animation: eq-apparaitre 0.35s ease;
+}
+
+@keyframes eq-apparaitre {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eq-panneau-apparition {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.editeur-questionnaire-etat {
+  margin: 0;
+  padding: var(--espace-xl) 0;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+/* ==============================
+   2. EN-TETE (retour, titre, badges, enregistrer)
+============================== */
+
+.editeur-questionnaire-entete {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espace-md);
+  padding-bottom: var(--espace-md);
+  border-bottom: 1px solid var(--bordure);
+}
+
+.editeur-questionnaire-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espace-xs);
+  flex-shrink: 0;
+  padding: var(--espace-xs) var(--espace-md) var(--espace-xs) var(--espace-sm);
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-rond);
+  color: var(--texte-secondaire);
+  font-family: inherit;
+  font-size: var(--texte-sm);
+  cursor: pointer;
+  transition: background var(--transition-rapide), border-color var(--transition-rapide),
+              color var(--transition-rapide);
+}
+
+.editeur-questionnaire-retour:hover {
+  background: var(--fond-survol);
+  border-color: var(--bordure-forte);
+  color: var(--texte-principal);
+}
+
+.editeur-questionnaire-retour svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.editeur-questionnaire-titres {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--espace-sm);
+  min-width: 0;
+}
+
+.editeur-questionnaire-titre {
+  margin: 0;
+  font-family: var(--police-titre);
+  font-size: clamp(19px, 2vw, 22px);
+  font-weight: var(--gras-semi);
+  letter-spacing: -0.01em;
+}
+
+.editeur-questionnaire-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--espace-sm);
+  background: var(--accent-fond);
+  border: 1px solid var(--bordure-forte);
+  border-radius: var(--rayon-rond);
+  color: var(--texte-secondaire);
+  font-size: 11px;
+  font-weight: var(--gras-semi);
+  white-space: nowrap;
+}
+
+.editeur-questionnaire-badge--alerte {
+  background: var(--attention-fond);
+  border-color: var(--attention-bordure);
+  color: var(--attention);
+}
+
+.editeur-questionnaire-enregistrer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espace-sm);
+  flex-shrink: 0;
+  padding: var(--espace-sm) var(--espace-lg);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--rayon-md);
+  color: var(--accent-texte);
+  font-family: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--gras-moyen);
+  cursor: pointer;
+  transition: opacity var(--transition-rapide), box-shadow var(--transition-rapide),
+              transform var(--transition-rapide);
+}
+
+.editeur-questionnaire-enregistrer:hover:not(:disabled) {
+  box-shadow: 0 0 14px -3px var(--accent-lueur);
+  opacity: 0.92;
+}
+
+.editeur-questionnaire-enregistrer:active:not(:disabled) { transform: scale(0.97); }
+
+.editeur-questionnaire-enregistrer:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editeur-questionnaire-enregistrer svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ==============================
+   3. MESSAGES (erreur, reussite)
+============================== */
+
+.editeur-questionnaire-message {
+  margin: 0;
+  padding: var(--espace-sm) var(--espace-md);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-sm);
+  font-size: var(--texte-sm);
+  animation: eq-panneau-apparition 0.25s ease both;
+}
+
+.editeur-questionnaire-message--erreur {
+  background: var(--erreur-fond);
+  border-color: var(--erreur-bordure);
+  color: var(--erreur);
+}
+
+.editeur-questionnaire-message--succes {
+  background: var(--succes-fond);
+  border-color: var(--succes-bordure);
+  color: var(--succes);
+}
+
+/* ==============================
+   4. SECTIONS (general, questions)
+============================== */
+
+.editeur-questionnaire-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  padding: var(--espace-lg);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-xs);
+  animation: eq-panneau-apparition 0.4s ease both;
+}
+
+.editeur-questionnaire-section-titre {
+  margin: 0;
+  font-family: var(--police-titre);
+  font-size: var(--texte-lg);
+  font-weight: var(--gras-semi);
+  color: var(--texte-principal);
+}
+
+.editeur-questionnaire-section-aide {
+  margin: calc(var(--espace-xs) * -1) 0 0;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+}
+
+.editeur-questionnaire-champ {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-xs);
+}
+
+.editeur-questionnaire-etiquette {
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+}
+
+.editeur-questionnaire-select {
+  width: 100%;
+  max-width: 280px;
+  padding: var(--espace-sm) var(--espace-md);
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-md);
+  color: var(--texte-principal);
+  font-family: inherit;
+  font-size: var(--texte-sm);
+  transition: border-color var(--transition-rapide);
+}
+
+.editeur-questionnaire-select:focus-visible {
+  outline: none;
+  border-color: var(--bordure-focus);
+}
+
+/* --- Liste des questions --- */
+
+.editeur-questionnaire-questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+}
+
+.editeur-questionnaire-vide {
+  margin: 0;
+  padding: var(--espace-lg) 0;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+.editeur-questionnaire-ajouter,
+.carte-question-ajouter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espace-sm);
+  padding: var(--espace-sm) var(--espace-md);
+  background: transparent;
+  border: 1px dashed var(--bordure-champ);
+  border-radius: var(--rayon-md);
+  color: var(--texte-secondaire);
+  font-family: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--gras-moyen);
+  cursor: pointer;
+  transition: background var(--transition-rapide), border-color var(--transition-rapide),
+              color var(--transition-rapide);
+}
+
+.editeur-questionnaire-ajouter { width: 100%; }
+.carte-question-ajouter { align-self: flex-start; }
+
+.editeur-questionnaire-ajouter:hover:not(:disabled),
+.carte-question-ajouter:hover:not(:disabled) {
+  background: var(--fond-survol);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.editeur-questionnaire-ajouter:disabled,
+.carte-question-ajouter:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editeur-questionnaire-ajouter svg,
+.carte-question-ajouter svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.editeur-questionnaire-limite {
+  margin: 0;
+  color: var(--attention);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+/* ==============================
+   5. CHAMP BILINGUE (francais, anglais)
+============================== */
+
+.champ-bilingue {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.champ-bilingue-libelle {
+  padding: 0;
+  margin-bottom: var(--espace-xs);
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+  font-weight: var(--gras-moyen);
+}
+
+.champ-bilingue-colonnes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espace-md);
+}
+
+.champ-bilingue-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-xs);
+  min-width: 0;
+}
+
+.champ-bilingue-langue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  color: var(--texte-tertiaire);
+  font-size: 12px;
+}
+
+.champ-bilingue-code {
+  padding: 1px var(--espace-xs);
+  background: var(--fond-actif);
+  border-radius: var(--rayon-xs);
+  color: var(--texte-secondaire);
+  font-size: 10px;
+  font-weight: var(--gras-semi);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.champ-bilingue-saisie {
+  width: 100%;
+  padding: var(--espace-sm) var(--espace-md);
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-md);
+  color: var(--texte-principal);
+  font-family: inherit;
+  font-size: var(--texte-sm);
+  line-height: 1.45;
+  transition: border-color var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+
+textarea.champ-bilingue-saisie {
+  min-height: 78px;
+  resize: vertical;
+}
+
+.champ-bilingue-saisie::placeholder { color: var(--texte-desactive); }
+
+.champ-bilingue-saisie:focus-visible {
+  outline: none;
+  border-color: var(--bordure-focus);
+  box-shadow: 0 0 0 3px var(--accent-lueur);
+}
+
+.champ-bilingue-saisie[readonly] {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.champ-bilingue-saisie--invalide,
+.champ-bilingue-saisie--invalide:focus-visible {
+  border-color: var(--erreur);
+}
+
+.champ-bilingue-saisie--invalide:focus-visible {
+  box-shadow: 0 0 0 3px var(--erreur-fond);
+}
+
+/* ==============================
+   6. CARTE D'UNE QUESTION
+============================== */
+
+.carte-question {
+  display: flex;
+  flex-direction: column;
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  overflow: hidden;
+  animation: eq-panneau-apparition 0.3s ease both;
+  transition: border-color var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+
+.carte-question:hover,
+.carte-question:focus-within {
+  border-color: var(--bordure-forte);
+  box-shadow: var(--ombre-xs);
+}
+
+/* --- En-tete : numero, icone du type, boutons --- */
+
+.carte-question-entete {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  padding: var(--espace-sm) var(--espace-md);
+  background: var(--fond-carte);
+  border-bottom: 1px solid var(--bordure);
+}
+
+.carte-question-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  background: var(--accent-fond);
+  border-radius: 50%;
+  color: var(--accent);
+}
+
+.carte-question-icone svg {
+  width: 16px;
+  height: 16px;
+}
+
+.carte-question-titre {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--police-titre);
+  font-size: var(--texte-md);
+  font-weight: var(--gras-semi);
+  color: var(--texte-principal);
+}
+
+.carte-question-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-xs);
+  flex-shrink: 0;
+}
+
+.carte-question-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+  color: var(--texte-secondaire);
+  cursor: pointer;
+  transition: background var(--transition-rapide), border-color var(--transition-rapide),
+              color var(--transition-rapide), transform var(--transition-rapide);
+}
+
+.carte-question-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+.carte-question-action:hover:not(:disabled) {
+  background: var(--fond-survol);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.carte-question-action--danger:hover:not(:disabled) {
+  background: var(--erreur-fond);
+  border-color: var(--erreur-bordure);
+  color: var(--erreur);
+}
+
+.carte-question-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Corps --- */
+
+.carte-question-corps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  padding: var(--espace-md);
+}
+
+.carte-question-champ {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-xs);
+  min-width: 0;
+}
+
+.carte-question-etiquette {
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+  font-weight: var(--gras-moyen);
+}
+
+.carte-question-select,
+.carte-question-nombre {
+  width: 100%;
+  padding: var(--espace-sm) var(--espace-md);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure-champ);
+  border-radius: var(--rayon-md);
+  color: var(--texte-principal);
+  font-family: inherit;
+  font-size: var(--texte-sm);
+  transition: border-color var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+
+.carte-question-select { max-width: 320px; }
+.carte-question-nombre { max-width: 140px; }
+
+.carte-question-select:focus-visible,
+.carte-question-nombre:focus-visible {
+  outline: none;
+  border-color: var(--bordure-focus);
+  box-shadow: 0 0 0 3px var(--accent-lueur);
+}
+
+/* --- Sections propres a un type (options, echelle) --- */
+
+.carte-question-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  padding: var(--espace-md);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+}
+
+.carte-question-section-titre {
+  margin: 0;
+  font-family: var(--police-titre);
+  font-size: var(--texte-md);
+  font-weight: var(--gras-semi);
+  color: var(--texte-principal);
+}
+
+.carte-question-section-aide {
+  margin: calc(var(--espace-xs) * -1) 0 0;
+  color: var(--texte-tertiaire);
+  font-size: 12px;
+}
+
+.carte-question-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carte-question-option {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espace-sm);
+}
+
+.carte-question-option-champ {
+  flex: 1;
+  min-width: 0;
+}
+
+.carte-question-echelle-valeurs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espace-md);
+}
+
+/* --- Pied : obligatoire et theme --- */
+
+.carte-question-ligne {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--espace-md);
+}
+
+.carte-question-case {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  color: var(--texte-principal);
+  font-size: var(--texte-sm);
+  cursor: pointer;
+}
+
+.carte-question-case input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.carte-question-message {
+  margin: 0;
+  padding: var(--espace-sm) var(--espace-md);
+  background: var(--attention-fond);
+  border: 1px solid var(--attention-bordure);
+  border-radius: var(--rayon-sm);
+  color: var(--attention);
+  font-size: 12px;
+}
+
+/* ==============================
+   7. RESPONSIVE
+============================== */
+
+@media (max-width: 720px) {
+  .champ-bilingue-colonnes { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .editeur-questionnaire-entete { align-items: flex-start; }
+  .editeur-questionnaire-titres { flex-basis: 100%; order: 3; }
+  .editeur-questionnaire-enregistrer { margin-left: auto; }
+
+  .editeur-questionnaire-section { padding: var(--espace-md); }
+  .editeur-questionnaire-select,
+  .carte-question-select { max-width: none; }
+
+  .carte-question-corps,
+  .carte-question-section { padding: var(--espace-sm); }
+  .carte-question-ligne { align-items: stretch; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editeur-questionnaire,
+  .editeur-questionnaire *,
+  .editeur-questionnaire *::before,
+  .editeur-questionnaire *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

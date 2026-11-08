@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { Navigate } from 'react-router'
+import { CalqueSites } from '../../composants-sites/calque-sites'
 import { CreationMasse } from '../../composants-sites/creation-masse'
 import { FormulaireSite } from '../../composants-sites/formulaire-site'
 import { ListePoints } from '../../composants-sites/liste-points'
@@ -18,8 +19,9 @@ import type { PointContact } from '../../types/sites-points'
 // chargement et sa propre erreur, avec un bouton "Reessayer".
 // Design (styles/sites.css, maquette Premium) : en haut le choix du site et ses boutons, puis le
 // titre et les coordonnees, la recherche, et la rangee de cartes des points de contact.
-// Un seul panneau est ouvert a la fois sous la barre d'actions : nouveau site, gerer le site
-// (modifier, activer ou desactiver), creer en masse ou ajouter une table.
+// Un seul panneau est ouvert a la fois : nouveau site, gerer le site (modifier, activer ou
+// desactiver), creer en masse ou ajouter une table. Il s'ouvre dans un tiroir qui glisse de la
+// droite vers la gauche (CalqueSites), au-dessus de la page, et non dans la page.
 // La page defile normalement si l'ecran est trop bas.
 
 type PropsEchec = {
@@ -44,7 +46,7 @@ function BlocEchec({ erreur, cleGenerale, surReessayer }: PropsEchec) {
   )
 }
 
-// Le panneau ouvert sous la barre d'actions (un seul a la fois, ou aucun).
+// Le panneau ouvert dans le tiroir (un seul a la fois, ou aucun).
 type Formulaire = 'aucun' | 'creation' | 'modification' | 'masse' | 'ajout'
 
 // Une coordonnee n'est affichee que si elle est renseignee.
@@ -105,6 +107,20 @@ export function PageSites() {
   function basculer(cible: Formulaire): void {
     setStatutTente(false)
     setFormulaire(formulaire === cible ? 'aucun' : cible)
+  }
+
+  // Nom du tiroir ouvert, lu par les lecteurs d'ecran.
+  function libelleTiroir(): string {
+    switch (formulaire) {
+      case 'creation':
+        return t('sites.nouveauSite')
+      case 'modification':
+        return t('sites.gererSite')
+      case 'masse':
+        return t('sites.creerEnMasse')
+      default:
+        return t('sites.ajouterTable')
+    }
   }
 
   // Message d'echec de l'activation ou de la desactivation du site.
@@ -278,9 +294,9 @@ export function PageSites() {
             )}
           </div>
 
-          {/* Panneau ouvert : Responsable seulement, on repart de zero a chaque site */}
+          {/* Tiroir ouvert : Responsable seulement, on repart de zero a chaque site */}
           {peutModifier && formulaire !== 'aucun' && (
-            <div className="sites-panneau">
+            <CalqueSites forme="tiroir" libelle={libelleTiroir()} surFermer={fermerFormulaire}>
               {formulaire === 'creation' && (
                 <FormulaireSite
                   key="nouveau"
@@ -343,7 +359,7 @@ export function PageSites() {
                   numeroInitial={prochainNumeroTable(points)}
                 />
               )}
-            </div>
+            </CalqueSites>
           )}
 
           {/* Points de contact du site choisi */}

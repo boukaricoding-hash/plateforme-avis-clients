@@ -17,6 +17,7 @@ import {
 import { modifierDatesQuestionnaire } from "../services/dates";
 import { clonerModele, listerModeles } from "../services/modeles";
 import { associerPointsContact } from "../services/points-contact";
+import { listerThemesDuSecteur } from "../services/themes";
 import { schemaDatesQuestionnaire } from "../validations/dates";
 import { schemaAssociationPointsContact } from "../validations/points-contact";
 import { schemaIdQuestionnaire, schemaQuestionnaire } from "../validations/questionnaire";
@@ -211,6 +212,14 @@ export async function listerLesModeles(req: Request, res: Response): Promise<voi
 
   const modeles = await listerModeles(ctx.organisationId);
   res.status(200).json({ modeles });
+}
+
+export async function listerLesThemes(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const themes = await listerThemesDuSecteur(ctx.organisationId);
+  res.status(200).json({ themes });
 }
 
 export async function clonerUnModele(req: Request, res: Response): Promise<void> {

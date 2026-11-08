@@ -12,6 +12,7 @@ import {
   lireUnQuestionnaire,
   listerLesModeles,
   listerLesQuestionnaires,
+  listerLesThemes,
   modifierLesDatesDuQuestionnaire,
   modifierUnQuestionnaire,
   publierUnQuestionnaire,
@@ -27,6 +28,8 @@ routesQuestionnaires.post("/", exigerRole("RESPONSABLE"), creerUnQuestionnaire);
 // Les routes des modeles AVANT /:id, sinon "modeles" serait lu comme un identifiant.
 routesQuestionnaires.get("/modeles", exigerRole("RESPONSABLE", "GESTIONNAIRE"), listerLesModeles);
 routesQuestionnaires.post("/modeles/:id/cloner", exigerRole("RESPONSABLE"), clonerUnModele);
+// Themes du secteur (jour 19) : AVANT /:id, comme les modeles.
+routesQuestionnaires.get("/themes", exigerRole("RESPONSABLE"), listerLesThemes);
 
 routesQuestionnaires.get("/:id", exigerRole("RESPONSABLE", "GESTIONNAIRE"), lireUnQuestionnaire);
 routesQuestionnaires.put("/:id", exigerRole("RESPONSABLE"), modifierUnQuestionnaire);

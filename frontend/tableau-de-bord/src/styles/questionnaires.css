@@ -1,0 +1,1797 @@
+/* ============================================================
+   PAGE QUESTIONNAIRES (ecran E10, liste) : FEUILLE DE STYLE
+   Adaptee de la page Classes (Classes.css), dans l'ordre de
+   page-questionnaires.tsx et de ses composants.
+   Les couleurs viennent de index.css (theme sombre et theme clair).
+   Les marges de la page s'ajoutent a celles de <main> (16 px sur
+   telephone, 24 px en grand ecran) : la page n'ajoute pas les siennes.
+============================================================ */
+
+/* ==============================
+   0. VARIABLES LOCALES
+   Les noms de Classes.css sont relies a ceux de index.css.
+   --accent-fond existe deja dans index.css (meme role).
+============================== */
+
+.questionnaires {
+  /* Espaces et textes */
+  --espace-xxs: 2px;
+  --espace-xs: 4px;
+  --espace-sm: 8px;
+  --espace-md: 16px;
+  --espace-lg: 24px;
+  --espace-xl: 32px;
+
+  --texte-sm: 13px;
+  --texte-md: 15px;
+  --texte-lg: 18px;
+  --gras-moyen: 500;
+  --gras-semi: 600;
+  --police-titre: var(--font-titre, Georgia, serif);
+
+  /* Fonds */
+  --fond-carte: var(--surface);
+  --fond-eleve: var(--surface-douce);
+  --fond-survol: var(--accent-fond);
+  --fond-actif: var(--bordure);
+
+  /* Accent (indigo en theme clair, gris clair en theme sombre) */
+  --accent: var(--couleur-principale);
+  --accent-texte: var(--texte-sur-principale);
+  --accent-lueur: color-mix(in srgb, var(--couleur-principale) 35%, transparent);
+
+  /* Textes : le texte a lire reste lisible dans les deux themes */
+  --texte-principal: var(--texte);
+  --texte-tertiaire: var(--texte-secondaire);
+  --texte-desactive: var(--texte-discret);
+
+  --bordure-focus: var(--bordure-champ-focus);
+
+  /* Etats : succes, erreur, attention (brouillon, alerte) */
+  --succes-fond: color-mix(in srgb, var(--succes) 12%, transparent);
+  --succes-bordure: color-mix(in srgb, var(--succes) 40%, transparent);
+  --erreur-fond: color-mix(in srgb, var(--erreur) 12%, transparent);
+  --erreur-bordure: color-mix(in srgb, var(--erreur) 40%, transparent);
+  --attention: var(--note-moyenne);
+  --attention-fond: color-mix(in srgb, var(--note-moyenne) 12%, transparent);
+  --attention-bordure: color-mix(in srgb, var(--note-moyenne) 40%, transparent);
+
+  /* Formes, ombres et vitesses */
+  --rayon-xs: 4px;
+  --rayon-rond: 999px;
+  --ombre-xs: 0 1px 2px color-mix(in srgb, var(--texte) 12%, transparent);
+  --transition: 0.25s ease;
+  --transition-rapide: 0.15s ease;
+}
+
+/* ==============================
+   1. CONTENEUR PRINCIPAL
+============================== */
+
+.questionnaires {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: inherit;
+  color: var(--texte-principal);
+  animation: q-apparaitre 0.35s ease;
+}
+
+@keyframes q-apparaitre {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==============================
+   2. EN-TETE ET MESSAGES DE LA PAGE
+============================== */
+
+.questionnaires-entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: var(--espace-md);
+  padding-bottom: var(--espace-md);
+  margin-bottom: var(--espace-md);
+  border-bottom: 1px solid var(--bordure);
+}
+
+.questionnaires-titre {
+  margin: 0;
+  font-family: var(--police-titre);
+  font-size: clamp(19px, 2vw, 22px);
+  font-weight: var(--gras-semi);
+  letter-spacing: -0.01em;
+}
+
+.questionnaires-soustitre {
+  margin: 3px 0 0;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+}
+
+.questionnaires-raccourci-palette {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  flex-shrink: 0;
+  padding: var(--espace-xs) var(--espace-md);
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-rond);
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+  cursor: pointer;
+  transition: border-color var(--transition-rapide), color var(--transition-rapide), background var(--transition-rapide);
+}
+
+.questionnaires-raccourci-palette:hover:not(:disabled) {
+  background: var(--fond-survol);
+  border-color: var(--bordure-forte);
+  color: var(--texte-principal);
+}
+
+.questionnaires-raccourci-palette:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.questionnaires-raccourci-palette svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.questionnaires-raccourci-palette kbd {
+  padding: 1px 6px;
+  background: var(--fond-actif);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-xs);
+  color: var(--texte-tertiaire);
+  font-size: 10px;
+}
+
+/* --- Bandeaux d'erreur, d'information et de reussite --- */
+
+.questionnaires-erreur-globale {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: var(--espace-sm);
+  padding: var(--espace-sm) var(--espace-md);
+  margin-bottom: var(--espace-md);
+  background: var(--erreur-fond);
+  border: 1px solid var(--erreur-bordure);
+  border-radius: var(--rayon-sm);
+  color: var(--erreur);
+  font-size: var(--texte-sm);
+}
+
+.questionnaires-reessayer {
+  padding: 4px var(--espace-md);
+  background: transparent;
+  border: 1px solid var(--erreur-bordure);
+  border-radius: var(--rayon-rond);
+  color: var(--erreur);
+  font-size: 12px;
+  font-weight: var(--gras-moyen);
+  cursor: pointer;
+  transition: background var(--transition-rapide);
+}
+
+.questionnaires-reessayer:hover { background: var(--erreur-fond); }
+
+.questionnaires-lecture-seule {
+  flex-shrink: 0;
+  padding: var(--espace-sm) var(--espace-md);
+  margin-bottom: var(--espace-md);
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--rayon-sm);
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+}
+
+.questionnaires-message-succes {
+  flex-shrink: 0;
+  padding: var(--espace-sm) var(--espace-md);
+  margin-bottom: var(--espace-md);
+  background: var(--succes-fond);
+  border: 1px solid var(--succes-bordure);
+  border-radius: var(--rayon-sm);
+  color: var(--succes);
+  font-size: var(--texte-sm);
+  animation: q-onglet-apparition 0.25s ease both;
+}
+
+.questionnaires-liste-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espace-xs);
+  flex-shrink: 0;
+  padding: var(--espace-md);
+  margin-bottom: var(--espace-md);
+  background: var(--fond-eleve);
+  border: 1px dashed var(--bordure-forte);
+  border-radius: var(--rayon-md);
+  color: var(--texte-principal);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+.questionnaires-liste-vide-aide {
+  color: var(--texte-tertiaire);
+  font-size: 12px;
+}
+
+/* ==============================
+   3. MISE EN PAGE (gauche / droite)
+============================== */
+
+.questionnaires-corps {
+  display: grid;
+  grid-template-columns: 1fr minmax(300px, 360px);
+  gap: var(--espace-lg);
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.questionnaires-gauche {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.questionnaires-graphe {
+  position: relative;
+  flex: 3;
+  min-height: 260px;
+  border-radius: var(--rayon-lg);
+  overflow: hidden;
+}
+
+.questionnaires-droite {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.questionnaires-droite::-webkit-scrollbar { width: 6px; }
+.questionnaires-droite::-webkit-scrollbar-track { background: transparent; }
+.questionnaires-droite::-webkit-scrollbar-thumb {
+  background: var(--bordure-forte);
+  border-radius: var(--rayon-rond);
+}
+.questionnaires-droite::-webkit-scrollbar-thumb:hover { background: var(--texte-desactive); }
+
+/* ==============================
+   4. GRAPHE (REACT FLOW) ET COLONNE D'ACTIONS
+============================== */
+
+.questionnaires-graphe .react-flow { background: transparent; }
+.questionnaires-graphe .react-flow__background { display: none; }
+
+.questionnaires-graphe .react-flow__edge-path {
+  stroke: var(--bordure-forte);
+  stroke-width: 1.5px;
+  transition: stroke var(--transition-rapide);
+}
+
+.questionnaires-graphe .react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--accent);
+}
+
+.questionnaires-graphe .react-flow__controls {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  background: var(--fond-eleve);
+  border: none;
+  border-radius: var(--rayon-md);
+  box-shadow: var(--ombre-sm);
+}
+
+.questionnaires-graphe .react-flow__controls-button {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--bordure);
+  fill: var(--texte-secondaire);
+  transition: background var(--transition-rapide), fill var(--transition-rapide);
+}
+
+.questionnaires-graphe .react-flow__controls-button:hover {
+  background: var(--fond-survol);
+  fill: var(--accent);
+}
+
+.questionnaires-graphe .react-flow__controls-button:last-child { border-right: none; }
+.questionnaires-graphe .react-flow__attribution { display: none; }
+
+/* --- Actions verticales (questionnaire vide, modele, dupliquer) --- */
+
+.questionnaires-graphe-actions {
+  position: absolute;
+  top: 50%;
+  left: var(--espace-lg);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espace-sm);
+  transform: translateY(-50%);
+}
+
+.questionnaires-graphe-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+  color: var(--texte-secondaire);
+  box-shadow: var(--ombre-sm);
+  cursor: pointer;
+  transition: background var(--transition-rapide),
+              border-color var(--transition-rapide),
+              color var(--transition-rapide),
+              transform var(--transition-rapide);
+}
+
+.questionnaires-graphe-action svg { width: 16px; height: 16px; }
+
+.questionnaires-graphe-action:hover:not(:disabled) {
+  background: var(--fond-survol);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.questionnaires-graphe-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ==============================
+   5. NOEUDS DU GRAPHE
+============================== */
+
+.questionnaires-noeud {
+  position: relative;
+  display: flex;
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
+  min-height: 100px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--espace-sm) var(--espace-md);
+  border-radius: 50%;
+  text-align: center;
+  cursor: pointer;
+  transition: transform var(--transition-rapide),
+              box-shadow var(--transition-rapide),
+              border-color var(--transition-rapide),
+              background var(--transition-rapide);
+  animation: q-noeud-apparaitre 0.35s cubic-bezier(0.25, 0.8, 0.35, 1) both;
+}
+
+.questionnaires-noeud:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ombre-sm);
+}
+
+@keyframes q-noeud-apparaitre {
+  from { opacity: 0; transform: scale(0.9) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.questionnaires-noeud-poignee {
+  width: 6px !important;
+  height: 6px !important;
+  background: var(--bordure-forte) !important;
+  border: none !important;
+}
+
+.questionnaires-noeud-label {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-family: var(--police-titre);
+  font-size: 12px;
+  font-weight: var(--gras-semi);
+  color: var(--texte-principal);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.questionnaires-noeud-souslabel {
+  font-size: 10px;
+  color: var(--texte-tertiaire);
+}
+
+/* --- Noeud racine (organisation) --- */
+
+.questionnaires-noeud--racine {
+  width: 130px;
+  height: 130px;
+  min-width: 130px;
+  min-height: 130px;
+  gap: 8px;
+  padding: var(--espace-md);
+  background: var(--accent-fond);
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 0 24px -4px var(--accent-lueur);
+}
+
+.questionnaires-noeud--racine .questionnaires-noeud-label {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.questionnaires-noeud-icone-svg {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+/* --- Noeuds de statut (Actifs, Brouillons, Inactifs) --- */
+
+.questionnaires-noeud--statut {
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure-forte);
+}
+
+/* Actifs : apparence normale, celle du noeud de statut */
+.questionnaires-noeud--statut-actif { border-color: var(--bordure-forte); }
+
+.questionnaires-noeud--statut-brouillon {
+  background: var(--attention-fond);
+  border-color: var(--attention-bordure);
+}
+.questionnaires-noeud--statut-brouillon .questionnaires-noeud-label { color: var(--attention); }
+
+.questionnaires-noeud--statut-inactif { border-color: var(--bordure); }
+.questionnaires-noeud--statut-inactif .questionnaires-noeud-label { color: var(--texte-secondaire); }
+
+/* Le statut ouvert est declare apres les autres : il l'emporte */
+.questionnaires-noeud--statut-ouvert {
+  border-color: var(--accent);
+  background: var(--accent-fond);
+  box-shadow: 0 0 0 2px var(--accent), 0 0 16px -4px var(--accent-lueur);
+}
+.questionnaires-noeud--statut-ouvert .questionnaires-noeud-label { color: var(--accent); }
+
+/* --- Noeuds questionnaire --- */
+
+.questionnaires-noeud--questionnaire {
+  width: 92px;
+  height: 92px;
+  min-width: 92px;
+  min-height: 92px;
+  padding: var(--espace-xs) var(--espace-md);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+}
+
+.questionnaires-noeud--questionnaire .questionnaires-noeud-label { font-size: 11px; }
+
+.questionnaires-noeud--questionnaire-actif { border-color: var(--bordure); }
+
+.questionnaires-noeud--questionnaire-brouillon {
+  border-color: var(--attention-bordure);
+  background: var(--attention-fond);
+}
+.questionnaires-noeud--questionnaire-brouillon .questionnaires-noeud-label { color: var(--attention); }
+
+.questionnaires-noeud--questionnaire-inactif {
+  background: var(--fond-eleve);
+  opacity: 0.8;
+}
+.questionnaires-noeud--questionnaire-inactif .questionnaires-noeud-label { color: var(--texte-secondaire); }
+
+/* La selection est declaree apres les statuts : elle l'emporte */
+.questionnaires-noeud--questionnaire-selectionne {
+  background: var(--accent-fond);
+  border-color: var(--accent);
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 16px -3px var(--accent-lueur);
+}
+.questionnaires-noeud--questionnaire-selectionne .questionnaires-noeud-label { color: var(--accent); }
+
+/* --- Badge d'alerte (questionnaire actif sans point de contact) --- */
+
+.questionnaires-noeud-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--fond-carte);
+  border: 1.5px solid var(--attention-bordure);
+  border-radius: 50%;
+  color: var(--attention);
+  box-shadow: var(--ombre-xs);
+  animation: q-badge-apparaitre 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.questionnaires-noeud-badge--attention {
+  border-color: var(--attention-bordure);
+  color: var(--attention);
+}
+
+@keyframes q-badge-apparaitre {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.questionnaires-alerte-icone-svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ==============================
+   6. PALETTE DE RECHERCHE (Ctrl K)
+============================== */
+
+.questionnaires-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh var(--espace-md) 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  animation: q-fondu-apparition 0.15s ease both;
+}
+
+@keyframes q-fondu-apparition {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.questionnaires-palette-modale {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 460px;
+  max-height: 60vh;
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-lg);
+  overflow: hidden;
+  animation: q-palette-apparition 0.18s cubic-bezier(0.25, 0.8, 0.35, 1) both;
+}
+
+@keyframes q-palette-apparition {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.questionnaires-palette-champ-conteneur {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  padding: var(--espace-md);
+  border-bottom: 1px solid var(--bordure);
+  transition: border-color var(--transition-rapide);
+}
+
+.questionnaires-palette-champ-conteneur:focus-within { border-bottom-color: var(--accent); }
+
+.questionnaires-palette-icone-svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--texte-tertiaire);
+}
+
+.questionnaires-palette-champ {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: var(--texte-principal);
+  font-size: var(--texte-sm);
+}
+
+/* Le champ n'a pas d'anneau : le trait sous la zone de saisie montre le focus */
+.questionnaires-palette-champ:focus,
+.questionnaires-palette-champ:focus-visible { outline: none; }
+.questionnaires-palette-champ::placeholder { color: var(--texte-desactive); }
+
+.questionnaires-palette-touche {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  background: var(--fond-actif);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-xs);
+  color: var(--texte-tertiaire);
+  font-size: 10px;
+}
+
+.questionnaires-palette-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--espace-xs);
+  overflow-y: auto;
+}
+
+.questionnaires-palette-vide {
+  padding: var(--espace-lg);
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+.questionnaires-palette-item {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  padding: var(--espace-sm);
+  background: transparent;
+  border: none;
+  border-radius: var(--rayon-md);
+  color: var(--texte-principal);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-rapide);
+}
+
+.questionnaires-palette-item:hover,
+.questionnaires-palette-item--actif {
+  background: var(--fond-survol);
+}
+
+.questionnaires-palette-item-pastille {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--succes);
+}
+
+.questionnaires-palette-item-pastille--actif { background: var(--succes); }
+.questionnaires-palette-item-pastille--brouillon { background: var(--attention); }
+.questionnaires-palette-item-pastille--inactif { background: var(--texte-desactive); }
+
+.questionnaires-palette-item-nom {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--texte-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.questionnaires-palette-item-meta {
+  flex-shrink: 0;
+  color: var(--texte-tertiaire);
+  font-size: 11px;
+}
+
+.questionnaires-palette-astuce {
+  flex-shrink: 0;
+  padding: var(--espace-sm) var(--espace-md);
+  border-top: 1px solid var(--bordure);
+  color: var(--texte-tertiaire);
+  font-size: 11px;
+}
+
+.questionnaires-palette-astuce kbd {
+  padding: 1px 5px;
+  background: var(--fond-actif);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-xs);
+  color: var(--texte-tertiaire);
+  font-size: 10px;
+}
+
+/* ==============================
+   7. PANNEAU "PARTIR D'UN MODELE"
+   (remplace le graphe, comme la gestion des matieres sur Classes)
+============================== */
+
+.questionnaires-modeles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  width: 100%;
+  height: 100%;
+  padding: var(--espace-lg) var(--espace-xl);
+  overflow-y: auto;
+  animation: q-panneau-apparition 0.35s ease both;
+}
+
+@keyframes q-panneau-apparition {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.questionnaires-modeles-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.questionnaires-modeles-titre-bloc {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+}
+
+.questionnaires-modeles-titre-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  color: var(--accent);
+  animation: q-icone-entree 0.5s cubic-bezier(0.25, 0.8, 0.35, 1) both;
+}
+
+.questionnaires-modeles-titre-icone-svg { width: 100%; height: 100%; }
+
+@keyframes q-icone-entree {
+  from { opacity: 0; transform: scale(0.6) rotate(-15deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.questionnaires-modeles-titre {
+  margin: 0;
+  font-family: var(--police-titre);
+  font-size: var(--texte-lg);
+  font-weight: var(--gras-semi);
+  color: var(--texte-principal);
+}
+
+.questionnaires-modeles-fermer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-rond);
+  color: var(--texte-tertiaire);
+  cursor: pointer;
+  transition: background var(--transition-rapide), color var(--transition-rapide),
+              border-color var(--transition-rapide), transform var(--transition-rapide);
+}
+
+.questionnaires-modeles-fermer-icone-svg { width: 13px; height: 13px; }
+
+.questionnaires-modeles-fermer:hover:not(:disabled) {
+  background: var(--fond-survol);
+  border-color: var(--bordure-forte);
+  color: var(--texte-principal);
+  transform: rotate(90deg);
+}
+
+.questionnaires-modeles-fermer:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.questionnaires-modeles-contenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto;
+  animation: q-onglet-apparition 0.3s ease both;
+}
+
+.questionnaires-modeles-aide {
+  margin: 0;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+}
+
+.questionnaires-modeles-erreur {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--espace-sm);
+  padding: var(--espace-sm) var(--espace-md);
+  background: var(--erreur-fond);
+  border: 1px solid var(--erreur-bordure);
+  border-radius: var(--rayon-sm);
+  color: var(--erreur);
+  font-size: var(--texte-sm);
+  animation: q-onglet-apparition 0.25s ease both;
+}
+
+.questionnaires-modeles-reessayer {
+  padding: 4px var(--espace-md);
+  background: transparent;
+  border: 1px solid var(--erreur-bordure);
+  border-radius: var(--rayon-rond);
+  color: var(--erreur);
+  font-size: 12px;
+  font-weight: var(--gras-moyen);
+  cursor: pointer;
+  transition: background var(--transition-rapide);
+}
+
+.questionnaires-modeles-reessayer:hover { background: var(--erreur-fond); }
+
+.questionnaires-modeles-vide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  padding: var(--espace-lg);
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+.questionnaires-modeles-liste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.questionnaires-modeles-ligne {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--espace-md);
+  padding: var(--espace-sm) var(--espace-md);
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+  transition: border-color var(--transition-rapide), transform var(--transition-rapide),
+              box-shadow var(--transition-rapide);
+  animation: q-ligne-apparition 0.4s cubic-bezier(0.25, 0.8, 0.35, 1) both;
+}
+
+@keyframes q-ligne-apparition {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.questionnaires-modeles-ligne:hover {
+  border-color: var(--bordure-forte);
+  transform: translateY(-1px);
+  box-shadow: var(--ombre-xs);
+}
+
+.questionnaires-modeles-ligne-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--accent);
+  transition: transform var(--transition-rapide);
+}
+
+.questionnaires-modeles-ligne:hover .questionnaires-modeles-ligne-icone { transform: scale(1.12); }
+
+.questionnaires-modeles-ligne-icone-svg { width: 100%; height: 100%; }
+
+.questionnaires-modeles-ligne-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.questionnaires-modeles-ligne-nom {
+  color: var(--texte-principal);
+  font-size: var(--texte-sm);
+  font-weight: var(--gras-semi);
+  overflow-wrap: anywhere;
+}
+
+.questionnaires-modeles-ligne-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--texte-secondaire);
+  font-size: 12px;
+}
+
+.questionnaires-modeles-ligne-meta {
+  color: var(--texte-tertiaire);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.questionnaires-modeles-utiliser {
+  padding: 6px var(--espace-md);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--rayon-md);
+  color: var(--accent-texte);
+  font-size: 12px;
+  font-weight: var(--gras-moyen);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity var(--transition-rapide), box-shadow var(--transition-rapide),
+              transform var(--transition-rapide);
+}
+
+.questionnaires-modeles-utiliser:hover:not(:disabled) {
+  opacity: 0.9;
+  box-shadow: 0 0 14px -3px var(--accent-lueur);
+}
+
+.questionnaires-modeles-utiliser:active:not(:disabled) { transform: scale(0.97); }
+.questionnaires-modeles-utiliser:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.questionnaires-modeles-squelette { width: 100%; }
+
+.questionnaires-modeles-squelette-contenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-sm);
+}
+
+/* ==============================
+   8. PANNEAU DE STATISTIQUES (bas gauche)
+============================== */
+
+.questionnaires-panneau-bas {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--espace-lg);
+  padding: var(--espace-md) var(--espace-lg);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-xs);
+  animation: q-panneau-apparition 0.5s ease both;
+  overflow-x: auto;
+}
+
+.questionnaires-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  flex: 1;
+  min-width: fit-content;
+  transition: transform var(--transition);
+}
+
+.questionnaires-stat:hover { transform: translateY(-1px); }
+
+.questionnaires-stat + .questionnaires-stat {
+  padding-left: var(--espace-lg);
+  border-left: 1px solid var(--bordure);
+}
+
+.questionnaires-stat-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--texte-tertiaire);
+  transition: color var(--transition);
+}
+
+.questionnaires-stat:hover .questionnaires-stat-icone { color: var(--accent); }
+
+.questionnaires-stat-icone-svg { width: 100%; height: 100%; stroke-width: 1.5; }
+
+.questionnaires-stat-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.questionnaires-stat-valeur {
+  font-size: var(--texte-lg);
+  font-weight: var(--gras-semi);
+  color: var(--texte-principal);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.questionnaires-stat-titre {
+  font-size: 12px;
+  color: var(--texte-tertiaire);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.questionnaires-stat-souslabel {
+  font-size: 10px;
+  color: var(--texte-tertiaire);
+}
+
+/* --- Jauge circulaire (part de questionnaires actifs) --- */
+
+.questionnaires-stat--jauge { gap: var(--espace-sm); }
+
+.questionnaires-jauge {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.questionnaires-jauge-svg { width: 100%; height: 100%; }
+.questionnaires-jauge-fond { stroke: var(--bordure-forte); }
+
+.questionnaires-jauge-progression {
+  stroke: var(--accent);
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.questionnaires-jauge-valeur {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 9px;
+  font-weight: var(--gras-semi);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==============================
+   9. PANNEAU DE DETAIL (droite)
+============================== */
+
+/* --- Etat vide : aucun questionnaire choisi --- */
+
+.questionnaires-detail-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espace-sm);
+  min-height: 200px;
+  padding: var(--espace-lg);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+  animation: q-panneau-apparition 0.4s ease both;
+}
+
+.questionnaires-detail-vide-icone { width: 64px; height: 64px; color: var(--texte-tertiaire); }
+.questionnaires-detail-vide-icone-svg { width: 100%; height: 100%; }
+
+/* Anneau de l'icone (classe donnee par icones-questionnaires.tsx) */
+.qdet-vide-anneau {
+  fill: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: q-vide-ping 1.8s ease-out infinite;
+}
+
+@keyframes q-vide-ping {
+  0%   { transform: scale(1); opacity: 0.6; }
+  75%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* --- Carte de detail --- */
+
+.questionnaires-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  flex-shrink: 0;
+  padding: var(--espace-md);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-xs);
+  animation: q-panneau-apparition 0.4s ease both;
+}
+
+.questionnaires-detail--erreur {
+  align-items: flex-start;
+  background: var(--erreur-fond);
+  border-color: var(--erreur-bordure);
+  color: var(--erreur);
+  font-size: var(--texte-sm);
+}
+
+.questionnaires-detail-reessayer {
+  padding: 4px var(--espace-md);
+  background: transparent;
+  border: 1px solid var(--erreur-bordure);
+  border-radius: var(--rayon-rond);
+  color: var(--erreur);
+  font-size: 12px;
+  font-weight: var(--gras-moyen);
+  cursor: pointer;
+  transition: background var(--transition-rapide);
+}
+
+.questionnaires-detail-reessayer:hover { background: var(--erreur-fond); }
+
+.questionnaires-detail-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.questionnaires-detail-libelle {
+  font-size: 11px;
+  font-weight: var(--gras-semi);
+  letter-spacing: 0.08em;
+  color: var(--texte-tertiaire);
+}
+
+/* --- Menu "..." (modifier, dupliquer) --- */
+
+.questionnaires-detail-menu-conteneur { position: relative; }
+
+.questionnaires-detail-menu {
+  padding: var(--espace-xxs) var(--espace-xs);
+  background: transparent;
+  border: none;
+  border-radius: var(--rayon-sm);
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-md);
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--transition-rapide), background var(--transition-rapide);
+}
+
+.questionnaires-detail-menu:hover {
+  background: var(--fond-survol);
+  color: var(--texte-principal);
+}
+
+.questionnaires-detail-menu-liste {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  padding: var(--espace-xxs);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+  box-shadow: var(--ombre-md);
+  animation: q-onglet-apparition 0.15s ease both;
+}
+
+.questionnaires-detail-menu-option {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  padding: var(--espace-sm);
+  background: transparent;
+  border: none;
+  border-radius: var(--rayon-sm);
+  color: var(--texte-principal);
+  font-size: var(--texte-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-rapide);
+}
+
+.questionnaires-detail-menu-option:hover:not(:disabled) { background: var(--fond-survol); }
+.questionnaires-detail-menu-option:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.questionnaires-detail-menu-icone-svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--texte-secondaire);
+}
+
+/* --- Identite --- */
+
+.questionnaires-detail-identite {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-md);
+}
+
+.questionnaires-detail-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border: 2px solid var(--accent);
+  border-radius: var(--rayon-rond);
+  color: var(--accent);
+  font-size: var(--texte-md);
+  font-weight: var(--gras-semi);
+}
+
+.questionnaires-detail-badge--actif { border-color: var(--accent); color: var(--accent); }
+.questionnaires-detail-badge--brouillon { border-color: var(--attention); color: var(--attention); }
+.questionnaires-detail-badge--inactif { border-color: var(--bordure-forte); color: var(--texte-secondaire); }
+
+.questionnaires-detail-identite-texte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-xxs);
+  min-width: 0;
+}
+
+.questionnaires-detail-identite-ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  flex-wrap: wrap;
+}
+
+.questionnaires-detail-nom {
+  font-size: var(--texte-lg);
+  font-weight: var(--gras-semi);
+  color: var(--texte-principal);
+  overflow-wrap: anywhere;
+}
+
+.questionnaires-detail-statut {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--espace-sm);
+  border: 1px solid var(--bordure-forte);
+  border-radius: var(--rayon-rond);
+  background: var(--fond-eleve);
+  color: var(--texte-secondaire);
+  font-size: 11px;
+  font-weight: var(--gras-semi);
+  white-space: nowrap;
+}
+
+.questionnaires-detail-statut--actif {
+  background: var(--succes-fond);
+  border-color: var(--succes-bordure);
+  color: var(--succes);
+}
+
+.questionnaires-detail-statut--brouillon,
+.questionnaires-detail-statut--alerte {
+  background: var(--attention-fond);
+  border-color: var(--attention-bordure);
+  color: var(--attention);
+}
+
+.questionnaires-detail-statut--inactif {
+  background: var(--fond-eleve);
+  border-color: var(--bordure-forte);
+  color: var(--texte-secondaire);
+}
+
+.questionnaires-detail-alerte-icone-svg { width: 11px; height: 11px; }
+
+.questionnaires-detail-meta {
+  color: var(--texte-secondaire);
+  font-size: 12px;
+}
+
+/* --- Onglets --- */
+
+.questionnaires-detail-onglets {
+  display: flex;
+  gap: var(--espace-md);
+  border-bottom: 1px solid var(--bordure);
+  overflow-x: auto;
+}
+
+.questionnaires-detail-onglet {
+  flex-shrink: 0;
+  padding: var(--espace-sm) var(--espace-xxs);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  cursor: pointer;
+  transition: color var(--transition-rapide), border-color var(--transition-rapide);
+}
+
+.questionnaires-detail-onglet:hover { color: var(--texte-principal); }
+
+.questionnaires-detail-onglet--actif {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+  font-weight: var(--gras-semi);
+}
+
+/* --- Onglet Apercu --- */
+
+.questionnaires-detail-grille {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espace-sm);
+  animation: q-onglet-apparition 0.3s ease both;
+}
+
+@keyframes q-onglet-apparition {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.questionnaires-detail-carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-xs);
+  padding: var(--espace-sm) var(--espace-md);
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-md);
+  transition: border-color var(--transition-rapide), transform var(--transition-rapide);
+}
+
+.questionnaires-detail-carte:hover { border-color: var(--bordure-forte); transform: translateY(-1px); }
+
+.questionnaires-detail-carte--mini {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espace-sm);
+}
+
+.questionnaires-detail-carte-icone {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.questionnaires-detail-carte-icone-svg { width: 100%; height: 100%; }
+
+.questionnaires-detail-carte-titre {
+  color: var(--texte-tertiaire);
+  font-size: 12px;
+}
+
+.questionnaires-detail-carte-valeur {
+  color: var(--texte-principal);
+  font-size: var(--texte-lg);
+  font-weight: var(--gras-semi);
+  font-variant-numeric: tabular-nums;
+}
+
+.questionnaires-detail-barre {
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  background: var(--bordure-forte);
+  border-radius: var(--rayon-rond);
+}
+
+.questionnaires-detail-barre-remplissage {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--rayon-rond);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.questionnaires-detail-carte--taux { position: relative; overflow: hidden; }
+
+.questionnaires-detail-vague {
+  width: 100%;
+  height: 28px;
+  margin-top: auto;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.questionnaires-detail-vague-svg { display: block; width: 100%; height: 100%; }
+
+/* --- Onglet Informations --- */
+
+.questionnaires-detail-infos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-sm);
+  animation: q-onglet-apparition 0.3s ease both;
+}
+
+.questionnaires-detail-info-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-sm);
+  padding: var(--espace-xs) 0;
+  border-bottom: 1px solid var(--bordure);
+}
+
+.questionnaires-detail-info-ligne:last-child { border-bottom: none; }
+
+.questionnaires-detail-info-cle {
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+}
+
+.questionnaires-detail-info-valeur {
+  color: var(--texte-principal);
+  font-size: var(--texte-sm);
+  font-weight: var(--gras-moyen);
+  text-align: right;
+}
+
+/* --- Onglet Questions --- */
+
+.questionnaires-detail-questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-xs);
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  animation: q-onglet-apparition 0.3s ease both;
+}
+
+.questionnaires-detail-questions-vide {
+  padding: var(--espace-lg) 0;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+.questionnaires-detail-question {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  padding: var(--espace-sm);
+  background: var(--fond-eleve);
+  border-radius: var(--rayon-md);
+  transition: background var(--transition-rapide);
+}
+
+.questionnaires-detail-question:hover { background: var(--fond-survol); }
+
+.questionnaires-detail-question-numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  padding: 0 var(--espace-xs);
+  background: var(--fond-actif);
+  border-radius: var(--rayon-xs);
+  color: var(--texte-secondaire);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.questionnaires-detail-question-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.questionnaires-detail-question-icone-svg { width: 100%; height: 100%; }
+
+.questionnaires-detail-question-libelle {
+  flex: 1;
+  min-width: 0;
+  color: var(--texte-principal);
+  font-size: var(--texte-sm);
+  overflow-wrap: anywhere;
+}
+
+.questionnaires-detail-question-obligatoire {
+  flex-shrink: 0;
+  padding: 1px var(--espace-sm);
+  border: 1px solid var(--bordure-forte);
+  border-radius: var(--rayon-rond);
+  color: var(--texte-secondaire);
+  font-size: 10px;
+  font-weight: var(--gras-semi);
+  white-space: nowrap;
+}
+
+/* ==============================
+   10. HISTOGRAMME DES TYPES DE QUESTIONS
+   (a la place du graphe des effectifs de Classes)
+============================== */
+
+.questionnaires-histo {
+  flex-shrink: 0;
+  padding: var(--espace-md);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-lg);
+  box-shadow: var(--ombre-xs);
+  animation: q-panneau-apparition 0.45s ease both;
+}
+
+.questionnaires-histo-entete {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--espace-md);
+}
+
+.questionnaires-histo-titre {
+  color: var(--texte-tertiaire);
+  font-size: 11px;
+  font-weight: var(--gras-semi);
+  letter-spacing: 0.08em;
+}
+
+.questionnaires-histo-soustitre {
+  color: var(--texte-secondaire);
+  font-size: 12px;
+}
+
+.questionnaires-histo-liste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.questionnaires-histo-ligne {
+  display: grid;
+  grid-template-columns: minmax(96px, 38%) 1fr auto;
+  align-items: center;
+  gap: var(--espace-sm);
+}
+
+.questionnaires-histo-type {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  min-width: 0;
+  color: var(--texte-secondaire);
+}
+
+.questionnaires-histo-icone-svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.questionnaires-histo-nom {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.questionnaires-histo-piste {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  background: var(--bordure-forte);
+  border-radius: var(--rayon-rond);
+}
+
+.questionnaires-histo-barre {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--rayon-rond);
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.questionnaires-histo-valeur {
+  min-width: 18px;
+  color: var(--texte-principal);
+  font-size: 12px;
+  font-weight: var(--gras-semi);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.questionnaires-histo-squelette {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-sm);
+}
+
+.questionnaires-histo-etat {
+  padding: var(--espace-lg) 0;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+/* ==============================
+   11. SQUELETTES DE CHARGEMENT
+============================== */
+
+.questionnaires-squelette-ligne {
+  background: linear-gradient(90deg, var(--fond-eleve) 25%, var(--fond-survol) 50%, var(--fond-eleve) 75%);
+  background-size: 200% 100%;
+  border-radius: var(--rayon-sm);
+  animation: q-squelette-onde 1.4s ease-in-out infinite;
+}
+
+@keyframes q-squelette-onde {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.questionnaires-squelette-cercle {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, var(--fond-eleve) 25%, var(--fond-survol) 50%, var(--fond-eleve) 75%);
+  background-size: 200% 100%;
+  border-radius: 50%;
+  animation: q-squelette-onde 1.4s ease-in-out infinite;
+}
+
+.questionnaires-squelette-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-xs);
+}
+
+.questionnaires-squelette-carte {
+  height: 64px;
+  background: linear-gradient(90deg, var(--fond-eleve) 25%, var(--fond-survol) 50%, var(--fond-eleve) 75%);
+  background-size: 200% 100%;
+  border-radius: var(--rayon-md);
+  animation: q-squelette-onde 1.4s ease-in-out infinite;
+}
+
+/* --- Squelette du graphe principal --- */
+
+.questionnaires-squelette-graphe-principal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espace-xl);
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+}
+
+.questionnaires-squelette-graphe-contenu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espace-sm);
+  width: 100%;
+}
+
+/* --- Squelette du panneau de statistiques --- */
+
+.questionnaires-squelette-panneau-bas { gap: var(--espace-lg); }
+
+.questionnaires-squelette-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  flex: 1;
+}
+
+/* --- Squelette du panneau de detail --- */
+
+.questionnaires-detail--squelette { gap: var(--espace-md); }
+
+.questionnaires-detail-squelette-contenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+}
+
+/* ==============================
+   12. RESPONSIVE ET MOUVEMENT REDUIT
+============================== */
+
+@media (max-width: 1024px) {
+  .questionnaires-corps { grid-template-columns: 1fr 300px; }
+}
+
+@media (max-width: 900px) {
+  .questionnaires { height: auto; }
+
+  .questionnaires-corps {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .questionnaires-gauche { height: auto; }
+
+  /* Hauteur fixe : le graphe a besoin d'une hauteur precise quand la page n'en impose pas */
+  .questionnaires-graphe {
+    flex: none;
+    height: 380px;
+  }
+
+  .questionnaires-droite { overflow-y: visible; }
+}
+
+@media (max-width: 640px) {
+  .questionnaires-entete { flex-wrap: wrap; }
+
+  .questionnaires-panneau-bas {
+    flex-wrap: wrap;
+    gap: var(--espace-md);
+  }
+
+  .questionnaires-stat { flex: 1 1 40%; }
+
+  .questionnaires-stat + .questionnaires-stat {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .questionnaires-detail-grille { grid-template-columns: 1fr; }
+  .questionnaires-detail-onglets { gap: var(--espace-sm); }
+
+  .questionnaires-modeles { padding: var(--espace-md); }
+
+  .questionnaires-modeles-ligne {
+    grid-template-columns: auto 1fr;
+    row-gap: var(--espace-xs);
+  }
+
+  .questionnaires-modeles-utiliser {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .questionnaires-graphe-actions { left: var(--espace-sm); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .questionnaires,
+  .questionnaires *,
+  .questionnaires *::before,
+  .questionnaires *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

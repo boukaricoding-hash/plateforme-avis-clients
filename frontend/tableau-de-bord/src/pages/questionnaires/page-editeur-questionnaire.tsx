@@ -1,27 +1,57 @@
 import { useEffect } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { IconeChevronGauche, IconeEnregistrer } from '../../composants-avis/icones-avis'
+import { ApercuTelephone } from '../../composants-questionnaires/apercu-telephone'
 import { CarteQuestion } from '../../composants-questionnaires/carte-question'
 import { ChampBilingue } from '../../composants-questionnaires/champ-bilingue'
-import { IconeAjouter } from '../../composants-questionnaires/icones-questionnaires'
+import { HistoriqueVersions } from '../../composants-questionnaires/historique-versions'
+import { IconeAjouter, IconeSupprimer } from '../../composants-questionnaires/icones-questionnaires'
+import { PanneauPublication } from '../../composants-questionnaires/panneau-publication'
+import type { ActionSuppression } from '../../hooks/utiliser-gestion-questionnaire'
+import { utiliserGestionQuestionnaire } from '../../hooks/utiliser-gestion-questionnaire'
 import {
   NOMBRE_MAX_QUESTIONS,
   utiliserEditeurQuestionnaire,
 } from '../../hooks/utiliser-editeur-questionnaire'
 import { utiliserLangue } from '../../hooks/utiliser-langue'
+import { utiliserParametres } from '../../hooks/utiliser-parametres'
+import { utiliserUtilisateur } from '../../hooks/utiliser-utilisateur'
+import { utiliserVersionsQuestionnaire } from '../../hooks/utiliser-versions-questionnaire'
+import type { ValeurContexteLangue } from '../../traductions/contexte-langue'
+import { versApercuPublic } from '../../utilitaires/vers-apercu-public'
 import '../../styles/editeur-questionnaire.css'
+import '../../styles/publication-questionnaire.css'
 
-// Ecran E10 : editeur d'un questionnaire (jour 19).
+// Ecran E10 : editeur d'un questionnaire (jour 19, complete au jour 20).
 // - /questionnaires/nouveau : questionnaire vide (une seule question d'etoiles au depart).
 // - /questionnaires/<id> : modification d'un questionnaire de l'organisation.
 // Seul le Responsable arrive ici ; les autres sont renvoyes a la liste.
-// La page n'appelle pas l'API : tout vient du hook utiliserEditeurQuestionnaire (brouillon,
-// themes, actions, enregistrement). Elle assemble le formulaire general, les cartes de question
-// et les messages, et garde ce qui est propre a l'ecran : le retour avec confirmation et
-// l'avertissement a la fermeture de l'onglet quand des modifications ne sont pas enregistrees.
+// La page n'appelle pas l'API : tout vient des hooks (brouillon, themes et enregistrement avec
+// utiliserEditeurQuestionnaire ; publication, dates, points de contact et suppression avec
+// utiliserGestionQuestionnaire ; historique avec utiliserVersionsQuestionnaire). Elle assemble le
+// formulaire general, les cartes de question, les messages, et garde ce qui est propre a l'ecran :
+// le retour avec confirmation et l'avertissement a la fermeture de l'onglet quand des modifications
+// ne sont pas enregistrees.
+// Jour 20, a droite (sous le formulaire sur petit ecran) : l'apercu telephone, alimente par le
+// brouillon a chaque frappe, avec le nom, le logo et la couleur de l'organisation.
+// Sous le formulaire, une fois le questionnaire cree (jamais en mode creation) : le panneau de
+// publication (publier ou activer, dates, points de contact) puis l'historique des versions.
+// Apres chaque enregistrement du contenu, la fiche est relue : une nouvelle version a pu etre creee,
+// et l'historique se relit tout seul quand la derniere version ou la date de modification change.
+// Bouton Supprimer (questionnaire sans aucun avis seulement, suppression douce) : une confirmation
+// du navigateur indique combien de points de contact lui seront retires ; si le serveur refuse
+// parce que des avis existent, un message propose de le desactiver. Apres une suppression, la page
+// revient a la liste avec { questionnaireSupprime: true } dans l'etat de navigation.
 // Apres la CREATION, la page passe sur /questionnaires/<id> (sinon un deuxieme enregistrement
 // creerait un autre questionnaire) et le message "Questionnaire cree." suit dans l'etat de navigation.
-// Le hook ne relit pas la fiche si l'id change : l'ecran est recree avec key a chaque nouvel id.
+// Les hooks ne relisent rien si l'id change : l'ecran est recree avec key a chaque nouvel id.
+
+const S = 'questionnaires.editeur.suppression.'
+
+type Traduire = ValeurContexteLangue['t']
+
+// Point de contact montre dans l'apercu : "Table 12", comme sur le chevalet d'un vrai client
+const POINT_CONTACT_APERCU = { nom: '12', type: 'table' }
 
 type PropsEcranEditeur = {
   // null = nouveau questionnaire
@@ -30,9 +60,31 @@ type PropsEcranEditeur = {
   creeAvant: boolean
 }
 
+// Texte du message quand la suppression echoue ; null s'il n'y a pas d'erreur
+function texteErreurSuppression(t: Traduire, suppression: ActionSuppression): string | null {
+  const { erreur, nombreAvis } = suppression
+  if (erreur === null) {
+    return null
+  }
+  if (nombreAvis !== null) {
+    return t(`${S}erreurAvis`, { nombre: nombreAvis })
+  }
+  if (erreur.statut === 0) {
+    return t('commun.erreurReseau')
+  }
+  if (erreur.statut === 403) {
+    return t(`${S}erreurInterdit`)
+  }
+  if (erreur.statut === 404) {
+    return t(`${S}erreurIntrouvable`)
+  }
+  return t(`${S}erreurGenerique`)
+}
+
 function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
   const { t } = utiliserLangue()
   const navigate = useNavigate()
+  const { utilisateur } = utiliserUtilisateur()
   const {
     acces,
     mode,
@@ -47,6 +99,46 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
     enregistrement,
     actions,
   } = utiliserEditeurQuestionnaire(id)
+
+  // Publication, dates, points de contact et suppression (aucun appel tant que id vaut null)
+  const gestion = utiliserGestionQuestionnaire(id)
+  const ficheGestion = gestion.fiche
+
+  // L'historique des versions se relit quand la derniere version ou la date de modification change
+  const jeton =
+    ficheGestion !== null && ficheGestion.version !== null
+      ? `${ficheGestion.version.numero}|${ficheGestion.version.publie_le ?? ''}|${ficheGestion.modifie_le}`
+      : ''
+  const versions = utiliserVersionsQuestionnaire(id, jeton)
+
+  // Nom, logo et couleur de l'organisation pour l'apercu (les parametres sont lus pour le Responsable)
+  const { parametres } = utiliserParametres()
+  const organisationUtilisateur = utilisateur !== null ? utilisateur.organisation : null
+  const nomOrganisation =
+    parametres !== null
+      ? parametres.nom
+      : organisationUtilisateur !== null
+        ? organisationUtilisateur.nom
+        : ''
+  const logoOrganisation =
+    parametres !== null
+      ? parametres.logo_url
+      : organisationUtilisateur !== null
+        ? organisationUtilisateur.logo_url
+        : null
+  const couleurOrganisation = parametres !== null ? parametres.couleur_principale : null
+
+  // Le questionnaire de l'apercu : le brouillon de l'editeur, tel que le verrait le client
+  const donneesApercu =
+    brouillon === null
+      ? null
+      : versApercuPublic(brouillon, {
+          organisationNom: nomOrganisation,
+          logoUrl: logoOrganisation,
+          couleurPrincipale: couleurOrganisation,
+          pointContactNom: POINT_CONTACT_APERCU.nom,
+          pointContactType: POINT_CONTACT_APERCU.type,
+        })
 
   // Avertit avant la fermeture de l'onglet quand des modifications ne sont pas enregistrees
   useEffect(() => {
@@ -76,11 +168,37 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
 
   async function gererEnregistrement(): Promise<void> {
     const questionnaireId = await enregistrement.enregistrer()
-    if (questionnaireId !== null && id === null) {
+    if (questionnaireId === null) {
+      return
+    }
+    if (id === null) {
       void navigate(`/questionnaires/${questionnaireId}`, {
         replace: true,
         state: { questionnaireCree: true },
       })
+      return
+    }
+    // Une nouvelle version a pu etre creee : on relit la fiche (et, avec elle, l'historique)
+    gestion.recharger()
+  }
+
+  async function gererSuppression(): Promise<void> {
+    if (ficheGestion === null) {
+      return
+    }
+    const nombrePoints = ficheGestion.points_contact.length
+    let question = t(`${S}confirmer`)
+    if (nombrePoints === 1) {
+      question = t(`${S}confirmerPointUn`)
+    } else if (nombrePoints > 1) {
+      question = t(`${S}confirmerPointsMultiple`, { nombre: nombrePoints })
+    }
+    if (!window.confirm(question)) {
+      return
+    }
+    const supprime = await gestion.suppression.supprimer()
+    if (supprime) {
+      void navigate('/questionnaires', { replace: true, state: { questionnaireSupprime: true } })
     }
   }
 
@@ -101,7 +219,7 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
     )
   }
 
-  if (erreurChargement !== null || brouillon === null) {
+  if (erreurChargement !== null || brouillon === null || donneesApercu === null) {
     const introuvable = erreurChargement !== null && erreurChargement.statut === 404
     const messageChargement = introuvable
       ? t('questionnaires.editeur.introuvable')
@@ -128,6 +246,7 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
   const limiteAtteinte = nombreQuestions >= NOMBRE_MAX_QUESTIONS
   const erreur = enregistrement.erreur
   const titreInvalide = erreur !== null && erreur.cle === 'questionnaires.editeur.erreurs.titreVide'
+  const erreurSuppression = texteErreurSuppression(t, gestion.suppression)
 
   // Message de reussite : celui du dernier enregistrement, ou celui de la creation juste avant
   const reussite = enregistrement.reussite
@@ -147,7 +266,7 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
   }
 
   return (
-    <div className="editeur-questionnaire">
+    <div className="editeur-questionnaire editeur-questionnaire--avec-apercu">
       <div className="editeur-questionnaire-entete">
         {boutonRetour}
         <div className="editeur-questionnaire-titres">
@@ -167,6 +286,17 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
             </span>
           )}
         </div>
+        {id !== null && (
+          <button
+            type="button"
+            className="editeur-questionnaire-supprimer"
+            disabled={ficheGestion === null || gestion.suppression.enCours || enregistrement.enCours}
+            onClick={() => void gererSuppression()}
+          >
+            <IconeSupprimer />
+            <span>{gestion.suppression.enCours ? t(`${S}enCours`) : t(`${S}supprimer`)}</span>
+          </button>
+        )}
         <button
           type="button"
           className="editeur-questionnaire-enregistrer"
@@ -187,94 +317,110 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
           {t(erreur.cle, erreur.valeurs)}
         </p>
       )}
+      {erreurSuppression !== null && (
+        <p className="editeur-questionnaire-message editeur-questionnaire-message--erreur" role="alert">
+          {erreurSuppression}
+        </p>
+      )}
       {messageReussite !== null && (
         <p className="editeur-questionnaire-message editeur-questionnaire-message--succes" role="status">
           {messageReussite}
         </p>
       )}
 
-      <section className="editeur-questionnaire-section">
-        <h2 className="editeur-questionnaire-section-titre">
-          {t('questionnaires.editeur.general.titre')}
-        </h2>
-        <p className="editeur-questionnaire-section-aide">
-          {t('questionnaires.editeur.general.aide')}
-        </p>
+      <div className="editeur-questionnaire-disposition">
+        <div className="editeur-questionnaire-colonne">
+          <section className="editeur-questionnaire-section">
+            <h2 className="editeur-questionnaire-section-titre">
+              {t('questionnaires.editeur.general.titre')}
+            </h2>
+            <p className="editeur-questionnaire-section-aide">
+              {t('questionnaires.editeur.general.aide')}
+            </p>
 
-        <ChampBilingue
-          libelle={t('questionnaires.editeur.general.titreQuestionnaire')}
-          valeur={brouillon.titre}
-          onChange={(langue, valeur) => actions.modifierGeneral('titre', langue, valeur)}
-          invalide={titreInvalide}
-        />
-        <ChampBilingue
-          libelle={t('questionnaires.editeur.general.messageAccueil')}
-          valeur={brouillon.messageAccueil}
-          onChange={(langue, valeur) => actions.modifierGeneral('messageAccueil', langue, valeur)}
-          multiligne
-        />
-        <ChampBilingue
-          libelle={t('questionnaires.editeur.general.messageRemerciement')}
-          valeur={brouillon.messageRemerciement}
-          onChange={(langue, valeur) =>
-            actions.modifierGeneral('messageRemerciement', langue, valeur)
-          }
-          multiligne
-        />
+            <ChampBilingue
+              libelle={t('questionnaires.editeur.general.titreQuestionnaire')}
+              valeur={brouillon.titre}
+              onChange={(langue, valeur) => actions.modifierGeneral('titre', langue, valeur)}
+              invalide={titreInvalide}
+            />
+            <ChampBilingue
+              libelle={t('questionnaires.editeur.general.messageAccueil')}
+              valeur={brouillon.messageAccueil}
+              onChange={(langue, valeur) => actions.modifierGeneral('messageAccueil', langue, valeur)}
+              multiligne
+            />
+            <ChampBilingue
+              libelle={t('questionnaires.editeur.general.messageRemerciement')}
+              valeur={brouillon.messageRemerciement}
+              onChange={(langue, valeur) =>
+                actions.modifierGeneral('messageRemerciement', langue, valeur)
+              }
+              multiligne
+            />
 
-        <div className="editeur-questionnaire-champ">
-          <label className="editeur-questionnaire-etiquette" htmlFor="editeur-langue-defaut">
-            {t('questionnaires.editeur.general.langueDefaut')}
-          </label>
-          <select
-            id="editeur-langue-defaut"
-            className="editeur-questionnaire-select"
-            value={brouillon.langueDefaut}
-            onChange={(e) => actions.changerLangueDefaut(e.target.value === 'en' ? 'en' : 'fr')}
-          >
-            <option value="fr">{t('questionnaires.page.detail.langues.fr')}</option>
-            <option value="en">{t('questionnaires.page.detail.langues.en')}</option>
-          </select>
+            <div className="editeur-questionnaire-champ">
+              <label className="editeur-questionnaire-etiquette" htmlFor="editeur-langue-defaut">
+                {t('questionnaires.editeur.general.langueDefaut')}
+              </label>
+              <select
+                id="editeur-langue-defaut"
+                className="editeur-questionnaire-select"
+                value={brouillon.langueDefaut}
+                onChange={(e) => actions.changerLangueDefaut(e.target.value === 'en' ? 'en' : 'fr')}
+              >
+                <option value="fr">{t('questionnaires.page.detail.langues.fr')}</option>
+                <option value="en">{t('questionnaires.page.detail.langues.en')}</option>
+              </select>
+            </div>
+          </section>
+
+          <section className="editeur-questionnaire-section">
+            <h2 className="editeur-questionnaire-section-titre">
+              {t('questionnaires.editeur.questions.titre', { nombre: nombreQuestions })}
+            </h2>
+
+            {nombreQuestions === 0 ? (
+              <p className="editeur-questionnaire-vide">{t('questionnaires.editeur.questions.aucune')}</p>
+            ) : (
+              <div className="editeur-questionnaire-questions">
+                {brouillon.questions.map((question, indice) => (
+                  <CarteQuestion
+                    key={question.cle}
+                    question={question}
+                    indice={indice}
+                    total={nombreQuestions}
+                    limiteAtteinte={limiteAtteinte}
+                    themes={themes}
+                    erreurThemes={erreurThemes}
+                    actions={actions}
+                  />
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="editeur-questionnaire-ajouter"
+              disabled={limiteAtteinte}
+              onClick={actions.ajouterQuestion}
+            >
+              <IconeAjouter />
+              <span>{t('questionnaires.editeur.questions.ajouter')}</span>
+            </button>
+            {limiteAtteinte && (
+              <p className="editeur-questionnaire-limite">{t('questionnaires.editeur.questions.limite')}</p>
+            )}
+          </section>
+
+          {id !== null && <PanneauPublication gestion={gestion} nonEnregistre={nonEnregistre} />}
+          {id !== null && <HistoriqueVersions resultat={versions} />}
         </div>
-      </section>
 
-      <section className="editeur-questionnaire-section">
-        <h2 className="editeur-questionnaire-section-titre">
-          {t('questionnaires.editeur.questions.titre', { nombre: nombreQuestions })}
-        </h2>
-
-        {nombreQuestions === 0 ? (
-          <p className="editeur-questionnaire-vide">{t('questionnaires.editeur.questions.aucune')}</p>
-        ) : (
-          <div className="editeur-questionnaire-questions">
-            {brouillon.questions.map((question, indice) => (
-              <CarteQuestion
-                key={question.cle}
-                question={question}
-                indice={indice}
-                total={nombreQuestions}
-                limiteAtteinte={limiteAtteinte}
-                themes={themes}
-                erreurThemes={erreurThemes}
-                actions={actions}
-              />
-            ))}
-          </div>
-        )}
-
-        <button
-          type="button"
-          className="editeur-questionnaire-ajouter"
-          disabled={limiteAtteinte}
-          onClick={actions.ajouterQuestion}
-        >
-          <IconeAjouter />
-          <span>{t('questionnaires.editeur.questions.ajouter')}</span>
-        </button>
-        {limiteAtteinte && (
-          <p className="editeur-questionnaire-limite">{t('questionnaires.editeur.questions.limite')}</p>
-        )}
-      </section>
+        <div className="editeur-questionnaire-colonne editeur-questionnaire-colonne-apercu">
+          <ApercuTelephone donnees={donneesApercu} langue={brouillon.langueDefaut} />
+        </div>
+      </div>
     </div>
   )
 }

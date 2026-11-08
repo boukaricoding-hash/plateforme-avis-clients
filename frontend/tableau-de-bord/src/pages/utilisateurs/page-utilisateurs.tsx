@@ -1,8 +1,9 @@
 import { useId, useState } from 'react'
 import { Navigate } from 'react-router'
+import { CarteInvitation } from '../../composants-utilisateurs/carte-invitation'
+import { CarteUtilisateur } from '../../composants-utilisateurs/carte-utilisateur'
 import { FormulaireInvitation } from '../../composants-utilisateurs/formulaire-invitation'
 import { FormulaireModification } from '../../composants-utilisateurs/formulaire-modification'
-import { LigneUtilisateur } from '../../composants-utilisateurs/ligne-utilisateur'
 import { utiliserLangue } from '../../hooks/utiliser-langue'
 import {
   utiliserListeUtilisateurs,
@@ -12,11 +13,12 @@ import type { ErreurService } from '../../services/api'
 import type { InvitationEnAttente } from '../../types/utilisateurs-admin'
 
 // Ecran E13 : utilisateurs, roles et perimetres (jour 18), Responsable seulement.
-// - Liste des utilisateurs de l'organisation (actifs ou non) avec role, perimetre et statut ;
-// - invitation d'un collaborateur par e-mail (Responsable ou Gestionnaire avec ses sites) ;
-// - modification du role et des sites, activation et desactivation ;
-// - invitations en attente, avec un bouton "Renvoyer" (l'invitation est remplacee, l'ancien lien
-//   ne marche plus).
+// - Equipe en cartes "profil" (role, perimetre, derniere connexion, statut) ; la derniere carte,
+//   en pointilles, ouvre l'invitation d'un collaborateur par e-mail (Responsable ou Gestionnaire
+//   avec ses sites) ;
+// - modification du role et des sites, activation et desactivation (sur chaque carte) ;
+// - invitations en attente en cartes "fantomes", avec un bouton "Renvoyer" (l'invitation est
+//   remplacee, l'ancien lien ne marche plus).
 // Le Gestionnaire et l'administrateur DTS n'ont rien a gerer ici : ils sont renvoyes a l'accueil.
 // La page n'appelle pas l'API : tout vient de utiliserListeUtilisateurs.
 
@@ -48,8 +50,7 @@ function BlocEchec({ erreur, surReessayer }: PropsEchec) {
 // Ce que montre le panneau sous l'en-tete : rien, l'invitation ou la modification d'un utilisateur.
 type Panneau = { type: 'aucun' } | { type: 'invitation' } | { type: 'modification'; id: string }
 
-const CLASSE_BOUTON =
-  'min-h-11 rounded-md border border-bordure-champ px-3 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond disabled:cursor-not-allowed disabled:opacity-60'
+const CLASSE_GRILLE = 'grid gap-4 grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]'
 
 const CODES_INVITATION_CONNUS = [
   'SITES_INVALIDES',
@@ -58,19 +59,8 @@ const CODES_INVITATION_CONNUS = [
   'ADRESSE_INDISPONIBLE',
 ]
 
-// Date dans la langue choisie ; valeur invalide = tiret.
-function formaterDate(valeur: string, langue: string): string {
-  const date = new Date(valeur)
-  if (Number.isNaN(date.getTime())) {
-    return '—'
-  }
-  return new Intl.DateTimeFormat(langue === 'en' ? 'en-GB' : 'fr-FR', {
-    dateStyle: 'medium',
-  }).format(date)
-}
-
 export function PageUtilisateurs() {
-  const { t, langue } = utiliserLangue()
+  const { t } = utiliserLangue()
   const idTitreListe = useId()
   const idTitreInvitations = useId()
   const {
@@ -89,7 +79,7 @@ export function PageUtilisateurs() {
 
   const [panneau, setPanneau] = useState<Panneau>({ type: 'aucun' })
   // Vrai apres un echec dans le formulaire de modification : son message n'est pas repete
-  // au-dessus du tableau une fois le formulaire ferme.
+  // au-dessus des cartes une fois le formulaire ferme.
   const [masquerErreur, setMasquerErreur] = useState(false)
 
   // Le Gestionnaire et l'administrateur DTS n'ont rien a gerer ici.
@@ -97,8 +87,8 @@ export function PageUtilisateurs() {
     return <Navigate to="/" replace />
   }
 
-  // Les actions du tableau (activer, desactiver) font reapparaitre leurs propres erreurs.
-  const actionsTableau: ActionsUtilisateurs = {
+  // Les actions des cartes (activer, desactiver) font reapparaitre leurs propres erreurs.
+  const actionsCartes: ActionsUtilisateurs = {
     ...actions,
     changerStatut: async (id, actif) => {
       setMasquerErreur(false)
@@ -135,7 +125,7 @@ export function PageUtilisateurs() {
       ? (utilisateurs?.find((u) => u.id === panneau.id) ?? null)
       : null
 
-  // Message d'echec d'une action du tableau (activer, desactiver), hors formulaire de modification.
+  // Message d'echec d'une action des cartes (activer, desactiver), hors formulaire de modification.
   let messageAction: string | null = null
   if (panneau.type !== 'modification' && !masquerErreur && actions.erreur !== null) {
     if (actions.erreur.statut === 0) {
@@ -184,19 +174,10 @@ export function PageUtilisateurs() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-titre text-2xl font-bold text-texte">{t('utilisateurs.titre')}</h1>
-          <p className="mt-1 text-texte-secondaire">{t('utilisateurs.sousTitre')}</p>
-        </div>
-        <button
-          type="button"
-          onClick={ouvrirInvitation}
-          className="min-h-11 rounded-md bg-principale px-4 text-sm font-semibold text-texte-sur-principale transition-colors hover:bg-principale-fonce"
-        >
-          {t('utilisateurs.inviter')}
-        </button>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <header>
+        <h1 className="font-titre text-2xl font-bold text-texte">{t('utilisateurs.titre')}</h1>
+        <p className="mt-1 text-texte-secondaire">{t('utilisateurs.sousTitre')}</p>
       </header>
 
       {panneau.type === 'invitation' && (
@@ -228,11 +209,8 @@ export function PageUtilisateurs() {
       )}
 
       {utilisateurs !== null && (
-        <section
-          aria-labelledby={idTitreListe}
-          className="rounded-lg border border-bordure bg-surface p-5 shadow-doux"
-        >
-          <h2 id={idTitreListe} className="font-titre text-lg font-bold text-texte">
+        <section aria-labelledby={idTitreListe}>
+          <h2 id={idTitreListe} className="m-0 font-titre text-lg font-bold text-texte">
             {t('utilisateurs.liste.titre', { nombre: utilisateurs.length })}
           </h2>
 
@@ -245,52 +223,47 @@ export function PageUtilisateurs() {
             </p>
           )}
 
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[44rem] border-collapse text-left">
-              <thead>
-                <tr>
-                  <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                    {t('utilisateurs.colonnes.utilisateur')}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                    {t('utilisateurs.colonnes.role')}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                    {t('utilisateurs.colonnes.perimetre')}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                    {t('utilisateurs.colonnes.derniereConnexion')}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                    {t('utilisateurs.colonnes.statut')}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                    {t('utilisateurs.colonnes.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {utilisateurs.map((utilisateur) => (
-                  <LigneUtilisateur
-                    key={utilisateur.id}
-                    utilisateur={utilisateur}
-                    estMoi={utilisateur.id === moiId}
-                    actions={actionsTableau}
-                    surModifier={(u) => setPanneau({ type: 'modification', id: u.id })}
-                  />
-                ))}
-              </tbody>
-            </table>
+          <div className={`mt-3 ${CLASSE_GRILLE}`}>
+            {utilisateurs.map((utilisateur) => (
+              <CarteUtilisateur
+                key={utilisateur.id}
+                utilisateur={utilisateur}
+                estMoi={utilisateur.id === moiId}
+                actions={actionsCartes}
+                surModifier={(u) => setPanneau({ type: 'modification', id: u.id })}
+              />
+            ))}
+
+            <button
+              type="button"
+              onClick={ouvrirInvitation}
+              className="flex min-h-44 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-bordure-forte p-6 text-texte-secondaire transition-colors hover:border-principale hover:bg-surface hover:text-principale"
+            >
+              <span
+                aria-hidden="true"
+                className="flex size-14 items-center justify-center rounded-full bg-accent-fond text-principale"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </span>
+              <span className="text-sm font-semibold">{t('utilisateurs.inviter')}</span>
+            </button>
           </div>
         </section>
       )}
 
       {invitations !== null && (
-        <section
-          aria-labelledby={idTitreInvitations}
-          className="rounded-lg border border-bordure bg-surface p-5 shadow-doux"
-        >
-          <h2 id={idTitreInvitations} className="font-titre text-lg font-bold text-texte">
+        <section aria-labelledby={idTitreInvitations}>
+          <h2 id={idTitreInvitations} className="m-0 font-titre text-lg font-bold text-texte">
             {t('utilisateurs.invitations.titre', { nombre: invitations.length })}
           </h2>
 
@@ -308,67 +281,15 @@ export function PageUtilisateurs() {
               {t('utilisateurs.invitations.vide')}
             </p>
           ) : (
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[44rem] border-collapse text-left">
-                <thead>
-                  <tr>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                      {t('utilisateurs.invitations.email')}
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                      {t('utilisateurs.colonnes.role')}
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                      {t('utilisateurs.colonnes.perimetre')}
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                      {t('utilisateurs.invitations.invitePar')}
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                      {t('utilisateurs.invitations.expire')}
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold text-texte-secondaire">
-                      {t('utilisateurs.colonnes.actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invitations.map((enAttente) => (
-                    <tr key={enAttente.id} className="border-t border-bordure align-middle">
-                      <td className="break-all px-3 py-2 text-sm font-semibold text-texte">
-                        {enAttente.email}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-texte-secondaire">
-                        {t(`utilisateurs.roles.${enAttente.role}`)}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-texte-secondaire">
-                        {enAttente.role === 'RESPONSABLE'
-                          ? t('utilisateurs.liste.touteOrganisation')
-                          : enAttente.sites.length === 0
-                            ? t('utilisateurs.liste.aucunSite')
-                            : enAttente.sites.map((site) => site.nom).join(', ')}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-texte-secondaire">
-                        {enAttente.invite_par_nom ?? '—'}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-texte-secondaire">
-                        {formaterDate(enAttente.expire_le, langue)}
-                      </td>
-                      <td className="px-3 py-2 text-sm">
-                        <button
-                          type="button"
-                          disabled={invitation.enCours}
-                          aria-busy={invitation.enCours}
-                          onClick={() => void renvoyer(enAttente)}
-                          className={CLASSE_BOUTON}
-                        >
-                          {t('utilisateurs.invitations.renvoyer')}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className={`mt-3 ${CLASSE_GRILLE}`}>
+              {invitations.map((enAttente) => (
+                <CarteInvitation
+                  key={enAttente.id}
+                  enAttente={enAttente}
+                  enCours={invitation.enCours}
+                  surRenvoyer={(a) => void renvoyer(a)}
+                />
+              ))}
             </div>
           )}
         </section>

@@ -4,6 +4,7 @@ import type { ActionsSites } from '../hooks/utiliser-sites-points'
 import type { CorpsCreationSite, CorpsModificationSite, Site } from '../types/sites-points'
 
 // Formulaire de creation ou de modification d'un site (ecran E12, jour 17), Responsable seulement.
+// Design : pas de cadre, des champs avec un trait fin dessous (styles/sites.css, sites-formulaire).
 // - site = null : creation (seul le nom est obligatoire) ;
 // - site = un site : modification (seuls les champs changes sont envoyes ; un champ vide efface
 //   l'adresse, la ville ou le telephone).
@@ -49,10 +50,8 @@ function ChampSite({
   const idErreur = `${id}-erreur`
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-semibold text-texte">
-        {libelle}
-      </label>
+    <div className="sites-champ">
+      <label htmlFor={id}>{libelle}</label>
       <input
         id={id}
         type={type}
@@ -64,7 +63,6 @@ function ChampSite({
         aria-invalid={erreur !== null}
         aria-describedby={erreur !== null ? idErreur : undefined}
         onChange={(evenement) => surChangement(evenement.target.value)}
-        className="min-h-11 w-full rounded-md border border-bordure-champ bg-fond px-3 text-sm text-texte"
       />
       {erreur !== null && (
         <p id={idErreur} role="alert" className="m-0 text-xs text-erreur">
@@ -162,18 +160,15 @@ export function FormulaireSite({ site, actions, surFermer }: Proprietes) {
   }
 
   return (
-    <section
-      aria-labelledby={idTitre}
-      className="rounded-lg border border-bordure bg-surface p-5 shadow-doux"
-    >
-      <h2 id={idTitre} className="font-titre text-lg font-bold text-texte">
+    <section aria-labelledby={idTitre} className="sites-formulaire">
+      <h2 id={idTitre} className="sites-formulaire-titre">
         {site === null ? t('sites.formulaire.titreCreation') : t('sites.formulaire.titreModification')}
       </h2>
 
       <form
         onSubmit={(evenement) => void enregistrer(evenement)}
         noValidate
-        className="mt-4 flex flex-col gap-5"
+        className="sites-formulaire-corps"
       >
         <ChampSite
           id={idNom}
@@ -191,7 +186,7 @@ export function FormulaireSite({ site, actions, surFermer }: Proprietes) {
           longueurMax={LONGUEUR_ADRESSE}
           surChangement={setAdresse}
         />
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="sites-formulaire-paire">
           <ChampSite
             id={idVille}
             libelle={`${t('sites.formulaire.ville')} ${t('sites.formulaire.facultatif')}`}
@@ -209,12 +204,12 @@ export function FormulaireSite({ site, actions, surFermer }: Proprietes) {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="sites-formulaire-boutons">
           <button
             type="submit"
             disabled={actions.enCours || !modifie}
             aria-busy={actions.enCours}
-            className="min-h-11 rounded-md bg-principale px-4 text-sm font-semibold text-texte-sur-principale transition-colors hover:bg-principale-fonce disabled:cursor-not-allowed disabled:opacity-60"
+            className="sites-bouton sites-bouton--plein"
           >
             {actions.enCours
               ? t('sites.formulaire.enregistrement')
@@ -226,7 +221,7 @@ export function FormulaireSite({ site, actions, surFermer }: Proprietes) {
             type="button"
             disabled={actions.enCours}
             onClick={surFermer}
-            className="min-h-11 rounded-md border border-bordure-champ px-4 text-sm font-semibold text-texte transition-colors hover:bg-accent-fond disabled:cursor-not-allowed disabled:opacity-60"
+            className="sites-bouton"
           >
             {t('sites.formulaire.annuler')}
           </button>

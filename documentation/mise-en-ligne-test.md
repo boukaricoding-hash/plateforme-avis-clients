@@ -39,7 +39,7 @@ Ouvrir un deuxième terminal avec le bouton `+` du panneau terminal. Mettre l'ad
 
 ```powershell
 cd C:\projets\plateforme-avis-clients
-$adresse = "expand-confidential-weekly-countries.trycloudflare.com"
+$adresse = "regards-habitat-societies-instances.trycloudflare.com"
 $env:PUBLIC_BASE_URL = "https://$adresse"
 ```
 
@@ -65,7 +65,7 @@ Réponse attendue : `{"statut":"ok"}`. Si ça ne répond pas, attendre 30 second
 
 ### 6. Ouvrir le tableau de bord
 
-Dans le navigateur : `https://expand-confidential-weekly-countries.trycloudflare.com/tableau-de-bord/` (avec l'adresse du tunnel). La page de connexion s'affiche. Le responsable se connecte, puis génère les QR codes depuis le tableau de bord : ils contiennent l'adresse du tunnel.
+Dans le navigateur : `https://regards-habitat-societies-instances.trycloudflare.com/tableau-de-bord/` (avec l'adresse du tunnel). La page de connexion s'affiche. Le responsable se connecte, puis génère les QR codes depuis le tableau de bord : ils contiennent l'adresse du tunnel.
 
 ### 7. Scanner
 

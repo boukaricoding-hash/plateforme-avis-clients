@@ -15,16 +15,6 @@ const LIGNES_PAR_DEFAUT = 8
 // Jamais moins de lignes que cela, meme si la zone est tres basse
 const LIGNES_MIN = 3
 
-function sAbonnerEcranFixe(rappel: () => void) {
-  const requete = window.matchMedia(REQUETE_ECRAN_FIXE)
-  requete.addEventListener('change', rappel)
-  return () => requete.removeEventListener('change', rappel)
-}
-
-function lireEcranFixe() {
-  return window.matchMedia(REQUETE_ECRAN_FIXE).matches
-}
-
 export type OptionsPages = {
   // Hauteur d'une ligne en pixels (ligne de tableau ou carte d'avis)
   hauteurLigne: number
@@ -34,6 +24,8 @@ export type OptionsPages = {
   lignesParDefaut?: number
   // Nombre minimum de lignes par page en ecran fixe (3 par defaut)
   lignesMin?: number
+  // Requete media de l'ecran fixe, a garder egale a celle du CSS de la page (par defaut : celle de l'accueil)
+  requeteEcranFixe?: string
 }
 
 export type ResultatPages<T> = {
@@ -52,9 +44,24 @@ export type ResultatPages<T> = {
 
 export function utiliserPages<T>(
   elements: readonly T[],
-  { hauteurLigne, hauteurEnTete = 0, lignesParDefaut = LIGNES_PAR_DEFAUT, lignesMin = LIGNES_MIN }: OptionsPages,
+  {
+    hauteurLigne,
+    hauteurEnTete = 0,
+    lignesParDefaut = LIGNES_PAR_DEFAUT,
+    lignesMin = LIGNES_MIN,
+    requeteEcranFixe = REQUETE_ECRAN_FIXE,
+  }: OptionsPages,
 ): ResultatPages<T> {
-  const ecranFixe = useSyncExternalStore(sAbonnerEcranFixe, lireEcranFixe)
+  const sAbonner = useCallback(
+    (rappel: () => void) => {
+      const requete = window.matchMedia(requeteEcranFixe)
+      requete.addEventListener('change', rappel)
+      return () => requete.removeEventListener('change', rappel)
+    },
+    [requeteEcranFixe],
+  )
+  const lire = useCallback(() => window.matchMedia(requeteEcranFixe).matches, [requeteEcranFixe])
+  const ecranFixe = useSyncExternalStore(sAbonner, lire)
   const [zone, setZone] = useState<HTMLDivElement | null>(null)
   const [hauteurZone, setHauteurZone] = useState(0)
   const [page, setPage] = useState(0)

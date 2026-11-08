@@ -1,0 +1,672 @@
+/* ------------------------------------------------------------
+   ECRAN E12 : SITES ET TABLES (design Premium)
+   Maquette : Premium.dc.html. Coins legerement arrondis (5 px pour les
+   boutons et les champs, 10 px pour les cartes), cartes que l'on fait
+   glisser de gauche a droite, titre en Georgia.
+   Les couleurs viennent de index.css (theme sombre et theme clair).
+   Les variables --s-* ci-dessous donnent a chaque theme le bon
+   fond pour les cartes et les pastilles : en theme clair, la
+   surface est blanche comme la page, on prend donc le gris doux.
+   Les marges de la page s'ajoutent a celles de <main> (24 px en
+   grand ecran, 16 px sur telephone) pour retrouver 48 px et 20 px.
+------------------------------------------------------------ */
+
+.sites-ecran {
+  --sites-marge: 4px;
+  --s-fond: var(--surface);
+  --s-survol: var(--surface-douce);
+  --s-rond: var(--accent-fond);
+  --s-champ: var(--accent-fond);
+  --s-texte-doux: color-mix(in srgb, var(--texte) 85%, var(--fond));
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1232px;
+  margin: 0 auto;
+  padding: 8px var(--sites-marge) 24px;
+}
+
+:root[data-theme='clair'] .sites-ecran {
+  --s-fond: var(--surface-douce);
+  --s-survol: var(--accent-fond);
+  --s-rond: var(--bordure-forte);
+  --s-champ: var(--surface);
+}
+
+/* Anneau de focus neutre (gris) au lieu du bleu du theme clair.
+   Il reste visible au clavier : contraste d'au moins 3 sur 1 dans les deux themes. */
+.sites-ecran :focus-visible {
+  outline: 2px solid var(--texte-secondaire);
+  outline-offset: 2px;
+}
+
+@media (min-width: 701px) {
+  .sites-ecran {
+    --sites-marge: 24px;
+    padding-top: 16px;
+    padding-bottom: 32px;
+  }
+}
+
+/* ---------- Boutons : coins arrondis de 5 px ---------- */
+
+.sites-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--s-fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sites-bouton:hover {
+  background: var(--s-survol);
+}
+
+.sites-bouton--plein {
+  background: var(--couleur-principale);
+  color: var(--texte-sur-principale);
+  font-weight: 700;
+}
+
+.sites-bouton--plein:hover {
+  background: var(--couleur-decor);
+}
+
+.sites-bouton--petit {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.sites-bouton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dans un panneau ou une carte, la pastille douce prend le gris des ronds */
+.sites-panneau .sites-bouton:not(.sites-bouton--plein),
+.sites-carte .sites-bouton:not(.sites-bouton--plein) {
+  background: var(--s-rond);
+}
+
+.sites-panneau .sites-bouton:not(.sites-bouton--plein):hover,
+.sites-carte .sites-bouton:not(.sites-bouton--plein):hover {
+  background: color-mix(in srgb, var(--s-rond) 85%, var(--texte));
+}
+
+.sites-groupe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ---------- Haut de page : choix du site et boutons ---------- */
+
+.sites-haut {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sites-choix {
+  position: relative;
+  width: 260px;
+  max-width: 100%;
+}
+
+.sites-choix select {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--s-fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sites-choix select:hover {
+  background: var(--s-survol);
+}
+
+.sites-ecran select option {
+  background: var(--fond);
+  color: var(--texte);
+}
+
+/* ---------- Titre, phrase et coordonnees ---------- */
+
+.sites-titre {
+  margin: 40px 0 10px;
+  font-family: var(--font-titre, Georgia, 'Iowan Old Style', 'Palatino Linotype', Charter, serif);
+  font-size: 38px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--texte);
+}
+
+.sites-sous {
+  margin: 0;
+  max-width: 520px;
+  color: var(--texte-secondaire);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.sites-infos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  margin-top: 18px;
+  color: var(--s-texte-doux);
+  font-size: 13px;
+}
+
+/* Statut : un point et un texte (le texte dit toujours l'etat, la couleur ne suffit pas) */
+.sites-statut {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--texte-secondaire);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sites-statut::before {
+  content: '';
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--texte-discret);
+}
+
+.sites-statut--actif {
+  color: var(--succes);
+}
+
+.sites-statut--actif::before {
+  background: var(--succes);
+}
+
+.sites-statut--revoque {
+  color: var(--erreur);
+}
+
+.sites-statut--revoque::before {
+  background: var(--erreur);
+}
+
+.sites-infos .sites-statut {
+  font-size: 12px;
+}
+
+/* ---------- Messages ---------- */
+
+.sites-message {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+.sites-message--succes {
+  min-height: 20px;
+  color: var(--succes);
+}
+
+.sites-message--succes:empty {
+  min-height: 0;
+  margin: 0;
+}
+
+.sites-message--erreur {
+  color: var(--erreur);
+}
+
+/* ---------- Barre d'actions : recherche et boutons ---------- */
+
+.sites-barre {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  margin: 36px 0 20px;
+}
+
+.sites-recherche {
+  position: relative;
+  flex: 1 1 300px;
+  max-width: 420px;
+}
+
+.sites-recherche svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texte-secondaire);
+  pointer-events: none;
+  width: 16px;
+  height: 16px;
+}
+
+.sites-recherche input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 0 16px 0 40px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--s-fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.sites-recherche input::placeholder {
+  color: var(--texte-secondaire);
+  opacity: 1;
+}
+
+.sites-recherche input:hover,
+.sites-recherche input:focus {
+  background: var(--s-survol);
+}
+
+/* ---------- Panneau : formulaires du site et creation en masse ---------- */
+
+.sites-panneau {
+  box-sizing: border-box;
+  max-width: 640px;
+  margin: -4px 0 24px;
+  padding: 22px;
+  border-radius: 10px;
+  background: var(--s-fond);
+}
+
+.sites-panneau-pied {
+  margin-top: 20px;
+}
+
+.sites-formulaire-titre {
+  margin: 0 0 8px;
+  font-family: var(--font-titre, Georgia, 'Iowan Old Style', 'Palatino Linotype', Charter, serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--texte);
+}
+
+.sites-formulaire-corps {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.sites-formulaire-paire {
+  display: grid;
+  gap: 16px;
+}
+
+.sites-formulaire-paire--serree {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sites-formulaire-boutons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .sites-formulaire-paire {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Un champ : libelle au dessus, saisie en pastille */
+.sites-champ {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sites-champ label {
+  padding: 0;
+  color: var(--texte-secondaire);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sites-champ input,
+.sites-champ select,
+.sites-carte-form input,
+.sites-carte-form select {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--s-champ);
+  box-shadow: inset 0 0 0 1px var(--bordure);
+  color: var(--texte);
+  font: inherit;
+  font-size: 14px;
+}
+
+.sites-champ input::placeholder,
+.sites-carte-form input::placeholder {
+  color: var(--texte-secondaire);
+  opacity: 1;
+}
+
+.sites-champ input[aria-invalid='true'],
+.sites-carte-form input[aria-invalid='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--erreur);
+}
+
+.sites-champ select:disabled,
+.sites-carte-form select:disabled {
+  opacity: 0.6;
+}
+
+/* Textes d'aide et apercu : du texte, pas de bloc */
+.sites-aide {
+  margin: 0;
+  padding: 0;
+  color: var(--texte-secondaire);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sites-formulaire-titre + .sites-aide {
+  padding: 0;
+}
+
+.sites-apercu {
+  margin: 0;
+  color: var(--s-texte-doux);
+  font-size: 13px;
+}
+
+/* ---------- Rangee de cartes qu'on fait glisser ---------- */
+
+.sites-points-titre {
+  margin: 0;
+}
+
+/* Les marges de la rangee debordent dans celles de la page : les cartes glissent bord a bord.
+   Les 6 px du haut et du bas laissent la place au soulevement d'une carte au survol. */
+.sites-piste {
+  display: flex;
+  gap: 16px;
+  margin: -6px calc(-1 * var(--sites-marge));
+  padding: 6px var(--sites-marge);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scroll-padding-left: var(--sites-marge);
+  scrollbar-width: none;
+}
+
+.sites-piste::-webkit-scrollbar {
+  display: none;
+}
+
+.sites-carte {
+  box-sizing: border-box;
+  flex: 0 0 230px;
+  height: 220px;
+  padding: 20px;
+  border-radius: 18px;
+  background: var(--s-fond);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  scroll-snap-align: start;
+  transition:
+    background 0.25s,
+    transform 0.25s;
+}
+
+.sites-carte:hover {
+  background: var(--s-survol);
+  transform: translateY(-4px);
+}
+
+.sites-carte-haut {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.sites-carte-num {
+  font-family: var(--font-titre, Georgia, 'Iowan Old Style', 'Palatino Linotype', Charter, serif);
+  font-size: 68px;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  color: var(--texte);
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Quatre chiffres ou plus : le numero reste dans la carte */
+.sites-carte-num--long {
+  font-size: 48px;
+}
+
+.sites-carte-nom {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--s-texte-doux);
+  overflow-wrap: anywhere;
+}
+
+.sites-carte--off .sites-carte-num {
+  color: var(--texte-discret);
+}
+
+.sites-carte--off .sites-carte-nom {
+  color: var(--texte-secondaire);
+}
+
+.sites-carte-bas {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.sites-carte-q {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--texte-secondaire);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Rond d'edition (crayon) */
+.sites-rond {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: var(--s-rond);
+  color: var(--texte);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.sites-rond:hover {
+  background: var(--texte);
+  color: var(--fond);
+}
+
+/* Carte en edition : le formulaire prend la place du numero */
+.sites-carte--edition {
+  justify-content: flex-start;
+  gap: 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sites-carte--edition:hover {
+  transform: none;
+}
+
+.sites-carte-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.sites-carte-form input,
+.sites-carte-form select {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.sites-carte-form-boutons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Pied : points de pagination et indication ---------- */
+
+.sites-pied {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.sites-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Un point : petit a l'oeil, mais la zone du doigt est agrandie par le ::before */
+.sites-dot {
+  position: relative;
+  display: block;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bordure-forte);
+  cursor: pointer;
+  transition:
+    width 0.25s,
+    background 0.25s;
+}
+
+.sites-dot::before {
+  content: '';
+  position: absolute;
+  inset: -12px -4px;
+}
+
+.sites-dot--actif {
+  width: 28px;
+  background: var(--texte);
+}
+
+.sites-indication {
+  color: var(--texte-secondaire);
+  font-size: 13px;
+}
+
+.sites-vide {
+  margin: 0;
+  color: var(--texte-secondaire);
+  font-size: 14px;
+}
+
+/* ---------- Telephone ---------- */
+
+@media (max-width: 700px) {
+  .sites-titre {
+    margin-top: 28px;
+    font-size: 30px;
+  }
+
+  .sites-barre {
+    margin-top: 28px;
+  }
+
+  .sites-panneau {
+    padding: 18px 16px;
+  }
+
+  .sites-carte {
+    flex-basis: 200px;
+    height: 210px;
+  }
+
+  .sites-carte-num {
+    font-size: 60px;
+  }
+
+  .sites-carte-num--long {
+    font-size: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sites-piste {
+    scroll-behavior: auto;
+  }
+
+  .sites-carte,
+  .sites-dot {
+    transition: none;
+  }
+
+  .sites-carte:hover {
+    transform: none;
+  }
+}

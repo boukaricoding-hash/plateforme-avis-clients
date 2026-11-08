@@ -16,6 +16,7 @@ import { EcranQuestion } from './pages/2-ecran-question/ecran-question'
 import { EcranCommentaire } from './pages/3-commentaire-coordonnees/ecran-commentaire'
 import { EcranRemerciement } from './pages/4-remerciement/ecran-remerciement'
 import { EcranErreur } from './pages/5-pages-erreur/ecran-erreur'
+import { PageApercu } from './pages/6-apercu/page-apercu'
 import { ErreurService, envoyerAvis } from './services/api-public'
 import type {
   CorpsAvis,
@@ -317,6 +318,7 @@ function App() {
   return (
     <Routes>
       <Route path="/q/:code" element={<RouteAvis />} />
+      <Route path="/apercu" element={<PageApercu />} />
       <Route path="*" element={<PageIntrouvable />} />
     </Routes>
   )

@@ -9,15 +9,18 @@ import {
   IconeAttention,
   IconeDupliquer,
   IconeModifier,
+  IconeSupprimer,
   IconeVideSelection,
   iconesParType,
 } from './icones-questionnaires'
 
 // Panneau de detail de la page Questionnaires (ecran E10, jour 19), en haut de la colonne de droite
 // (comme le panneau de detail de la page Classes) : onglets Apercu / Informations / Questions
-// et menu ... (modifier, dupliquer).
+// et menu ... (modifier, dupliquer, supprimer).
 // Ce composant n'appelle pas l'API : la page lui donne la fiche deja chargee, l'etat de chargement
 // et les actions. Le menu n'est affiche que pour le Responsable (le Gestionnaire est en lecture seule).
+// "Supprimer" ne fait que prevenir la page (onSupprimer) : la confirmation, l'appel a l'API et le
+// refus quand des avis existent sont geres par la page.
 // L'histogramme des types de questions est un composant a part, place sous ce panneau par la page.
 
 type Onglet = 'apercu' | 'informations' | 'questions'
@@ -90,14 +93,24 @@ type ProprietesContenu = {
   fiche: FicheQuestionnaire
   peutModifier: boolean
   duplicationEnCours: boolean
+  suppressionEnCours: boolean
   onModifier: (id: string) => void
   onDupliquer: (id: string) => void
+  onSupprimer: (id: string) => void
 }
 
 // Contenu du panneau pour une fiche chargee.
 // La page le recree (key = id de la fiche) a chaque changement de questionnaire :
 // l'onglet repart sur Apercu et le menu se ferme sans code supplementaire.
-function ContenuDetail({ fiche, peutModifier, duplicationEnCours, onModifier, onDupliquer }: ProprietesContenu) {
+function ContenuDetail({
+  fiche,
+  peutModifier,
+  duplicationEnCours,
+  suppressionEnCours,
+  onModifier,
+  onDupliquer,
+  onSupprimer,
+}: ProprietesContenu) {
   const { t, langue } = utiliserLangue()
   const [onglet, setOnglet] = useState<Onglet>('apercu')
   const [menuOuvert, setMenuOuvert] = useState(false)
@@ -194,6 +207,19 @@ function ContenuDetail({ fiche, peutModifier, duplicationEnCours, onModifier, on
                 >
                   <IconeDupliquer className="questionnaires-detail-menu-icone-svg" />
                   {duplicationEnCours ? t('questionnaires.duplication.enCours') : t('questionnaires.page.detail.dupliquer')}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="questionnaires-detail-menu-option questionnaires-detail-menu-option--danger"
+                  disabled={suppressionEnCours}
+                  onClick={() => {
+                    setMenuOuvert(false)
+                    onSupprimer(fiche.id)
+                  }}
+                >
+                  <IconeSupprimer className="questionnaires-detail-menu-icone-svg" />
+                  {suppressionEnCours ? t('questionnaires.editeur.suppression.enCours') : t('questionnaires.page.detail.supprimer')}
                 </button>
               </div>
             )}
@@ -358,12 +384,14 @@ type Proprietes = {
   chargement: boolean
   // Vrai si le chargement de la fiche a echoue.
   erreur: boolean
-  // Vrai pour le Responsable : le menu (modifier, dupliquer) est affiche.
+  // Vrai pour le Responsable : le menu (modifier, dupliquer, supprimer) est affiche.
   peutModifier: boolean
   duplicationEnCours: boolean
+  suppressionEnCours: boolean
   onReessayer: () => void
   onModifier: (id: string) => void
   onDupliquer: (id: string) => void
+  onSupprimer: (id: string) => void
 }
 
 export function DetailQuestionnaire({
@@ -373,9 +401,11 @@ export function DetailQuestionnaire({
   erreur,
   peutModifier,
   duplicationEnCours,
+  suppressionEnCours,
   onReessayer,
   onModifier,
   onDupliquer,
+  onSupprimer,
 }: Proprietes) {
   const { t } = utiliserLangue()
 
@@ -413,8 +443,10 @@ export function DetailQuestionnaire({
       fiche={fiche}
       peutModifier={peutModifier}
       duplicationEnCours={duplicationEnCours}
+      suppressionEnCours={suppressionEnCours}
       onModifier={onModifier}
       onDupliquer={onDupliquer}
+      onSupprimer={onSupprimer}
     />
   )
 }

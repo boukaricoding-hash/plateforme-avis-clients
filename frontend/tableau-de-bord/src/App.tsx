@@ -9,13 +9,14 @@ import { PageReinitialisation } from './pages/connexion/page-reinitialisation'
 import { PageListeAvis } from './pages/liste-avis/page-liste-avis'
 import { PageParametres } from './pages/parametres-organisation/page-parametres'
 import { PageQrCodes } from './pages/qr-codes/page-qr-codes'
+import { PageEditeurQuestionnaire } from './pages/questionnaires/page-editeur-questionnaire'
+import { PageQuestionnaires } from './pages/questionnaires/page-questionnaires'
 import { PageSites } from './pages/sites-points-de-contact/page-sites'
 import { PageAccueil } from './pages/tableau-de-bord/page-accueil'
 import { PageUtilisateurs } from './pages/utilisateurs/page-utilisateurs'
 
 // Ecrans prevus mais pas encore construits : chacun est remplace par son vrai ecran le jour venu.
 const ECRANS_A_VENIR = [
-  { chemin: 'questionnaires', cle: 'menu.questionnaires' },
   { chemin: 'exports', cle: 'menu.exports' },
 ]
 
@@ -47,6 +48,8 @@ export default function App() {
           <Route path="parametres" element={<PageParametres />} />
           <Route path="sites" element={<PageSites />} />
           <Route path="qr-codes" element={<PageQrCodes />} />
+          <Route path="questionnaires" element={<PageQuestionnaires />} />
+          <Route path="questionnaires/:id" element={<PageEditeurQuestionnaire />} />
           <Route path="utilisateurs" element={<PageUtilisateurs />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route

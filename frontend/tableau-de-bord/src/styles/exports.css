@@ -14,7 +14,10 @@
    pas celle de l'ecran, car le menu lateral en prend une partie.
    - Large (56rem et plus) : trois colonnes, la barre au milieu,
      les indications dans la colonne de droite.
-   - Etroit : tout est empile au centre, les indications sous la barre.
+   - Moyen (40rem a 56rem) : deux colonnes, le robot, sa phrase et la
+     barre a gauche, les indications a droite.
+   - Etroit (moins de 40rem) : tout est empile au centre, les
+     indications sous la barre.
 
    Classes utilisees par les fichiers suivants :
    page : exports-page, exports-scene, exports-robot, exports-parole,
@@ -384,6 +387,14 @@ main:has(> .exports-page) {
   }
 }
 
+/* Ecran bas (zoom 150 % ou plus, fenetre aplatie) : le robot est plus petit,
+   pour que les choix rapides ouverts tiennent sans defiler */
+@media (max-height: 560px) {
+  .exports-robot {
+    width: clamp(4rem, 15vh, 14rem);
+  }
+}
+
 /* Ecran tres bas : seuls les titres restent pour que tout tienne sans defiler */
 @media (max-height: 520px) {
   .exports-etape-detail {
@@ -391,13 +402,14 @@ main:has(> .exports-page) {
   }
 }
 
-/* Page large (56rem et plus) : grille a trois colonnes.
-   Les indications 1 a 4 sont a droite, centrees sur la hauteur du robot,
-   de sa phrase et de la barre : elles n'ajoutent jamais de hauteur. */
-@container exports (min-width: 56rem) {
+/* Page de 40rem et plus (portable, fenetre reduite, zoom 125 %) : deux colonnes.
+   Le robot, sa phrase et la barre sont a gauche ; les indications 1 a 4, avec
+   leur texte, sont a droite, centrees sur la hauteur du bloc. Elles ne passent
+   jamais sous la barre : c'est ce qui faisait defiler la page. */
+@container exports (min-width: 40rem) {
   .exports-scene {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) min(40rem, calc(100cqw - 32rem)) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) clamp(14rem, 34cqw, 19rem);
     align-items: center;
     justify-items: center;
     column-gap: 1rem;
@@ -412,7 +424,7 @@ main:has(> .exports-page) {
   .exports-parole,
   .exports-saisie-centre,
   .exports-messages {
-    grid-column: 2;
+    grid-column: 1;
   }
 
   .exports-saisie-centre {
@@ -421,14 +433,14 @@ main:has(> .exports-page) {
   }
 
   .exports-etapes {
-    grid-column: 3;
+    grid-column: 2;
     grid-row: 1 / span 3;
     grid-template-columns: minmax(0, 1fr);
     align-self: center;
     justify-self: start;
     max-width: 19rem;
     margin: 0;
-    padding: 0 0 0 1.5rem;
+    padding: 0;
   }
 
   /* Plus compact, pour que les quatre indications avec leur texte tiennent a droite */
@@ -439,6 +451,26 @@ main:has(> .exports-page) {
   .exports-etape-detail {
     font-size: 0.75rem;
     line-height: 1.35;
+  }
+}
+
+/* Page large (56rem et plus) : trois colonnes, la barre bien au milieu de la page,
+   les indications dans la colonne de droite. */
+@container exports (min-width: 56rem) {
+  .exports-scene {
+    grid-template-columns: minmax(0, 1fr) min(40rem, calc(100cqw - 32rem)) minmax(0, 1fr);
+  }
+
+  .exports-robot,
+  .exports-parole,
+  .exports-saisie-centre,
+  .exports-messages {
+    grid-column: 2;
+  }
+
+  .exports-etapes {
+    grid-column: 3;
+    padding: 0 0 0 1.5rem;
   }
 }
 

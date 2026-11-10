@@ -40,7 +40,7 @@ function conditionSite(perimetre: string[] | null, site: string | undefined): Pr
   return { in: perimetre };
 }
 
-function construireFiltre(
+export function construireFiltre(
   organisationId: string,
   perimetre: string[] | null,
   filtres: FiltresAvis,

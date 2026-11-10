@@ -2,10 +2,12 @@ import { useEffect } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { IconeChevronGauche, IconeEnregistrer } from '../../composants-avis/icones-avis'
 import { ApercuTelephone } from '../../composants-questionnaires/apercu-telephone'
+import { CarrouselEditeur } from '../../composants-questionnaires/carrousel-editeur'
+import type { Diapositive } from '../../composants-questionnaires/carrousel-editeur'
 import { CarteQuestion } from '../../composants-questionnaires/carte-question'
 import { ChampBilingue } from '../../composants-questionnaires/champ-bilingue'
 import { HistoriqueVersions } from '../../composants-questionnaires/historique-versions'
-import { IconeAjouter, IconeSupprimer } from '../../composants-questionnaires/icones-questionnaires'
+import { IconeSupprimer } from '../../composants-questionnaires/icones-questionnaires'
 import { PanneauPublication } from '../../composants-questionnaires/panneau-publication'
 import type { ActionSuppression } from '../../hooks/utiliser-gestion-questionnaire'
 import { utiliserGestionQuestionnaire } from '../../hooks/utiliser-gestion-questionnaire'
@@ -21,6 +23,7 @@ import type { ValeurContexteLangue } from '../../traductions/contexte-langue'
 import { versApercuPublic } from '../../utilitaires/vers-apercu-public'
 import '../../styles/editeur-questionnaire.css'
 import '../../styles/publication-questionnaire.css'
+import '../../styles/carrousel-editeur.css'
 
 // Ecran E10 : editeur d'un questionnaire (jour 19, complete au jour 20).
 // - /questionnaires/nouveau : questionnaire vide (une seule question d'etoiles au depart).
@@ -45,6 +48,12 @@ import '../../styles/publication-questionnaire.css'
 // Apres la CREATION, la page passe sur /questionnaires/<id> (sinon un deuxieme enregistrement
 // creerait un autre questionnaire) et le message "Questionnaire cree." suit dans l'etat de navigation.
 // Les hooks ne relisent rien si l'id change : l'ecran est recree avec key a chaque nouvel id.
+// Jour 20, design : le formulaire n'est plus une longue page verticale. Un carrousel (composant
+// CarrouselEditeur) montre une seule slide a la fois : General, une par question, puis Publication
+// et Versions (questionnaire deja cree), avec des points numerotes et un bouton + pour ajouter une
+// question. Sur grand ecran la page a la hauteur de la zone principale et ne defile plus
+// (styles/carrousel-editeur.css) ; sur petit ecran elle defile comme avant. Rien d'autre ne change :
+// memes hooks, memes messages, memes boutons.
 
 const S = 'questionnaires.editeur.suppression.'
 
@@ -265,8 +274,114 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
     messageReussite = t('questionnaires.editeur.reussite.cree')
   }
 
+  // Slide General : le formulaire general du questionnaire (titre, messages, langue par defaut)
+  const contenuGeneral = (
+    <section className="editeur-questionnaire-section">
+      <h2 className="editeur-questionnaire-section-titre">
+        {t('questionnaires.editeur.general.titre')}
+      </h2>
+      <p className="editeur-questionnaire-section-aide">
+        {t('questionnaires.editeur.general.aide')}
+      </p>
+
+      <ChampBilingue
+        libelle={t('questionnaires.editeur.general.titreQuestionnaire')}
+        valeur={brouillon.titre}
+        onChange={(langue, valeur) => actions.modifierGeneral('titre', langue, valeur)}
+        invalide={titreInvalide}
+      />
+      <ChampBilingue
+        libelle={t('questionnaires.editeur.general.messageAccueil')}
+        valeur={brouillon.messageAccueil}
+        onChange={(langue, valeur) => actions.modifierGeneral('messageAccueil', langue, valeur)}
+        multiligne
+      />
+      <ChampBilingue
+        libelle={t('questionnaires.editeur.general.messageRemerciement')}
+        valeur={brouillon.messageRemerciement}
+        onChange={(langue, valeur) =>
+          actions.modifierGeneral('messageRemerciement', langue, valeur)
+        }
+        multiligne
+      />
+
+      <div className="editeur-questionnaire-champ">
+        <label className="editeur-questionnaire-etiquette" htmlFor="editeur-langue-defaut">
+          {t('questionnaires.editeur.general.langueDefaut')}
+        </label>
+        <select
+          id="editeur-langue-defaut"
+          className="editeur-questionnaire-select"
+          value={brouillon.langueDefaut}
+          onChange={(e) => actions.changerLangueDefaut(e.target.value === 'en' ? 'en' : 'fr')}
+        >
+          <option value="fr">{t('questionnaires.page.detail.langues.fr')}</option>
+          <option value="en">{t('questionnaires.page.detail.langues.en')}</option>
+        </select>
+      </div>
+    </section>
+  )
+
+  // Les slides, dans l'ordre : General, une par question, puis Publication et Versions
+  // (seulement quand le questionnaire existe deja)
+  const diapositives: Diapositive[] = [
+    {
+      cle: 'general',
+      etiquette: t('questionnaires.editeur.carrousel.general'),
+      libelle: t('questionnaires.editeur.general.titre'),
+      genre: 'general',
+      contenu: contenuGeneral,
+    },
+    ...brouillon.questions.map(
+      (question, indice): Diapositive => ({
+        cle: question.cle,
+        etiquette: String(indice + 1),
+        libelle: t('questionnaires.editeur.questions.numero', { numero: indice + 1 }),
+        genre: 'question',
+        contenu: (
+          <CarteQuestion
+            question={question}
+            indice={indice}
+            total={nombreQuestions}
+            limiteAtteinte={limiteAtteinte}
+            themes={themes}
+            erreurThemes={erreurThemes}
+            actions={actions}
+          />
+        ),
+      }),
+    ),
+  ]
+  if (id !== null) {
+    const libellePublication = t('questionnaires.publication.titre')
+    const libelleVersions = t('questionnaires.versions.titre')
+    diapositives.push(
+      {
+        cle: 'publication',
+        etiquette: libellePublication,
+        libelle: libellePublication,
+        genre: 'autre',
+        contenu: <PanneauPublication gestion={gestion} nonEnregistre={nonEnregistre} />,
+      },
+      {
+        cle: 'versions',
+        etiquette: libelleVersions,
+        libelle: libelleVersions,
+        genre: 'autre',
+        contenu: <HistoriqueVersions resultat={versions} />,
+      },
+    )
+  }
+
+  // Petit texte sous les points : la limite atteinte, ou l'absence de question
+  const indicationQuestions = limiteAtteinte
+    ? t('questionnaires.editeur.questions.limite')
+    : nombreQuestions === 0
+      ? t('questionnaires.editeur.questions.aucune')
+      : null
+
   return (
-    <div className="editeur-questionnaire editeur-questionnaire--avec-apercu">
+    <div className="editeur-questionnaire editeur-questionnaire--avec-apercu editeur-questionnaire--carrousel">
       <div className="editeur-questionnaire-entete">
         {boutonRetour}
         <div className="editeur-questionnaire-titres">
@@ -330,91 +445,14 @@ function EcranEditeur({ id, creeAvant }: PropsEcranEditeur) {
 
       <div className="editeur-questionnaire-disposition">
         <div className="editeur-questionnaire-colonne">
-          <section className="editeur-questionnaire-section">
-            <h2 className="editeur-questionnaire-section-titre">
-              {t('questionnaires.editeur.general.titre')}
-            </h2>
-            <p className="editeur-questionnaire-section-aide">
-              {t('questionnaires.editeur.general.aide')}
-            </p>
-
-            <ChampBilingue
-              libelle={t('questionnaires.editeur.general.titreQuestionnaire')}
-              valeur={brouillon.titre}
-              onChange={(langue, valeur) => actions.modifierGeneral('titre', langue, valeur)}
-              invalide={titreInvalide}
-            />
-            <ChampBilingue
-              libelle={t('questionnaires.editeur.general.messageAccueil')}
-              valeur={brouillon.messageAccueil}
-              onChange={(langue, valeur) => actions.modifierGeneral('messageAccueil', langue, valeur)}
-              multiligne
-            />
-            <ChampBilingue
-              libelle={t('questionnaires.editeur.general.messageRemerciement')}
-              valeur={brouillon.messageRemerciement}
-              onChange={(langue, valeur) =>
-                actions.modifierGeneral('messageRemerciement', langue, valeur)
-              }
-              multiligne
-            />
-
-            <div className="editeur-questionnaire-champ">
-              <label className="editeur-questionnaire-etiquette" htmlFor="editeur-langue-defaut">
-                {t('questionnaires.editeur.general.langueDefaut')}
-              </label>
-              <select
-                id="editeur-langue-defaut"
-                className="editeur-questionnaire-select"
-                value={brouillon.langueDefaut}
-                onChange={(e) => actions.changerLangueDefaut(e.target.value === 'en' ? 'en' : 'fr')}
-              >
-                <option value="fr">{t('questionnaires.page.detail.langues.fr')}</option>
-                <option value="en">{t('questionnaires.page.detail.langues.en')}</option>
-              </select>
-            </div>
-          </section>
-
-          <section className="editeur-questionnaire-section">
-            <h2 className="editeur-questionnaire-section-titre">
-              {t('questionnaires.editeur.questions.titre', { nombre: nombreQuestions })}
-            </h2>
-
-            {nombreQuestions === 0 ? (
-              <p className="editeur-questionnaire-vide">{t('questionnaires.editeur.questions.aucune')}</p>
-            ) : (
-              <div className="editeur-questionnaire-questions">
-                {brouillon.questions.map((question, indice) => (
-                  <CarteQuestion
-                    key={question.cle}
-                    question={question}
-                    indice={indice}
-                    total={nombreQuestions}
-                    limiteAtteinte={limiteAtteinte}
-                    themes={themes}
-                    erreurThemes={erreurThemes}
-                    actions={actions}
-                  />
-                ))}
-              </div>
-            )}
-
-            <button
-              type="button"
-              className="editeur-questionnaire-ajouter"
-              disabled={limiteAtteinte}
-              onClick={actions.ajouterQuestion}
-            >
-              <IconeAjouter />
-              <span>{t('questionnaires.editeur.questions.ajouter')}</span>
-            </button>
-            {limiteAtteinte && (
-              <p className="editeur-questionnaire-limite">{t('questionnaires.editeur.questions.limite')}</p>
-            )}
-          </section>
-
-          {id !== null && <PanneauPublication gestion={gestion} nonEnregistre={nonEnregistre} />}
-          {id !== null && <HistoriqueVersions resultat={versions} />}
+          <CarrouselEditeur
+            diapositives={diapositives}
+            libelleNavigation={t('questionnaires.editeur.carrousel.navigation')}
+            libelleAjouter={t('questionnaires.editeur.questions.ajouter')}
+            onAjouter={actions.ajouterQuestion}
+            ajoutDesactive={limiteAtteinte}
+            indication={indicationQuestions}
+          />
         </div>
 
         <div className="editeur-questionnaire-colonne editeur-questionnaire-colonne-apercu">

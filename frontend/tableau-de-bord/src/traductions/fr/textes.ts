@@ -653,6 +653,10 @@ export const fr = {
         messageRemerciement: 'Message de remerciement',
         langueDefaut: 'Langue par défaut',
       },
+      carrousel: {
+        navigation: 'Parties du questionnaire',
+        general: 'Général',
+      },
       bilingue: {
         francais: 'Français',
         anglais: 'Anglais (facultatif)',

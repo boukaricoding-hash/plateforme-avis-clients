@@ -636,6 +636,10 @@ export const en = {
         messageRemerciement: 'Thank-you message',
         langueDefaut: 'Default language',
       },
+      carrousel: {
+        navigation: 'Questionnaire sections',
+        general: 'General',
+      },
       bilingue: {
         francais: 'French',
         anglais: 'English (optional)',

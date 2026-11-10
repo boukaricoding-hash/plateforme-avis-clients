@@ -36,7 +36,6 @@ const HAUTEUR_TELEPHONE = 667
 
 const MESSAGE_PRET = 'apercu-pret'
 const MESSAGE_DONNEES = 'apercu-donnees'
-const MESSAGE_RECOMMENCER = 'apercu-recommencer'
 
 type PropsApercuTelephone = {
   donnees: DonneesApercu
@@ -94,23 +93,9 @@ export function ApercuTelephone({ donnees, langue }: PropsApercuTelephone) {
     fenetre.postMessage({ type: MESSAGE_DONNEES, donnees, langue }, ORIGINE_APERCU)
   }, [numeroPret, donnees, langue])
 
-  function recommencer(): void {
-    cadreRef.current?.contentWindow?.postMessage({ type: MESSAGE_RECOMMENCER }, ORIGINE_APERCU)
-  }
 
   return (
     <section className="apercu-telephone" aria-label={t('questionnaires.apercu.titre')}>
-      <div className="apercu-telephone-entete">
-        <h2 className="apercu-telephone-titre">{t('questionnaires.apercu.titre')}</h2>
-        <button
-          type="button"
-          className="apercu-telephone-bouton"
-          onClick={recommencer}
-          disabled={numeroPret === 0}
-        >
-          {t('questionnaires.apercu.recommencer')}
-        </button>
-      </div>
 
       <div className="apercu-telephone-cadre">
         <iframe
@@ -122,8 +107,6 @@ export function ApercuTelephone({ donnees, langue }: PropsApercuTelephone) {
           height={HAUTEUR_TELEPHONE}
         />
       </div>
-
-      <p className="apercu-telephone-note">{t('questionnaires.apercu.note')}</p>
     </section>
   )
 }

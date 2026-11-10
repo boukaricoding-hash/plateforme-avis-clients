@@ -450,3 +450,37 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - `eslint` sur les fichiers du jour : 38 erreurs, toutes `react-hooks/rules-of-hooks` dans les hooks nommes `utiliser...` (18 dans `utiliser-gestion-questionnaire.ts`, 16 dans `utiliser-liste-questionnaires.ts`, 4 dans `utiliser-versions-questionnaire.ts`), meme cause que les jours 15, 17 et 18. Aucune autre erreur. A traiter plus tard.
 - En developpement, l'apercu a besoin que la page d'avis tourne (port 5173 du meme ordinateur) : sinon le cadre reste vide. En production il utilise la meme adresse que le tableau de bord : a verifier a la mise en ligne.
 - Onze textes `sites.*` manquent encore en anglais (hors jour 20).
+
+
+## Jour 21 - mardi 10 novembre 2026 : exports et rapports, robot et ecran E16
+
+**Fait**
+- Backend, module `modules/rapports` : `validations/exports.ts` (corps de `POST /exports` et `POST /exports/analyse` : format csv, xlsx ou pdf, langue, filtres identiques a ceux de `GET /avis`), `services/collecte-avis.ts` (lecture des avis filtres par paquets, une ligne par avis, une colonne par question), `services/export-csv.ts`, `services/export-xlsx.ts`, `services/analyse.ts` (points forts, points faibles et pistes d'action), `services/rapport-pdf.ts`, `controleurs/exports.controleur.ts` et `routes/exports.routes.ts` (branchee dans `app.ts` par 2 lignes). Dependance ajoutee dans backend : `exceljs`.
+- Tests : `backend/tests/integration/exports.test.ts` (30 tests : accents et BOM du CSV, colonnes Excel, PDF valide, 1 000 avis en moins de 10 s pour le scenario 10, gestionnaire limite a son perimetre) et `isolation-exports.test.ts` (7 tests : les routes d'exports ajoutees au test d'isolation entre organisations).
+- Tableau de bord (`frontend/tableau-de-bord/src`) : `types/exports.ts`, `services/exports.ts`, `services/telechargement.ts` (envoi POST accepte), `utilitaires/comprendre-recherche.ts` (le texte tape devient format, periode et filtres), `hooks/utiliser-export.ts` (etat de l'ecran, analyse, creation et telechargement du fichier).
+- Ecran E16 : `composants-exports/robot.tsx` (robot SVG, 5 humeurs, yeux qui suivent le curseur, ressorts), `barre-recherche-export.tsx`, `etapes-export.tsx` (indications 1 a 4), `choix-format.tsx`, `panneau-analyse.tsx`, `pages/rapports-exports/page-exports.tsx`, `styles/exports.css`, route `/exports` dans `App.tsx` (elle remplace le message "en construction").
+- Textes fr et en : bloc `exports` (64 textes, memes cles dans les deux langues).
+- Frontend : `tsc -b` et `eslint` sans erreur sur les fichiers du jour, et `vite build` sans erreur (testes sur une copie du depot).
+
+**Decisions**
+- Analyse du robot calculee par des regles (seuils, comparaisons, classements) sur les memes chiffres que le tableau de bord. Ce n'est pas une IA externe : rien ne quitte le serveur, et c'est gratuit. Un vrai modele pourra etre branche plus tard, avec l'accord de DTS (cout et confidentialite des avis).
+- L'analyse ne tient compte que de la periode, du site, du point de contact et du questionnaire. Les autres filtres de l'export (statut, negatifs, note, recherche) ne s'y appliquent pas. Sans dates : les 30 derniers jours.
+- Sans dates, csv et xlsx exportent tous les avis ; le rapport pdf prend les 30 derniers jours. Periode limitee a 366 jours pour le pdf et l'analyse, comme le tableau de bord.
+- Limite de 50 000 avis par export : au dela, rien n'est lu (erreur `EXPORT_TROP_VOLUMINEUX`) et l'utilisateur doit reduire la periode ou ajouter un filtre.
+- CSV : UTF-8 avec BOM (accents corrects dans Excel). Separateur point-virgule et virgule decimale en francais, virgule et point en anglais. Un texte qui commence par `=`, `+`, `-` ou `@` est precede d'une apostrophe, pour qu'Excel ne le lise pas comme une formule.
+- Excel : feuille "Avis" (notes en nombres, vraie date) et feuille "Analyse" avec les conclusions du robot. Deux questions de versions differentes, avec le meme texte et le meme type, partagent la meme colonne.
+- Les coordonnees du client ne sortent que s'il a coche la case de consentement.
+- L'organisation et le perimetre du gestionnaire viennent de la session, jamais du corps de la requete. Chaque fichier genere ecrit une ligne `EXPORT_GENERE` dans le journal d'audit. Noms des fichiers : `avis-AAAA-MM-JJ.xlsx` et `rapport-avis-AAAA-MM-JJ.pdf`.
+- Rapport PDF sur 2 pages (Helvetica) : page 1 avec logo, periode, resume, six indicateurs et trois graphiques dessines en vecteur ; page 2 avec trois points forts, trois points faibles et les pistes d'action.
+- Ecran : le Responsable et le Gestionnaire l'utilisent ; l'administrateur DTS (sans organisation) est renvoye a l'accueil. Le robot comprend le francais et l'anglais, quelle que soit la langue de l'ecran. Presque tout en classes Tailwind ; `exports.css` ne contient que le halo de la barre et l'apparition des pastilles, importe par `barre-recherche-export.tsx` (comme `sites.css` par `liste-points.tsx`).
+- La liste `ECRANS_A_VENIR` de `App.tsx` est maintenant vide (typee), le mecanisme reste pour les prochains ecrans.
+
+**A faire ensuite**
+- Fichier 26 : entree dans `apres-un-pull.md` (`npm install` dans backend pour `exceljs`).
+- Verifications du soir, a faire a la main : exporter 1 000 avis en Excel en moins de 10 secondes avec les accents corrects (scenario 10) ; ouvrir le CSV dans Excel (accents) ; PDF propre (logo, periode, graphiques) ; un gestionnaire n'exporte que son perimetre ; l'analyse du robot correspond aux chiffres du tableau de bord ; l'ecran sur ordinateur, tablette et telephone, themes sombre et clair.
+- Lancer `npx tsc --noEmit` et `npm test` dans backend et noter le resultat.
+- Cloture : pull request vers main, fusion, `git checkout main` puis `git pull`. Ensuite jour 22 (back-office DTS : organisations et modeles sectoriels).
+
+**Points d'attention**
+- `npx eslint src` sur tout le dossier signale environ 230 erreurs `react-hooks/rules-of-hooks` dans les anciens hooks nommes `utiliser...`, y compris `utiliser-langue.ts` qui date d'avant le jour 21. Aucune dans les fichiers du jour 21.
+- Si le planning prend du retard, le rapport PDF est la premiere chose a couper (on garde les exports CSV et Excel).

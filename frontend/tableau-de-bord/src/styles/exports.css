@@ -333,7 +333,7 @@ main:has(> .exports-page) {
 
 /* Les longs textes : une courte phrase sous le titre de l'etape */
 .exports-etape-detail {
-  display: none;
+  display: block;
   margin-top: 0.125rem;
   color: var(--texte-secondaire);
   font-size: 0.8125rem;
@@ -377,14 +377,17 @@ main:has(> .exports-page) {
   }
 }
 
-/* Ecran bas (paysage) : les textes longs s'effacent aussi */
+/* Ecran bas (paysage) : la phrase du robot reserve moins de place */
 @media (max-height: 640px) {
-  .exports-etape-detail {
-    display: none;
-  }
-
   .exports-parole {
     min-height: 3rem;
+  }
+}
+
+/* Ecran tres bas : seuls les titres restent pour que tout tienne sans defiler */
+@media (max-height: 520px) {
+  .exports-etape-detail {
+    display: none;
   }
 }
 
@@ -428,11 +431,14 @@ main:has(> .exports-page) {
     padding: 0 0 0 1.5rem;
   }
 
-  /* Les textes longs ne reviennent que si l'ecran est assez haut */
-  @media (min-height: 801px) {
-    .exports-etape-detail {
-      display: block;
-    }
+  /* Plus compact, pour que les quatre indications avec leur texte tiennent a droite */
+  .exports-etape {
+    padding-block: 0.375rem;
+  }
+
+  .exports-etape-detail {
+    font-size: 0.75rem;
+    line-height: 1.35;
   }
 }
 

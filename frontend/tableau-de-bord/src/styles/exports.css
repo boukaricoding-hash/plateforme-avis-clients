@@ -12,7 +12,7 @@
    (90vh). Il reste centre, en haut comme en bas, a toute taille.
    Largeur : la page regarde sa propre largeur (container query),
    pas celle de l'ecran, car le menu lateral en prend une partie.
-   - Large (60rem et plus) : trois colonnes, la barre au milieu,
+   - Large (56rem et plus) : trois colonnes, la barre au milieu,
      les indications dans la colonne de droite.
    - Etroit : tout est empile au centre, les indications sous la barre.
 
@@ -41,6 +41,12 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+/* Le defilement ne vient jamais du cadre : la page tient dans la zone libre */
+main:has(> .exports-page) {
+  overflow: hidden;
 }
 
 .exports-scene {
@@ -58,7 +64,7 @@
 .exports-robot {
   display: block;
   flex-shrink: 0;
-  width: clamp(7rem, 27vh, 16rem);
+  width: clamp(6rem, 22vh, 14rem);
   height: auto;
 }
 
@@ -116,26 +122,6 @@
   max-width: 40rem;
   margin-inline: auto;
   padding-inline: 1rem;
-}
-
-/* Page large : trois colonnes (vide, barre, indications) */
-@container exports (min-width: 60rem) {
-  .exports-saisie {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 40rem) minmax(0, 1fr);
-    align-items: start;
-    column-gap: 1rem;
-  }
-
-  .exports-saisie-centre {
-    grid-column: 2;
-    padding-inline: 0;
-  }
-
-  .exports-etapes {
-    grid-column: 3;
-    max-width: 19rem;
-    padding-left: 1.5rem;
-  }
 }
 
 /* ---------- Barre de recherche : sans bordure, transparente ---------- */
@@ -347,7 +333,7 @@
 
 /* Les longs textes : une courte phrase sous le titre de l'etape */
 .exports-etape-detail {
-  display: block;
+  display: none;
   margin-top: 0.125rem;
   color: var(--texte-secondaire);
   font-size: 0.8125rem;
@@ -379,15 +365,6 @@
   outline-offset: 2px;
 }
 
-/* Page large : les quatre indications s'empilent a droite de la barre */
-@container exports (min-width: 60rem) {
-  .exports-etapes {
-    grid-template-columns: minmax(0, 1fr);
-    margin: 0;
-    padding-inline: 0;
-  }
-}
-
 /* Telephone : seuls les titres restent, pour que tout tienne sans defiler */
 @container exports (max-width: 34rem) {
   .exports-etape-detail {
@@ -408,6 +385,54 @@
 
   .exports-parole {
     min-height: 3rem;
+  }
+}
+
+/* Page large (56rem et plus) : grille a trois colonnes.
+   Les indications 1 a 4 sont a droite, centrees sur la hauteur du robot,
+   de sa phrase et de la barre : elles n'ajoutent jamais de hauteur. */
+@container exports (min-width: 56rem) {
+  .exports-scene {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(40rem, calc(100cqw - 32rem)) minmax(0, 1fr);
+    align-items: center;
+    justify-items: center;
+    column-gap: 1rem;
+    row-gap: clamp(0.5rem, 1.6vh, 1.25rem);
+  }
+
+  .exports-saisie {
+    display: contents;
+  }
+
+  .exports-robot,
+  .exports-parole,
+  .exports-saisie-centre,
+  .exports-messages {
+    grid-column: 2;
+  }
+
+  .exports-saisie-centre {
+    align-self: start;
+    padding-inline: 0;
+  }
+
+  .exports-etapes {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+    grid-template-columns: minmax(0, 1fr);
+    align-self: center;
+    justify-self: start;
+    max-width: 19rem;
+    margin: 0;
+    padding: 0 0 0 1.5rem;
+  }
+
+  /* Les textes longs ne reviennent que si l'ecran est assez haut */
+  @media (min-height: 801px) {
+    .exports-etape-detail {
+      display: block;
+    }
   }
 }
 

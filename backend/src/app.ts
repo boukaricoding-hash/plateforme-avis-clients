@@ -18,6 +18,7 @@ import { dossierLogos } from "./modules/organisations/services/logo";
 import { routesDashboard } from "./modules/tableaux-de-bord/routes/dashboard.routes";
 import { routesUtilisateurs } from "./modules/utilisateurs/routes/utilisateurs.routes";
 import { routesInvitations } from "./modules/utilisateurs/routes/invitations.routes";
+import { routesExports } from "./modules/rapports/routes/exports.routes";
 
 export const app = express();
 // Nombre d'intermediaires (tunnel, Nginx) entre le client et le serveur.
@@ -112,6 +113,7 @@ app.use(
   express.static(dossierLogos(), { index: false, dotfiles: "ignore", maxAge: "30d", immutable: true }),
 );
 app.use("/api/v1/dashboard", routesDashboard);
+app.use("/api/v1/exports", routesExports);
 // 404 : aucune route ne correspond
 app.use((_req: Request, res: Response) => {
   res.status(404).json({

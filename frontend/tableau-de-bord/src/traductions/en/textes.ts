@@ -984,6 +984,101 @@ export const en = {
     },
   },
 
+  // Screen E16: exports and reports (day 21).
+  // The phrases in barre.suggestions are typed into the bar when clicked:
+  // the robot understands them (it understands French and English).
+  exports: {
+    titre: 'Exports and reports',
+    sousTitre: 'Download your reviews as CSV or Excel, or a PDF report for your management.',
+    robot: {
+      // One short sentence per mood, also read aloud by screen readers
+      humeur: {
+        repos: 'I’m ready. Tell me what you want to export.',
+        ecoute: 'I’m listening, keep going.',
+        reflechit: 'Thinking, one moment…',
+        content: 'All done! Your file has been downloaded.',
+        inquiet: 'Something worries me: have a look at the messages below.',
+      },
+    },
+    etapes: {
+      titre: 'The four export steps',
+      format: 'Format',
+      periode: 'Period and filters',
+      generer: 'Generate',
+      telecharger: 'Download',
+      etatTerminee: 'done',
+      etatEnCours: 'in progress',
+      etatAVenir: 'upcoming',
+    },
+    formats: {
+      csv: 'CSV',
+      xlsx: 'Excel',
+      pdf: 'PDF report',
+    },
+    barre: {
+      etiquette: 'What you want to export',
+      placeholder: 'e.g. excel 7 days negative table 12',
+      effacer: 'Clear',
+      motsComprisTitre: 'What I understood',
+      aide: 'Write what you want: the format, the period, a site, a table… I’ll set the options for you.',
+      suggestionsTitre: 'Examples to try',
+      aucunMot: 'I haven’t recognised anything yet. Try “excel”, “pdf” or “7 days”.',
+      ambigu: '“{nom}” exists more than once. Specify the site in your text.',
+      suggestions: {
+        excelTrenteJours: 'excel 30 days',
+        pdfSeptJours: 'report pdf 7 days',
+        csvNegatifs: 'csv negative reviews',
+        excelCommentaires: 'excel with comments',
+      },
+      pastilles: {
+        tout: 'All dates',
+        negatifs: 'Negative',
+        commentaire: 'With a comment',
+      },
+    },
+    choix: {
+      format: 'File format',
+      descriptions: {
+        csv: 'A text file, one line per review. Accented characters display correctly in Excel.',
+        xlsx: 'An Excel workbook: one row per review, one column per question, and an analysis sheet.',
+        pdf: 'A summary report: indicators, charts, three strengths and three weaknesses.',
+      },
+      periode: 'Period',
+      toutesLesDates: 'All dates',
+      rapportTrenteJours: 'No date chosen: the PDF report will cover the last 30 days.',
+      filtres: 'Filters',
+    },
+    generer: {
+      titre: 'Create the file',
+      bouton: 'Generate the file',
+      enCours: 'Creating the file…',
+      encore: 'Generate again',
+      choisirFormat: 'Choose a format first.',
+      pret: 'The file “{nom}” has been downloaded.',
+      tropVolumineux: 'This export contains too many reviews (over 50,000). Reduce the period or add a filter.',
+      erreur: 'The file could not be created. Please try again.',
+    },
+    analyse: {
+      titre: 'What the robot says about your reviews',
+      enAttente: 'Choose a valid period: I’ll analyse your reviews as soon as it is correct.',
+      enCours: 'Analysing your reviews',
+      erreur: 'The analysis could not be done. You can still generate your file.',
+      aucuneDonnee: 'No data',
+      insuffisant: 'Reviews in this period: {nombre}. Too few to draw reliable conclusions.',
+      chiffres: {
+        avis: 'Reviews',
+        note: 'Average rating',
+        nps: 'NPS',
+        alertes: 'Open alerts',
+      },
+      pointsForts: 'Strengths',
+      pointsFaibles: 'Weaknesses',
+      pistes: 'Suggested actions',
+      negatifsParJour: 'Negative reviews by day of the week',
+      pic: 'Busiest day: {date} (negative reviews: {nombre}).',
+    },
+  },
+
   tableau: {
     // Screen states
     chargement: 'Loading indicators…',

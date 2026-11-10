@@ -13,9 +13,11 @@ import {
   listerLesModeles,
   listerLesQuestionnaires,
   listerLesThemes,
+  listerLesVersions,
   modifierLesDatesDuQuestionnaire,
   modifierUnQuestionnaire,
   publierUnQuestionnaire,
+  supprimerUnQuestionnaire,
 } from "../controleurs/questionnaires.controleur";
 
 export const routesQuestionnaires = Router();
@@ -43,3 +45,7 @@ routesQuestionnaires.post("/:id/publier", exigerRole("RESPONSABLE"), publierUnQu
 routesQuestionnaires.post("/:id/dupliquer", exigerRole("RESPONSABLE"), dupliquerUnQuestionnaire);
 routesQuestionnaires.post("/:id/activer", exigerRole("RESPONSABLE"), activerUnQuestionnaire);
 routesQuestionnaires.post("/:id/desactiver", exigerRole("RESPONSABLE"), desactiverUnQuestionnaire);
+// Historique des versions (jour 20) : Responsable seulement (les nombres d'avis couvrent toute l'organisation).
+routesQuestionnaires.get("/:id/versions", exigerRole("RESPONSABLE"), listerLesVersions);
+// Suppression (jour 20) : refusee s'il y a deja des avis (le questionnaire se desactive alors).
+routesQuestionnaires.delete("/:id", exigerRole("RESPONSABLE"), supprimerUnQuestionnaire);

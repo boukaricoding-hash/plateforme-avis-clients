@@ -185,3 +185,100 @@ export type CorpsQuestionnaire = {
   langue_defaut: LangueQuestionnaire
   questions: QuestionEnvoyee[]
 }
+
+// ------------------------------------------------------------
+// Jour 20 : publication, dates, points de contact, versions et suppression
+// ------------------------------------------------------------
+// - GET    /api/v1/questionnaires/:id/versions        : { versions } (Responsable seulement)
+// - POST   /api/v1/questionnaires/:id/publier         : { publication }
+// - POST   /api/v1/questionnaires/:id/activer         : { questionnaire: { id, statut } } (409 NON_PUBLIE si jamais publie)
+// - POST   /api/v1/questionnaires/:id/desactiver      : { questionnaire: { id, statut } }
+// - PUT    /api/v1/questionnaires/:id/dates           : { questionnaire: { id, statut, date_debut, date_fin } }
+// - PUT    /api/v1/questionnaires/:id/points-contact  : { points_contact } (la liste complete remplace l'ancienne)
+// - DELETE /api/v1/questionnaires/:id                 : { questionnaire: { id }, points_contact_detaches }
+//   ou 409 QUESTIONNAIRE_AVEC_AVIS avec details { nombre_avis } (il faut alors le desactiver)
+
+// Une ligne de l'historique : une version, de la plus recente a la plus ancienne.
+export type VersionHistorique = {
+  id: string
+  numero: number
+  // null = version pas encore publiee.
+  publie_le: string | null
+  cree_le: string
+  nombre_questions: number
+  // Avis recus avec CETTE version (les avis supprimes ne sont pas comptes).
+  nombre_avis: number
+}
+
+export type ReponseVersions = {
+  versions: VersionHistorique[]
+}
+
+// Resultat de la publication : la derniere version est publiee et le questionnaire devient actif.
+export type PublicationQuestionnaire = {
+  id: string
+  statut: StatutQuestionnaire
+  // Numero de la version publiee.
+  version: number
+  publie_le: string
+}
+
+export type ReponsePublication = {
+  publication: PublicationQuestionnaire
+}
+
+// Reponse de l'activation et de la desactivation.
+export type ReponseStatutQuestionnaire = {
+  questionnaire: {
+    id: string
+    statut: 'ACTIF' | 'INACTIF'
+  }
+}
+
+// Corps du PUT des dates : les deux dates sont toujours envoyees, null = pas de date.
+// Format attendu : 2026-12-01T08:00:00Z (ISO 8601 avec fuseau). La fin doit etre apres le debut.
+export type CorpsDatesQuestionnaire = {
+  date_debut: string | null
+  date_fin: string | null
+}
+
+export type ReponseDatesQuestionnaire = {
+  questionnaire: {
+    id: string
+    statut: StatutQuestionnaire
+    date_debut: string | null
+    date_fin: string | null
+  }
+}
+
+// Corps du PUT des points de contact : la liste complete (500 au maximum, sans doublon).
+// Les points qui ne sont plus dans la liste sont detaches du questionnaire.
+export type CorpsPointsContactQuestionnaire = {
+  points_contact_ids: string[]
+}
+
+// Un point de contact associe, tel que le renvoie le PUT.
+export type PointContactAssocie = {
+  id: string
+  nom: string
+  type: string
+  site_id: string
+}
+
+export type ReponsePointsContactQuestionnaire = {
+  points_contact: PointContactAssocie[]
+}
+
+// Reponse du DELETE : suppression douce, reservee aux questionnaires sans aucun avis.
+export type ReponseSuppressionQuestionnaire = {
+  questionnaire: {
+    id: string
+  }
+  // Points de contact visibles qui ont ete detaches du questionnaire.
+  points_contact_detaches: number
+}
+
+// Details de l'erreur 409 QUESTIONNAIRE_AVEC_AVIS.
+export type DetailsQuestionnaireAvecAvis = {
+  nombre_avis: number
+}

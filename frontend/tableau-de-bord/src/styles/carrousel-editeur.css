@@ -1,0 +1,275 @@
+/* ============================================================
+   Carrousel de l'editeur de questionnaire (ecran E10, jour 20, design)
+   Utilise par :
+   - composants-questionnaires/carrousel-editeur.tsx (classes carrousel-editeur-*)
+   - pages/questionnaires/page-editeur-questionnaire.tsx (classe editeur-questionnaire--carrousel)
+   Ordre : slides, points et bouton +, ecran fixe sans defilement, ecran tactile,
+   mouvement reduit.
+   Les couleurs, rayons et vitesses viennent des variables de l'editeur
+   (editeur-questionnaire.css) et de index.css : aucune couleur ecrite en dur.
+   Cette feuille se charge APRES editeur-questionnaire.css et publication-questionnaire.css.
+============================================================ */
+
+/* ==============================
+   1. SLIDES
+   Une seule slide est visible. Son contenu est centre dans la zone ; s'il est plus grand que
+   la zone, c'est la slide qui defile (jamais la page) et le haut du contenu reste atteignable.
+============================== */
+
+.carrousel-editeur {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.carrousel-editeur-scene {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.carrousel-editeur-diapo {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  animation: ce-apparition 0.3s ease both;
+}
+
+/* Une slide cachee ne prend aucune place (le display ci-dessus l'emporterait sur hidden) */
+.carrousel-editeur-diapo[hidden] {
+  display: none;
+}
+
+/* margin auto : centre le contenu en hauteur et en largeur, sans jamais le couper en haut */
+.carrousel-editeur-contenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-md);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px;
+  margin: auto;
+  padding: var(--espace-xs);
+}
+
+.carrousel-editeur-contenu > * {
+  flex-shrink: 0;
+}
+
+@keyframes ce-apparition {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==============================
+   2. POINTS NUMEROTES ET BOUTON +
+   Un point par slide (un numero, ou un mot court pour General, Publication, Versions).
+   S'il y a beaucoup de slides, la barre defile de cote.
+============================== */
+
+.carrousel-editeur-navigation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espace-xs);
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.carrousel-editeur-points {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-sm);
+  max-width: 100%;
+  margin: 0;
+  padding: var(--espace-xs);
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.carrousel-editeur-element {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--espace-sm);
+}
+
+.carrousel-editeur-point,
+.carrousel-editeur-ajouter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 var(--espace-sm);
+  border-radius: var(--rayon-rond);
+  font-family: inherit;
+  font-size: var(--texte-sm);
+  font-weight: var(--gras-moyen);
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition-rapide), border-color var(--transition-rapide),
+              color var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+
+.carrousel-editeur-point {
+  background: var(--fond-eleve);
+  border: 1px solid var(--bordure);
+  color: var(--texte-secondaire);
+}
+
+.carrousel-editeur-point:hover {
+  background: var(--fond-survol);
+  border-color: var(--bordure-forte);
+  color: var(--texte-principal);
+}
+
+.carrousel-editeur-point--actif,
+.carrousel-editeur-point--actif:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-texte);
+  box-shadow: 0 0 0 3px var(--accent-lueur);
+}
+
+/* Le bouton + : un rond en pointilles, comme l'ancien bouton Ajouter une question */
+.carrousel-editeur-ajouter {
+  width: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px dashed var(--bordure-champ);
+  color: var(--texte-secondaire);
+}
+
+.carrousel-editeur-ajouter:hover:not(:disabled) {
+  background: var(--fond-survol);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.carrousel-editeur-ajouter:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.carrousel-editeur-ajouter svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.carrousel-editeur-point:focus-visible,
+.carrousel-editeur-ajouter:focus-visible {
+  outline: 2px solid var(--bordure-focus);
+  outline-offset: 2px;
+}
+
+.carrousel-editeur-indication {
+  margin: 0;
+  color: var(--texte-tertiaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+
+/* ==============================
+   3. ECRAN FIXE : AUCUNE BARRE DE DEFILEMENT
+   Meme requete que l'ecran fixe de l'accueil. La page a exactement la hauteur de la zone
+   principale du cadre : l'en-tete et les messages gardent leur hauteur, le reste est partage
+   entre le carrousel (a gauche) et l'apercu telephone (a droite), tous deux centres.
+============================== */
+
+@media (min-width: 1100px) and (min-height: 640px) {
+  .editeur-questionnaire--carrousel {
+    height: 100%;
+    min-height: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+
+  .editeur-questionnaire--carrousel > * {
+    flex-shrink: 0;
+  }
+
+  .editeur-questionnaire--carrousel > .editeur-questionnaire-disposition {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) clamp(280px, 32%, 400px);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .editeur-questionnaire--carrousel .editeur-questionnaire-colonne {
+    min-height: 0;
+  }
+
+  /* Le carrousel prend toute la hauteur de sa colonne ; la zone des slides, tout ce qui reste
+     au-dessus des points */
+  .editeur-questionnaire--carrousel .carrousel-editeur {
+    flex: 1 1 0;
+  }
+
+  .editeur-questionnaire--carrousel .carrousel-editeur-scene {
+    flex: 1 1 0;
+  }
+
+  .editeur-questionnaire--carrousel .carrousel-editeur-diapo {
+    overflow-y: auto;
+  }
+
+  /* L'apercu ne colle plus en haut : il est centre, et le cadre du telephone s'adapte a la hauteur
+     (sa largeur suit, avec le meme rapport qu'un vrai telephone) */
+  .editeur-questionnaire--carrousel .editeur-questionnaire-colonne-apercu {
+    position: static;
+    justify-content: center;
+  }
+
+  .editeur-questionnaire--carrousel .apercu-telephone {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: 820px;
+  }
+
+  .editeur-questionnaire--carrousel .apercu-telephone-cadre {
+    flex: 1 1 0;
+    min-height: 0;
+    width: auto;
+  }
+}
+
+/* ==============================
+   4. ECRAN TACTILE
+   Zones du doigt d'au moins 44 px.
+============================== */
+
+@media (pointer: coarse) {
+  .carrousel-editeur-point,
+  .carrousel-editeur-ajouter {
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .carrousel-editeur-ajouter {
+    width: 44px;
+  }
+}
+
+/* ==============================
+   5. MOUVEMENT REDUIT
+============================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .carrousel-editeur-diapo {
+    animation: none;
+  }
+
+  .carrousel-editeur-point,
+  .carrousel-editeur-ajouter {
+    transition: none;
+  }
+}

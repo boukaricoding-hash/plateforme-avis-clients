@@ -18,6 +18,8 @@ import { modifierDatesQuestionnaire } from "../services/dates";
 import { clonerModele, listerModeles } from "../services/modeles";
 import { associerPointsContact } from "../services/points-contact";
 import { listerThemesDuSecteur } from "../services/themes";
+import { supprimerQuestionnaire } from "../services/suppression";
+import { listerVersionsQuestionnaire } from "../services/versions";
 import { schemaDatesQuestionnaire } from "../validations/dates";
 import { schemaAssociationPointsContact } from "../validations/points-contact";
 import { schemaIdQuestionnaire, schemaQuestionnaire } from "../validations/questionnaire";
@@ -204,6 +206,43 @@ export async function associerLesPointsContact(req: Request, res: Response): Pro
     return repondreNonTrouve(res, "Point de contact introuvable.");
   }
   res.status(200).json({ points_contact: resultat.points_contact });
+}
+
+export async function listerLesVersions(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdQuestionnaire.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+
+  const versions = await listerVersionsQuestionnaire(ctx.organisationId, identifiant.data.id);
+  if (!versions) return repondreNonTrouve(res, MESSAGE_INTROUVABLE);
+  res.status(200).json({ versions });
+}
+
+export async function supprimerUnQuestionnaire(req: Request, res: Response): Promise<void> {
+  const ctx = contexte(req);
+  if (!ctx) return repondreNonConnecte(res);
+
+  const identifiant = schemaIdQuestionnaire.safeParse(req.params);
+  if (!identifiant.success) return repondreDonneesInvalides(res, identifiant.error);
+
+  const resultat = await supprimerQuestionnaire(ctx.organisationId, identifiant.data.id);
+  if (resultat.etat === "introuvable") {
+    return repondreNonTrouve(res, MESSAGE_INTROUVABLE);
+  }
+  if (resultat.etat === "a_des_avis") {
+    res.status(409).json({
+      code: "QUESTIONNAIRE_AVEC_AVIS",
+      message: "Ce questionnaire a deja recu des avis : desactivez-le au lieu de le supprimer.",
+      details: { nombre_avis: resultat.nombre_avis },
+    });
+    return;
+  }
+  res.status(200).json({
+    questionnaire: { id: resultat.id },
+    points_contact_detaches: resultat.points_contact_detaches,
+  });
 }
 
 export async function listerLesModeles(req: Request, res: Response): Promise<void> {

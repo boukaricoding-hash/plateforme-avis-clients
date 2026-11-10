@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Navigate, useLocation, useNavigate } from 'react-router'
 import { IconeRecherche } from '../../composants-avis/icones-avis'
 import { ChoixModele } from '../../composants-questionnaires/choix-modele'
 import { DetailQuestionnaire } from '../../composants-questionnaires/detail-questionnaire'
@@ -9,10 +9,12 @@ import { PaletteRecherche } from '../../composants-questionnaires/palette-recher
 import { PanneauStats, SqueletteStats } from '../../composants-questionnaires/panneau-stats'
 import { utiliserFicheQuestionnaire } from '../../hooks/utiliser-fiche-questionnaire'
 import { utiliserLangue } from '../../hooks/utiliser-langue'
+import type { ActionSuppressionListe } from '../../hooks/utiliser-liste-questionnaires'
 import { utiliserListeQuestionnaires } from '../../hooks/utiliser-liste-questionnaires'
 import { utiliserUtilisateur } from '../../hooks/utiliser-utilisateur'
 import type { ErreurService } from '../../services/api'
 import '../../styles/questionnaires.css'
+import type { ValeurContexteLangue } from '../../traductions/contexte-langue'
 import type {
   QuestionQuestionnaire,
   ResumeQuestionnaire,
@@ -20,8 +22,8 @@ import type {
 } from '../../types/questionnaires'
 
 // Ecran E10 : liste des questionnaires (jour 19, design de la page Classes).
-// - Le Responsable cree un questionnaire vide, part d'un modele de son secteur, duplique un
-//   questionnaire et ouvre l'editeur pour le modifier.
+// - Le Responsable cree un questionnaire vide, part d'un modele de son secteur, duplique ou
+//   supprime un questionnaire et ouvre l'editeur pour le modifier.
 // - Le Gestionnaire consulte la liste et le detail, en lecture seule (aucun bouton d'action).
 // - L'administrateur DTS n'a pas d'organisation : il est renvoye a l'accueil.
 // La page n'appelle pas l'API : tout vient des deux hooks (la liste, puis la fiche du questionnaire
@@ -30,6 +32,10 @@ import type {
 // Mise en page : a gauche le graphe (ou le panneau des modeles, qui prend sa place) et les
 // statistiques ; a droite le detail du questionnaire selectionne et l'histogramme de ses questions.
 // Ctrl K (ou Cmd K) ou le bouton "Rechercher" ouvre la palette de recherche.
+// Suppression (menu ... du detail, jour 20) : une confirmation du navigateur indique combien de
+// points de contact seront retires, puis le questionnaire disparait de la liste. Le serveur la
+// refuse s'il a deja des avis : un message propose alors de le desactiver. La page recoit aussi
+// { questionnaireSupprime: true } quand l'editeur vient de supprimer un questionnaire.
 // L'editeur est une autre page : /questionnaires/nouveau pour un questionnaire vide,
 // /questionnaires/<id> pour modifier un questionnaire existant.
 
@@ -39,6 +45,32 @@ const AUCUNE_QUESTION: QuestionQuestionnaire[] = []
 // Message d'une erreur : pas de reseau (statut 0) ou texte general
 function messageErreur(erreur: ErreurService, cleGenerale: string, t: (cle: string) => string): string {
   return erreur.statut === 0 ? t('commun.erreurReseau') : t(cleGenerale)
+}
+
+type Traduire = ValeurContexteLangue['t']
+
+// Textes de la suppression : les memes que dans l'editeur
+const S = 'questionnaires.editeur.suppression.'
+
+// Texte du message quand la suppression echoue ; null s'il n'y a pas d'erreur
+function texteErreurSuppression(t: Traduire, suppression: ActionSuppressionListe): string | null {
+  const { erreur, nombreAvis } = suppression
+  if (erreur === null) {
+    return null
+  }
+  if (nombreAvis !== null) {
+    return t(`${S}erreurAvis`, { nombre: nombreAvis })
+  }
+  if (erreur.statut === 0) {
+    return t('commun.erreurReseau')
+  }
+  if (erreur.statut === 403) {
+    return t(`${S}erreurInterdit`)
+  }
+  if (erreur.statut === 404) {
+    return t(`${S}erreurIntrouvable`)
+  }
+  return t(`${S}erreurGenerique`)
 }
 
 type ProprietesEntete = {
@@ -87,6 +119,7 @@ function BandeauErreur({ message, onReessayer }: { message: string; onReessayer:
 export function PageQuestionnaires() {
   const { t } = utiliserLangue()
   const navigate = useNavigate()
+  const emplacement = useLocation()
   const { utilisateur } = utiliserUtilisateur()
   const {
     acces,
@@ -100,6 +133,7 @@ export function PageQuestionnaires() {
     recharger,
     clonage,
     duplication,
+    suppression,
   } = utiliserListeQuestionnaires()
 
   const [statutOuvert, setStatutOuvert] = useState<StatutQuestionnaire | null>(null)
@@ -108,6 +142,13 @@ export function PageQuestionnaires() {
   const [paletteOuverte, setPaletteOuverte] = useState(false)
   // Vrai juste apres une duplication reussie : affiche le message de confirmation
   const [copieFaite, setCopieFaite] = useState(false)
+  // Vrai juste apres une suppression reussie (ici, ou dans l'editeur) : message de confirmation
+  const [suppressionFaite, setSuppressionFaite] = useState(
+    () =>
+      typeof emplacement.state === 'object' &&
+      emplacement.state !== null &&
+      'questionnaireSupprime' in emplacement.state,
+  )
 
   const ficheSelection = utiliserFicheQuestionnaire(selectionId)
 
@@ -136,6 +177,7 @@ export function PageQuestionnaires() {
 
   function choisirQuestionnaire(id: string | null): void {
     setCopieFaite(false)
+    setSuppressionFaite(false)
     setSelectionId(id)
   }
 
@@ -155,6 +197,7 @@ export function PageQuestionnaires() {
   // La copie est un nouveau brouillon : on l'ouvre dans le graphe et on la selectionne.
   async function dupliquer(id: string): Promise<void> {
     setCopieFaite(false)
+    setSuppressionFaite(false)
     const copieId = await duplication.dupliquer(id)
     if (copieId === null) {
       return
@@ -163,6 +206,29 @@ export function PageQuestionnaires() {
     setStatutOuvert('BROUILLON')
     setSelectionId(copieId)
     setCopieFaite(true)
+  }
+
+  // Suppression douce, sans avis seulement : confirmation, puis le questionnaire quitte la liste.
+  // Si le serveur refuse (des avis existent), le message d'erreur propose de le desactiver.
+  async function supprimer(id: string): Promise<void> {
+    setCopieFaite(false)
+    setSuppressionFaite(false)
+    const nombrePoints = questionnaires?.find((q) => q.id === id)?.nombre_points_contact ?? 0
+    let question = t(`${S}confirmer`)
+    if (nombrePoints === 1) {
+      question = t(`${S}confirmerPointUn`)
+    } else if (nombrePoints > 1) {
+      question = t(`${S}confirmerPointsMultiple`, { nombre: nombrePoints })
+    }
+    if (!window.confirm(question)) {
+      return
+    }
+    const supprime = await suppression.supprimer(id)
+    if (!supprime) {
+      return
+    }
+    setSelectionId(null)
+    setSuppressionFaite(true)
   }
 
   // Apres un clonage reussi, on ouvre l'editeur sur la copie.
@@ -209,9 +275,11 @@ export function PageQuestionnaires() {
               erreur={false}
               peutModifier={false}
               duplicationEnCours={false}
+              suppressionEnCours={false}
               onReessayer={() => undefined}
               onModifier={() => undefined}
               onDupliquer={() => undefined}
+              onSupprimer={() => undefined}
             />
           </div>
         </div>
@@ -253,6 +321,18 @@ export function PageQuestionnaires() {
       {copieFaite && (
         <div className="questionnaires-message-succes" role="status">
           {t('questionnaires.duplication.reussie')}
+        </div>
+      )}
+
+      {suppression.erreur !== null && (
+        <div className="questionnaires-erreur-globale" role="alert">
+          {texteErreurSuppression(t, suppression)}
+        </div>
+      )}
+
+      {suppressionFaite && (
+        <div className="questionnaires-message-succes" role="status">
+          {t(`${S}reussie`)}
         </div>
       )}
 
@@ -311,10 +391,14 @@ export function PageQuestionnaires() {
             erreur={ficheSelection.erreur !== null}
             peutModifier={peutModifier}
             duplicationEnCours={duplication.enCours}
+            suppressionEnCours={suppression.enCours}
             onReessayer={ficheSelection.recharger}
             onModifier={ouvrirEditeur}
             onDupliquer={(id) => {
               void dupliquer(id)
+            }}
+            onSupprimer={(id) => {
+              void supprimer(id)
             }}
           />
 

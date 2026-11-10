@@ -14,37 +14,35 @@ import {
 import { IconeFermer } from '../composants-questionnaires/icones-questionnaires'
 import type { ComposantIcone } from '../composants-tableau/icones-accueil'
 import { utiliserLangue } from '../hooks/utiliser-langue'
-import type { HumeurRobot } from '../types/exports'
+import type { FiltresEcranExport, FormatExport, HumeurRobot, PeriodeExport } from '../types/exports'
 import type { MotCompris, ProblemeRecherche } from '../utilitaires/comprendre-recherche'
 import { formaterJour, type ErreurPeriode } from '../utilitaires/periodes'
 import { cleTexteStatut } from '../utilitaires/statuts-avis'
 import '../styles/exports.css'
 
-// Barre de recherche de l'ecran E16 (jour 21, fichier 16) : l'utilisateur ecrit ce qu'il veut
-// exporter ("excel 7 jours negatifs table 12"), le robot comprend les mots et les affiche en
-// pastilles. Ce composant n'affiche que ce que le hook utiliserExport lui donne : il ne fait
-// aucun appel a l'API et ne calcule rien. La comprehension du texte est dans
-// utilitaires/comprendre-recherche.ts, l'etat dans hooks/utiliser-export.ts.
-//
-// Mise en page : le composant prend toute la largeur que la page lui donne (w-full). C'est la page
-// (fichier 20) qui le centre, avec des marges a gauche et a droite, et qui place les indications
-// 1, 2, 3, 4 (fichier 17) a droite de la barre.
-// Style : classes Tailwind, plus deux classes a definir dans styles/exports.css (fichier 21) :
-// - exports-barre : halo autour de la barre quand elle a le focus ;
-// - exports-pastille : petite animation d'apparition d'une pastille (coupee si l'utilisateur
-//   demande moins d'animations).
-// Textes : cles exports.barre.* (fichiers 23 et 24), plus des cles qui existent deja
-// (tableau.filtres.*, tableau.periodeAffichee, avis.statuts.*) et exports.formats.* (csv, xlsx, pdf).
+// Barre de recherche de l'ecran E16 (jour 21, fichier 3 sur 9 du design) : l'utilisateur ecrit
+// ce qu'il veut exporter ("excel 7 jours negatifs table 12"), le robot comprend les mots et les
+// affiche en pastilles. Sous la barre, les choix rapides s'ouvrent quand on clique sur l'indication
+// 1 (format) ou 2 (periode et filtres) : ce sont les memes reglages que ceux tapes dans la barre,
+// le hook utiliserExport garde les deux a jour.
+// Le composant n'affiche que ce que le hook lui donne : aucun appel a l'API, aucun calcul.
+// La comprehension du texte est dans utilitaires/comprendre-recherche.ts.
+// Un site, une table, un questionnaire ou un statut se disent dans la barre (par leur nom).
+// Plus de grande carte, de bordure, de texte d'aide ni d'exemples : le texte du champ suffit.
+// Mise en page : le composant est le bloc central de la page (classe exports-saisie-centre),
+// qui le place au milieu avec les indications a sa droite (fichier 5).
+// Style : aucune bordure, classes de styles/exports.css (exports-barre, exports-barre--inquiet,
+// exports-champ, exports-effacer, exports-choix, exports-choix-bouton, exports-pastilles,
+// exports-pastille, exports-pastille--alerte, exports-messages).
+// Textes : cles exports.barre.* (fichiers 6 et 7), dont les nouveaux choixFormatTitre et
+// choixPeriodeTitre, plus des cles qui existent deja (tableau.filtres.*, tableau.periodeAffichee,
+// avis.statuts.*, exports.formats.*).
 
 const LONGUEUR_MAX_TEXTE = 200
 
-// Cles des phrases d'exemple proposees quand la barre est vide.
-const CLES_SUGGESTIONS: readonly string[] = [
-  'exports.barre.suggestions.excelTrenteJours',
-  'exports.barre.suggestions.pdfSeptJours',
-  'exports.barre.suggestions.csvNegatifs',
-  'exports.barre.suggestions.excelCommentaires',
-]
+const FORMATS: readonly FormatExport[] = ['csv', 'xlsx', 'pdf']
+
+const PERIODES: readonly PeriodeExport[] = ['aujourdhui', '7jours', '30jours', 'mois', 'tout']
 
 type PropsBarreRechercheExport = {
   texte: string
@@ -54,8 +52,14 @@ type PropsBarreRechercheExport = {
   problemes: ProblemeRecherche[]
   // Erreur de la periode (dates manquantes, inversees ou trop longues), choisie a la main ou tapee.
   erreurPeriode: ErreurPeriode | null
-  // Seule l'humeur "inquiet" change l'aspect de la barre (bordure rouge).
+  // Seule l'humeur "inquiet" change l'aspect de la barre (halo rouge).
   humeur: HumeurRobot
+  // Choix rapides ouverts sous la barre : 1 = format, 2 = periode et filtres, null = fermes.
+  ouverte: 1 | 2 | null
+  format: FormatExport | null
+  onChoisirFormat: (format: FormatExport) => void
+  filtres: FiltresEcranExport
+  onChangerFiltres: (changements: Partial<FiltresEcranExport>) => void
 }
 
 type Pastille = {
@@ -118,7 +122,7 @@ function versPastille(mot: MotCompris, t: FonctionTexte, formaterDate: (jour: st
 }
 
 // Les messages du robot quand il n'a pas pu faire ce qu'on lui demande. Un meme message n'apparait
-// qu'une fois : la periode tapee en trop longue est vue par le texte ET par le choix des filtres.
+// qu'une fois : la periode tapee en trop longue est vue par le texte ET par les filtres.
 function listerMessages(
   problemes: ProblemeRecherche[],
   erreurPeriode: ErreurPeriode | null,
@@ -145,15 +149,19 @@ export function BarreRechercheExport({
   problemes,
   erreurPeriode,
   humeur,
+  ouverte,
+  format,
+  onChoisirFormat,
+  filtres,
+  onChangerFiltres,
 }: PropsBarreRechercheExport) {
   const { t, langue } = utiliserLangue()
   const idChamp = useId()
-  const idAide = useId()
+  const idMessages = useId()
   const refChamp = useRef<HTMLInputElement>(null)
 
   const pastilles = mots.map((mot) => versPastille(mot, t, (jour) => formaterJour(jour, langue)))
   const messages = listerMessages(problemes, erreurPeriode, t)
-  const texteVide = texte.trim() === ''
 
   function effacer(): void {
     onChangerTexte('')
@@ -168,19 +176,14 @@ export function BarreRechercheExport({
     }
   }
 
-  const classeBordure =
-    humeur === 'inquiet' ? 'border-erreur' : 'border-bordure-champ focus-within:border-principale'
-
   return (
-    <div role="search" className="w-full min-w-0">
+    <div role="search" className="exports-saisie-centre">
       <label htmlFor={idChamp} className="sr-only">
         {t('exports.barre.etiquette')}
       </label>
 
-      <div
-        className={`exports-barre flex min-h-14 w-full items-center gap-3 rounded-2xl border bg-surface px-4 shadow-doux transition-colors ${classeBordure}`}
-      >
-        <IconeRecherche width={22} height={22} className="shrink-0 text-texte-secondaire" />
+      <div className={humeur === 'inquiet' ? 'exports-barre exports-barre--inquiet' : 'exports-barre'}>
+        <IconeRecherche width={22} height={22} className="shrink-0" />
         <input
           ref={refChamp}
           id={idChamp}
@@ -191,85 +194,98 @@ export function BarreRechercheExport({
           spellCheck={false}
           enterKeyHint="search"
           placeholder={t('exports.barre.placeholder')}
-          aria-describedby={idAide}
+          aria-describedby={messages.length > 0 ? idMessages : undefined}
           aria-invalid={messages.length > 0}
           onChange={(evenement) => onChangerTexte(evenement.target.value)}
           onKeyDown={surTouche}
-          className="h-14 min-w-0 flex-1 border-0 bg-transparent text-base text-texte outline-none placeholder:text-texte-discret"
+          className="exports-champ"
         />
         {texte !== '' && (
           <button
             type="button"
             onClick={effacer}
             aria-label={t('exports.barre.effacer')}
-            className="-mr-2 inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-texte-secondaire hover:text-texte"
+            className="exports-effacer"
           >
             <IconeFermer width={18} height={18} />
           </button>
         )}
       </div>
 
-      <div id={idAide} className="mt-3 flex flex-col gap-3">
-        {pastilles.length > 0 && (
-          <ul
-            aria-label={t('exports.barre.motsComprisTitre')}
-            className="m-0 flex list-none flex-wrap gap-2 p-0"
-          >
-            {pastilles.map(({ cle, Icone, libelle, alerte }) => (
-              <li
-                key={cle}
-                className={`exports-pastille inline-flex min-h-8 max-w-full items-center gap-1.5 rounded-full border bg-surface-douce px-3 text-sm ${
-                  alerte ? 'border-erreur text-erreur' : 'border-bordure-champ text-texte'
-                }`}
+      {/* Indication 1 : le format */}
+      {ouverte === 1 && (
+        <ul aria-label={t('exports.barre.choixFormatTitre')} className="exports-choix">
+          {FORMATS.map((valeur) => (
+            <li key={valeur}>
+              <button
+                type="button"
+                aria-pressed={format === valeur}
+                onClick={() => onChoisirFormat(valeur)}
+                className="exports-choix-bouton"
               >
-                <Icone width={15} height={15} className="shrink-0" />
-                <span className="truncate">{libelle}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+                {t(`exports.formats.${valeur}`)}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
-        {messages.length > 0 && (
-          <ul role="status" className="m-0 flex list-none flex-col gap-1 p-0 text-sm text-erreur">
-            {messages.map((message) => (
-              <li key={message}>{message}</li>
-            ))}
-          </ul>
-        )}
-
-        {texteVide ? (
-          <div className="flex flex-col gap-2">
-            <p className="m-0 text-sm text-texte-secondaire">{t('exports.barre.aide')}</p>
-            <ul
-              aria-label={t('exports.barre.suggestionsTitre')}
-              className="m-0 flex list-none flex-wrap gap-2 p-0"
+      {/* Indication 2 : la periode et les deux cases */}
+      {ouverte === 2 && (
+        <ul aria-label={t('exports.barre.choixPeriodeTitre')} className="exports-choix">
+          {PERIODES.map((valeur) => (
+            <li key={valeur}>
+              <button
+                type="button"
+                aria-pressed={filtres.periode === valeur}
+                onClick={() => onChangerFiltres({ periode: valeur })}
+                className="exports-choix-bouton"
+              >
+                {valeur === 'tout' ? t('exports.barre.pastilles.tout') : t(`tableau.filtres.periodes.${valeur}`)}
+              </button>
+            </li>
+          ))}
+          <li>
+            <button
+              type="button"
+              aria-pressed={filtres.negatifs}
+              onClick={() => onChangerFiltres({ negatifs: !filtres.negatifs })}
+              className="exports-choix-bouton"
             >
-              {CLES_SUGGESTIONS.map((cle) => {
-                const suggestion = t(cle)
-                return (
-                  <li key={cle}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onChangerTexte(suggestion)
-                        refChamp.current?.focus()
-                      }}
-                      className="inline-flex min-h-10 cursor-pointer items-center rounded-full border border-bordure bg-transparent px-3 text-sm text-texte-secondaire transition-colors hover:border-bordure-champ hover:text-texte"
-                    >
-                      {suggestion}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        ) : (
-          pastilles.length === 0 &&
-          messages.length === 0 && (
-            <p className="m-0 text-sm text-texte-secondaire">{t('exports.barre.aucunMot')}</p>
-          )
-        )}
-      </div>
+              {t('exports.barre.pastilles.negatifs')}
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              aria-pressed={filtres.avecCommentaire}
+              onClick={() => onChangerFiltres({ avecCommentaire: !filtres.avecCommentaire })}
+              className="exports-choix-bouton"
+            >
+              {t('exports.barre.pastilles.commentaire')}
+            </button>
+          </li>
+        </ul>
+      )}
+
+      {pastilles.length > 0 && (
+        <ul aria-label={t('exports.barre.motsComprisTitre')} className="exports-pastilles">
+          {pastilles.map(({ cle, Icone, libelle, alerte }) => (
+            <li key={cle} className={alerte ? 'exports-pastille exports-pastille--alerte' : 'exports-pastille'}>
+              <Icone width={15} height={15} className="shrink-0" />
+              <span className="truncate">{libelle}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {messages.length > 0 && (
+        <ul id={idMessages} role="status" className="exports-messages">
+          {messages.map((message) => (
+            <li key={message}>{message}</li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

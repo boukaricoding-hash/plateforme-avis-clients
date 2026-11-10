@@ -1,0 +1,72 @@
+/* ------------------------------------------------------------
+   ECRAN E16 : EXPORTS ET RAPPORTS (jour 21, fichier 21)
+   Presque toute la page est en classes Tailwind. Ce fichier ne
+   contient que ce que Tailwind ne sait pas faire seul :
+   - exports-barre : halo autour de la barre de recherche quand
+     elle a le focus (le champ a l'interieur n'a pas de contour,
+     le halo est donc le signe visible du focus au clavier) ;
+   - exports-pastille : petite animation d'apparition d'une
+     pastille, quand le robot comprend un mot.
+   Les couleurs viennent de index.css (theme sombre et theme
+   clair) : le halo prend la couleur principale de l'organisation.
+   Les animations sont coupees si l'utilisateur demande moins de
+   mouvement.
+------------------------------------------------------------ */
+
+/* ---------- Barre de recherche ---------- */
+
+/* La transition de Tailwind (transition-colors) ne couvre pas
+   l'ombre : on la redefinit ici pour que le halo apparaisse en
+   douceur, avec la couleur de la bordure. */
+.exports-barre {
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.25s ease;
+}
+
+/* Halo : l'ombre habituelle de la barre, plus un anneau de 4 px */
+.exports-barre:focus-within {
+  box-shadow:
+    var(--ombre-sm),
+    0 0 0 4px color-mix(in srgb, var(--couleur-principale) 32%, transparent);
+}
+
+/* Si le robot est inquiet (la bordure est rouge), le halo l'est aussi */
+.exports-barre.border-erreur:focus-within {
+  box-shadow:
+    var(--ombre-sm),
+    0 0 0 4px color-mix(in srgb, var(--erreur) 32%, transparent);
+}
+
+/* ---------- Pastilles des mots compris ---------- */
+
+@keyframes exports-pastille-apparition {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Un leger depassement a l'arrivee (courbe a ressort), comme le robot */
+.exports-pastille {
+  transform-origin: left center;
+  animation: exports-pastille-apparition 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ---------- Moins de mouvement ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .exports-barre {
+    transition: none;
+  }
+
+  .exports-pastille {
+    animation: none;
+  }
+}

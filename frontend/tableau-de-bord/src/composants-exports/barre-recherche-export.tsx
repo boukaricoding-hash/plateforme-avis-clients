@@ -18,6 +18,7 @@ import type { HumeurRobot } from '../types/exports'
 import type { MotCompris, ProblemeRecherche } from '../utilitaires/comprendre-recherche'
 import { formaterJour, type ErreurPeriode } from '../utilitaires/periodes'
 import { cleTexteStatut } from '../utilitaires/statuts-avis'
+import '../styles/exports.css'
 
 // Barre de recherche de l'ecran E16 (jour 21, fichier 16) : l'utilisateur ecrit ce qu'il veut
 // exporter ("excel 7 jours negatifs table 12"), le robot comprend les mots et les affiche en

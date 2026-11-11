@@ -19,9 +19,17 @@
    - Etroit (moins de 40rem) : tout est empile au centre, les
      indications sous la barre.
 
+   Mouvement : rien n'apparait d'un coup. Un clic sur l'indication 1 ou 2
+   la fait reagir tout de suite (elle s'enfonce, son numero a un halo),
+   puis les choix s'ouvrent du haut vers le bas avec un fondu, et les
+   boutons arrivent un par un. Sous la phrase du robot, de petits points
+   montrent qu'il y a d'autres conclusions a faire defiler.
+   Aucun mouvement si l'ordinateur est regle sur "moins de mouvement".
+
    Classes utilisees par les fichiers suivants :
    page : exports-page, exports-scene, exports-robot, exports-parole,
-          exports-parole-texte, exports-parole-suite
+          exports-parole-texte, exports-parole-suite,
+          exports-parole-points, exports-parole-point
    barre : exports-saisie, exports-saisie-centre, exports-barre,
            exports-barre--inquiet, exports-champ, exports-effacer,
            exports-pastilles, exports-pastille, exports-pastille--alerte,
@@ -103,6 +111,38 @@ main:has(> .exports-page) {
   font-size: 0.875rem;
   line-height: 1.4;
   text-wrap: balance;
+}
+
+/* De tres petits points sous la conclusion : un point par conclusion, le point
+   en cours est plus long et colore. Ils montrent qu'il y a d'autres pages. */
+.exports-parole-points {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-top: 0.125rem;
+  animation: exports-fondu 0.4s ease 0.15s both;
+}
+
+.exports-parole-point {
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--texte) 25%, transparent);
+  transition:
+    width 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.25s ease;
+}
+
+/* Le point en cours est allonge et prend la couleur principale */
+.exports-parole-point[data-actif='true'] {
+  width: 1rem;
+  background: var(--couleur-principale);
+}
+
+/* Le point suivant est un peu plus visible : c'est la que le clic emmene */
+.exports-parole-point[data-actif='true'] + .exports-parole-point {
+  background: color-mix(in srgb, var(--texte) 45%, transparent);
 }
 
 /* ---------- Zone de saisie : barre au milieu, indications a droite ---------- */
@@ -272,6 +312,56 @@ main:has(> .exports-page) {
   color: var(--texte-sur-principale);
 }
 
+/* Ouverture douce de la zone des choix : elle attend un instant (le temps de sentir
+   le clic sur l'indication), puis s'ouvre du haut vers le bas avec un fondu.
+   La page grandit peu a peu au lieu de sauter, et le robot glisse avec elle.
+   Le petit remplissage (0.25rem, annule par la marge negative) garde le contour
+   du clavier visible malgre le "overflow: hidden" qui coupe pendant l'ouverture. */
+.exports-choix {
+  margin: -0.25rem;
+  padding: 0.25rem;
+  overflow: hidden;
+  animation: exports-choix-ouverture 0.55s cubic-bezier(0.45, 0, 0.25, 1) 90ms both;
+}
+
+/* Les boutons arrivent un par un, environ 45 ms d'ecart, apres l'ouverture */
+.exports-choix > li {
+  animation: exports-choix-entree 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.14s + var(--rang, 0) * 45ms);
+}
+
+.exports-choix > li:nth-child(1) {
+  --rang: 0;
+}
+
+.exports-choix > li:nth-child(2) {
+  --rang: 1;
+}
+
+.exports-choix > li:nth-child(3) {
+  --rang: 2;
+}
+
+.exports-choix > li:nth-child(4) {
+  --rang: 3;
+}
+
+.exports-choix > li:nth-child(5) {
+  --rang: 4;
+}
+
+.exports-choix > li:nth-child(6) {
+  --rang: 5;
+}
+
+.exports-choix > li:nth-child(7) {
+  --rang: 6;
+}
+
+.exports-choix > li:nth-child(8) {
+  --rang: 7;
+}
+
 /* ---------- Indications 1, 2, 3, 4 (cliquables) ---------- */
 
 /* Etroit : deux colonnes sous la barre ; tres etroit : une colonne */
@@ -299,11 +389,19 @@ main:has(> .exports-page) {
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .exports-etape:hover:not(:disabled) {
   background: color-mix(in srgb, var(--surface-douce) 70%, transparent);
+}
+
+/* Retour immediat au clic : l'indication s'enfonce un peu */
+.exports-etape:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .exports-etape:disabled {
@@ -323,7 +421,18 @@ main:has(> .exports-page) {
   color: var(--texte-secondaire);
   font-size: 0.875rem;
   font-weight: 600;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.25s ease;
+}
+
+/* Indication 1 ou 2 dont les choix sont ouverts : le numero a un halo doux,
+   avec un petit battement quand elle s'ouvre. C'est ce que l'on sent avant
+   que les choix n'arrivent. */
+.exports-etape[aria-expanded='true'] .exports-etape-numero {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--couleur-principale) 28%, transparent);
+  animation: exports-etape-battement 0.4s ease-out;
 }
 
 .exports-etape-titre {
@@ -500,19 +609,72 @@ main:has(> .exports-page) {
   }
 }
 
+/* La zone des choix s'ouvre du haut vers le bas (14rem : plus haut que les choix
+   les plus hauts, sur le plus petit telephone) */
+@keyframes exports-choix-ouverture {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+
+  to {
+    max-height: 14rem;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Un bouton de choix arrive en remontant un peu */
+@keyframes exports-choix-entree {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Le numero de l'indication bat une fois quand on clique dessus */
+@keyframes exports-etape-battement {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.14);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* ---------- Moins de mouvement ---------- */
 
 @media (prefers-reduced-motion: reduce) {
   .exports-parole,
-  .exports-pastille {
+  .exports-parole-points,
+  .exports-pastille,
+  .exports-choix,
+  .exports-choix > li,
+  .exports-etape[aria-expanded='true'] .exports-etape-numero {
     animation: none;
   }
 
   .exports-barre,
   .exports-etape,
   .exports-etape-numero,
+  .exports-parole-point,
   .exports-choix-bouton,
   .exports-effacer {
     transition: none;
+  }
+
+  .exports-etape:active:not(:disabled) {
+    transform: none;
   }
 }

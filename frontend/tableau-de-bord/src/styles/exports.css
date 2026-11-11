@@ -1,45 +1,601 @@
 /* ------------------------------------------------------------
-   ECRAN E16 : EXPORTS ET RAPPORTS (jour 21, fichier 21)
-   Presque toute la page est en classes Tailwind. Ce fichier ne
-   contient que ce que Tailwind ne sait pas faire seul :
-   - exports-barre : halo autour de la barre de recherche quand
-     elle a le focus (le champ a l'interieur n'a pas de contour,
-     le halo est donc le signe visible du focus au clavier) ;
-   - exports-pastille : petite animation d'apparition d'une
-     pastille, quand le robot comprend un mot.
-   Les couleurs viennent de index.css (theme sombre et theme
-   clair) : le halo prend la couleur principale de l'organisation.
-   Les animations sont coupees si l'utilisateur demande moins de
-   mouvement.
+   ECRAN E16 : EXPORTS ET RAPPORTS (jour 21, fichier 1 sur 9 du design)
+   Un seul ecran, tres leger, sans bordure et sans defilement :
+   le robot au centre, ce qu'il dit juste en dessous, la barre de
+   recherche, et les indications 1, 2, 3, 4 a droite de la barre.
+   Tout est transparent ou presque : aucune carte, aucune bordure.
+   Les couleurs viennent de index.css (theme sombre et clair) :
+   aucune couleur n'est ecrite ici.
+
+   Hauteur : la page prend toute la zone libre sous la barre du haut,
+   et son contenu ne depasse jamais 90 % de la hauteur de l'ecran
+   (90vh). Il reste centre, en haut comme en bas, a toute taille.
+   Largeur : la page regarde sa propre largeur (container query),
+   pas celle de l'ecran, car le menu lateral en prend une partie.
+   - Large (56rem et plus) : trois colonnes, la barre au milieu,
+     les indications dans la colonne de droite.
+   - Moyen (40rem a 56rem) : deux colonnes, le robot, sa phrase et la
+     barre a gauche, les indications a droite.
+   - Etroit (moins de 40rem) : tout est empile au centre, les
+     indications sous la barre.
+
+   Mouvement : rien n'apparait d'un coup. Un clic sur l'indication 1 ou 2
+   la fait reagir tout de suite (elle s'enfonce, son numero a un halo),
+   puis les choix s'ouvrent du haut vers le bas avec un fondu, et les
+   boutons arrivent un par un. Sous la phrase du robot, de petits points
+   montrent qu'il y a d'autres conclusions a faire defiler.
+   Aucun mouvement si l'ordinateur est regle sur "moins de mouvement".
+
+   Classes utilisees par les fichiers suivants :
+   page : exports-page, exports-scene, exports-robot, exports-parole,
+          exports-parole-texte, exports-parole-suite,
+          exports-parole-points, exports-parole-point
+   barre : exports-saisie, exports-saisie-centre, exports-barre,
+           exports-barre--inquiet, exports-champ, exports-effacer,
+           exports-pastilles, exports-pastille, exports-pastille--alerte,
+           exports-messages, exports-choix, exports-choix-bouton
+   indications : exports-etapes, exports-etape, exports-etape-numero,
+          exports-etape-titre, exports-etape-detail
 ------------------------------------------------------------ */
 
-/* ---------- Barre de recherche ---------- */
+/* ---------- Page : un seul ecran, centre ---------- */
 
-/* La transition de Tailwind (transition-colors) ne couvre pas
-   l'ombre : on la redefinit ici pour que le halo apparaisse en
-   douceur, avec la couleur de la bordure. */
-.exports-barre {
+/* La page remplit la zone libre du cadre et centre son contenu.
+   Le centrage par "margin: auto" (et non par align-items) evite que
+   le haut du contenu soit coupe si l'ecran est vraiment trop bas. */
+.exports-page {
+  container-type: inline-size;
+  container-name: exports;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+/* Le defilement ne vient jamais du cadre : la page tient dans la zone libre */
+main:has(> .exports-page) {
+  overflow: hidden;
+}
+
+.exports-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.5rem, 1.6vh, 1.25rem);
+  width: 100%;
+  max-width: 80rem;
+  max-height: 90vh;
+  margin: auto;
+}
+
+/* Le robot grandit avec la hauteur de l'ecran, sans jamais la manger */
+.exports-robot {
+  display: block;
+  flex-shrink: 0;
+  width: clamp(6rem, 22vh, 14rem);
+  height: auto;
+}
+
+/* ---------- Ce que dit le robot (sous le robot) ---------- */
+
+/* Une hauteur reservee : la barre en dessous ne saute pas quand le texte change */
+.exports-parole {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 38rem;
+  min-height: 4.5rem;
+  padding-inline: 1rem;
+  text-align: center;
+  animation: exports-fondu 0.3s ease both;
+}
+
+.exports-parole-texte {
+  margin: 0;
+  color: var(--texte);
+  font-size: clamp(1rem, 2.3vh, 1.25rem);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.exports-parole-suite {
+  margin: 0;
+  color: var(--texte-secondaire);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+/* De tres petits points sous la conclusion : un point par conclusion, le point
+   en cours est plus long et colore. Ils montrent qu'il y a d'autres pages. */
+.exports-parole-points {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-top: 0.125rem;
+  animation: exports-fondu 0.4s ease 0.15s both;
+}
+
+.exports-parole-point {
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--texte) 25%, transparent);
   transition:
-    border-color 0.2s ease,
+    width 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.25s ease;
+}
+
+/* Le point en cours est allonge et prend la couleur principale */
+.exports-parole-point[data-actif='true'] {
+  width: 1rem;
+  background: var(--couleur-principale);
+}
+
+/* Le point suivant est un peu plus visible : c'est la que le clic emmene */
+.exports-parole-point[data-actif='true'] + .exports-parole-point {
+  background: color-mix(in srgb, var(--texte) 45%, transparent);
+}
+
+/* ---------- Zone de saisie : barre au milieu, indications a droite ---------- */
+
+.exports-saisie {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 1rem;
+  width: 100%;
+}
+
+/* Le bloc central : la barre, les pastilles, les choix rapides */
+.exports-saisie-centre {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 40rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+/* ---------- Barre de recherche : sans bordure, transparente ---------- */
+
+.exports-barre {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding-inline: 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-douce) 60%, transparent);
+  color: var(--texte-secondaire);
+  transition:
     background-color 0.2s ease,
     box-shadow 0.25s ease;
 }
 
-/* Halo : l'ombre habituelle de la barre, plus un anneau de 4 px */
-.exports-barre:focus-within {
-  box-shadow:
-    var(--ombre-sm),
-    0 0 0 4px color-mix(in srgb, var(--couleur-principale) 32%, transparent);
+.exports-barre:hover {
+  background: color-mix(in srgb, var(--surface-douce) 80%, transparent);
 }
 
-/* Si le robot est inquiet (la bordure est rouge), le halo l'est aussi */
-.exports-barre.border-erreur:focus-within {
-  box-shadow:
-    var(--ombre-sm),
-    0 0 0 4px color-mix(in srgb, var(--erreur) 32%, transparent);
+/* Le focus se voit par un halo doux, pas par une bordure */
+.exports-barre:focus-within {
+  background: color-mix(in srgb, var(--surface-douce) 85%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--couleur-principale) 28%, transparent);
+}
+
+/* Robot inquiet : le halo devient rouge, meme au repos */
+.exports-barre--inquiet,
+.exports-barre--inquiet:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--erreur) 45%, transparent);
+}
+
+.exports-champ {
+  flex: 1;
+  min-width: 0;
+  height: 3.5rem;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--texte);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.exports-champ::placeholder {
+  color: var(--texte-discret);
+}
+
+.exports-effacer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-right: -0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--texte-secondaire);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.exports-effacer:hover {
+  background: color-mix(in srgb, var(--texte) 10%, transparent);
+  color: var(--texte);
 }
 
 /* ---------- Pastilles des mots compris ---------- */
+
+.exports-pastilles,
+.exports-choix {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exports-pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2rem;
+  max-width: 100%;
+  padding-inline: 0.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--couleur-principale) 16%, transparent);
+  color: var(--texte);
+  font-size: 0.875rem;
+  transform-origin: left center;
+  animation: exports-pastille-apparition 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.exports-pastille--alerte {
+  background: color-mix(in srgb, var(--erreur) 18%, transparent);
+  color: var(--erreur);
+}
+
+/* Messages du robot quand il n'a pas compris (texte seul, pas de cadre) */
+.exports-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--erreur);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* ---------- Choix rapides (format, periode, filtres) ---------- */
+
+.exports-choix-bouton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding-inline: 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-douce) 60%, transparent);
+  color: var(--texte-secondaire);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.exports-choix-bouton:hover {
+  background: color-mix(in srgb, var(--surface-douce) 90%, transparent);
+  color: var(--texte);
+}
+
+/* Choix deja fait : rempli avec la couleur principale */
+.exports-choix-bouton[aria-pressed='true'] {
+  background: var(--couleur-principale);
+  color: var(--texte-sur-principale);
+}
+
+/* Ouverture douce de la zone des choix : elle attend un instant (le temps de sentir
+   le clic sur l'indication), puis s'ouvre du haut vers le bas avec un fondu.
+   La page grandit peu a peu au lieu de sauter, et le robot glisse avec elle.
+   Le petit remplissage (0.25rem, annule par la marge negative) garde le contour
+   du clavier visible malgre le "overflow: hidden" qui coupe pendant l'ouverture. */
+.exports-choix {
+  margin: -0.25rem;
+  padding: 0.25rem;
+  overflow: hidden;
+  animation: exports-choix-ouverture 0.55s cubic-bezier(0.45, 0, 0.25, 1) 90ms both;
+}
+
+/* Les boutons arrivent un par un, environ 45 ms d'ecart, apres l'ouverture */
+.exports-choix > li {
+  animation: exports-choix-entree 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.14s + var(--rang, 0) * 45ms);
+}
+
+.exports-choix > li:nth-child(1) {
+  --rang: 0;
+}
+
+.exports-choix > li:nth-child(2) {
+  --rang: 1;
+}
+
+.exports-choix > li:nth-child(3) {
+  --rang: 2;
+}
+
+.exports-choix > li:nth-child(4) {
+  --rang: 3;
+}
+
+.exports-choix > li:nth-child(5) {
+  --rang: 4;
+}
+
+.exports-choix > li:nth-child(6) {
+  --rang: 5;
+}
+
+.exports-choix > li:nth-child(7) {
+  --rang: 6;
+}
+
+.exports-choix > li:nth-child(8) {
+  --rang: 7;
+}
+
+/* ---------- Indications 1, 2, 3, 4 (cliquables) ---------- */
+
+/* Etroit : deux colonnes sous la barre ; tres etroit : une colonne */
+.exports-etapes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem 0.75rem;
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  list-style: none;
+}
+
+.exports-etape {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 0;
+  border-radius: var(--rayon-lg);
+  background: transparent;
+  color: var(--texte-secondaire);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.exports-etape:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface-douce) 70%, transparent);
+}
+
+/* Retour immediat au clic : l'indication s'enfonce un peu */
+.exports-etape:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.exports-etape:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.exports-etape-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--texte) 10%, transparent);
+  color: var(--texte-secondaire);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.25s ease;
+}
+
+/* Indication 1 ou 2 dont les choix sont ouverts : le numero a un halo doux,
+   avec un petit battement quand elle s'ouvre. C'est ce que l'on sent avant
+   que les choix n'arrivent. */
+.exports-etape[aria-expanded='true'] .exports-etape-numero {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--couleur-principale) 28%, transparent);
+  animation: exports-etape-battement 0.4s ease-out;
+}
+
+.exports-etape-titre {
+  display: block;
+  color: var(--texte);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Les longs textes : une courte phrase sous le titre de l'etape */
+.exports-etape-detail {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--texte-secondaire);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* Etape en cours : le numero est rempli */
+.exports-etape[data-etat='courante'] .exports-etape-numero {
+  background: var(--couleur-principale);
+  color: var(--texte-sur-principale);
+}
+
+/* Etape faite : numero plein et doux, avec la coche */
+.exports-etape[data-etat='terminee'] .exports-etape-numero {
+  background: color-mix(in srgb, var(--succes) 24%, transparent);
+  color: var(--succes);
+}
+
+/* Etape a venir : discrete */
+.exports-etape[data-etat='avenir'] .exports-etape-titre {
+  color: var(--texte-secondaire);
+}
+
+/* Le clavier voit toujours ou il est (un contour, pas une bordure) */
+.exports-etape:focus-visible,
+.exports-choix-bouton:focus-visible,
+.exports-effacer:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Telephone : seuls les titres restent, pour que tout tienne sans defiler */
+@container exports (max-width: 34rem) {
+  .exports-etape-detail {
+    display: none;
+  }
+
+  .exports-etape {
+    align-items: center;
+    padding: 0.375rem 0.5rem;
+  }
+}
+
+/* Ecran bas (paysage) : la phrase du robot reserve moins de place */
+@media (max-height: 640px) {
+  .exports-parole {
+    min-height: 3rem;
+  }
+}
+
+/* Ecran bas (zoom 150 % ou plus, fenetre aplatie) : le robot est plus petit,
+   pour que les choix rapides ouverts tiennent sans defiler */
+@media (max-height: 560px) {
+  .exports-robot {
+    width: clamp(4rem, 15vh, 14rem);
+  }
+}
+
+/* Ecran tres bas : seuls les titres restent pour que tout tienne sans defiler */
+@media (max-height: 520px) {
+  .exports-etape-detail {
+    display: none;
+  }
+}
+
+/* Page de 40rem et plus (portable, fenetre reduite, zoom 125 %) : deux colonnes.
+   Le robot, sa phrase et la barre sont a gauche ; les indications 1 a 4, avec
+   leur texte, sont a droite, centrees sur la hauteur du bloc. Elles ne passent
+   jamais sous la barre : c'est ce qui faisait defiler la page. */
+@container exports (min-width: 40rem) {
+  .exports-scene {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(14rem, 34cqw, 19rem);
+    align-items: center;
+    justify-items: center;
+    column-gap: 1rem;
+    row-gap: clamp(0.5rem, 1.6vh, 1.25rem);
+  }
+
+  .exports-saisie {
+    display: contents;
+  }
+
+  .exports-robot,
+  .exports-parole,
+  .exports-saisie-centre,
+  .exports-messages {
+    grid-column: 1;
+  }
+
+  .exports-saisie-centre {
+    align-self: start;
+    padding-inline: 0;
+  }
+
+  .exports-etapes {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    grid-template-columns: minmax(0, 1fr);
+    align-self: center;
+    justify-self: start;
+    max-width: 19rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Plus compact, pour que les quatre indications avec leur texte tiennent a droite */
+  .exports-etape {
+    padding-block: 0.375rem;
+  }
+
+  .exports-etape-detail {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+}
+
+/* Page large (56rem et plus) : trois colonnes, la barre bien au milieu de la page,
+   les indications dans la colonne de droite. */
+@container exports (min-width: 56rem) {
+  .exports-scene {
+    grid-template-columns: minmax(0, 1fr) min(40rem, calc(100cqw - 32rem)) minmax(0, 1fr);
+  }
+
+  .exports-robot,
+  .exports-parole,
+  .exports-saisie-centre,
+  .exports-messages {
+    grid-column: 2;
+  }
+
+  .exports-etapes {
+    grid-column: 3;
+    padding: 0 0 0 1.5rem;
+  }
+}
+
+/* ---------- Animations ---------- */
+
+@keyframes exports-fondu {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
 @keyframes exports-pastille-apparition {
   from {
@@ -53,20 +609,72 @@
   }
 }
 
-/* Un leger depassement a l'arrivee (courbe a ressort), comme le robot */
-.exports-pastille {
-  transform-origin: left center;
-  animation: exports-pastille-apparition 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+/* La zone des choix s'ouvre du haut vers le bas (14rem : plus haut que les choix
+   les plus hauts, sur le plus petit telephone) */
+@keyframes exports-choix-ouverture {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+
+  to {
+    max-height: 14rem;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Un bouton de choix arrive en remontant un peu */
+@keyframes exports-choix-entree {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Le numero de l'indication bat une fois quand on clique dessus */
+@keyframes exports-etape-battement {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.14);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ---------- Moins de mouvement ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .exports-barre {
+  .exports-parole,
+  .exports-parole-points,
+  .exports-pastille,
+  .exports-choix,
+  .exports-choix > li,
+  .exports-etape[aria-expanded='true'] .exports-etape-numero {
+    animation: none;
+  }
+
+  .exports-barre,
+  .exports-etape,
+  .exports-etape-numero,
+  .exports-parole-point,
+  .exports-choix-bouton,
+  .exports-effacer {
     transition: none;
   }
 
-  .exports-pastille {
-    animation: none;
+  .exports-etape:active:not(:disabled) {
+    transform: none;
   }
 }

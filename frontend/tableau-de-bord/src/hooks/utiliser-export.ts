@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ErreurService } from '../services/api'
-import { analyserAvis, genererExport } from '../services/exports'
+import { analyserAvis, creerExport, enregistrerExport } from '../services/exports'
 import { listerPointsContact } from '../services/points-contact'
 import { listerQuestionnaires } from '../services/questionnaires'
 import { listerSites } from '../services/sites'
+import type { FichierRecupere } from '../services/telechargement'
 import type {
   CodePointAnalyse,
   EtapeExport,
@@ -32,7 +33,12 @@ import { utiliserUtilisateur } from './utiliser-utilisateur'
 // - ce que l'utilisateur tape dans la barre, et ce que le robot en comprend (comprendre-recherche.ts) ;
 // - le format et les filtres choisis, a la main ou par le texte ;
 // - l'analyse des avis filtres (POST /exports/analyse), relancee toute seule quand les filtres changent ;
-// - la creation et le telechargement du fichier (POST /exports) ;
+// - la creation du fichier (POST /exports, indication 3), puis son enregistrement sur l'appareil
+//   (indication 4) : deux gestes distincts, le fichier est "pret" avant d'etre "enregistre" ;
+// - la remise a zero : une fois le fichier enregistre, les quatre coches vertes restent visibles
+//   quelques secondes, puis tout revient a zero tout seul (barre vide, format et filtres par
+//   defaut, indications au debut, robot au repos). Toucher un choix pendant ce delai annule la
+//   remise a zero : le travail en cours est garde. Le fichier enregistre est oublie de la page ;
 // - l'humeur du robot et l'indication en cours (1 Format, 2 Periode et filtres, 3 Generer, 4 Telecharger).
 // Le Responsable et le Gestionnaire utilisent l'ecran ; le Gestionnaire n'exporte que son perimetre
 // (le serveur le decide). L'administrateur DTS n'a pas d'organisation : le hook ne fait alors aucun
@@ -48,6 +54,10 @@ const DELAI_ANALYSE_MS = 500
 
 // Le robot "ecoute" tant que l'utilisateur tape, puis revient au repos apres ce delai.
 const DELAI_ECOUTE_MS = 1500
+
+// Apres l'enregistrement du fichier, les coches vertes restent visibles ce temps, puis l'ecran
+// revient a zero tout seul (l'utilisateur n'a pas a recharger la page).
+const DELAI_REMISE_A_ZERO_MS = 2500
 
 // Points faibles assez serieux pour que le robot soit inquiet quand l'analyse est terminee.
 const CODES_INQUIETANTS: readonly CodePointAnalyse[] = [
@@ -95,15 +105,25 @@ export type ResultatExport = {
   erreurAnalyse: ErreurService | null
 
   // --- Fichier ----------------------------------------------------------------------------------
-  // 'termine' : le fichier est enregistre sur l'appareil. Il repasse a 'repos' des qu'un choix change.
+  // 'termine' : le fichier est cree et pret (indication 4), pas forcement enregistre.
+  // Il repasse a 'repos' des qu'un choix change.
   etatGeneration: EtatOperation
   // Erreur 422 EXPORT_TROP_VOLUMINEUX : il faut reduire la periode (csv et excel).
   erreurGeneration: ErreurService | null
-  // Nom du fichier enregistre quand etatGeneration vaut 'termine'.
+  // Nom du fichier pret quand etatGeneration vaut 'termine'.
   nomFichier: string | null
+  // Vrai quand le fichier pret a ete enregistre sur l'appareil : les quatre indications sont faites.
+  // Cela ne dure que quelques secondes : l'ecran revient ensuite a zero tout seul, ou plus tot
+  // si l'utilisateur touche a un choix (il garde alors son travail).
+  fichierEnregistre: boolean
   // Format choisi, periode valide et aucune creation en cours.
   peutGenerer: boolean
+  // Indication 3 : cree le fichier. Il n'est pas enregistre : c'est le role de telecharger.
   generer: () => Promise<void>
+  // Indication 4 : enregistre sur l'appareil le fichier pret. Ne fait rien s'il n'y en a pas.
+  // Une fois enregistre, le fichier est oublie quand l'ecran revient a zero : pour l'avoir de
+  // nouveau, il faut le creer encore (indication 3).
+  telecharger: () => void
 
   // --- Robot et indications ---------------------------------------------------------------------
   humeur: HumeurRobot
@@ -182,14 +202,18 @@ type EtatAnalyseStocke = {
 type EtatGenerationStocke = {
   etat: EtatOperation
   cle: string | null
-  nom: string | null
+  // Le fichier cree (indication 3), garde en memoire jusqu'a son enregistrement (indication 4).
+  fichier: FichierRecupere | null
+  // Vrai des que ce fichier a ete enregistre sur l'appareil.
+  enregistre: boolean
   erreur: ErreurService | null
 }
 
 const GENERATION_AU_REPOS: EtatGenerationStocke = {
   etat: 'repos',
   cle: null,
-  nom: null,
+  fichier: null,
+  enregistre: false,
   erreur: null,
 }
 
@@ -217,6 +241,13 @@ export function utiliserExport(): ResultatExport {
 
   const [resultatAnalyse, setResultatAnalyse] = useState<EtatAnalyseStocke | null>(null)
   const [generation, setGeneration] = useState<EtatGenerationStocke>(GENERATION_AU_REPOS)
+
+  // Toucher a un choix (texte, format ou filtre) une fois le fichier enregistre : l'ecran garde le
+  // travail de l'utilisateur, mais quitte l'etat "tout est fait" (les coches vertes disparaissent)
+  // et la remise a zero prevue est annulee. Sans effet tant que le fichier n'est pas enregistre.
+  const oublierFichierEnregistre = useCallback((): void => {
+    setGeneration((courante) => (courante.enregistre ? GENERATION_AU_REPOS : courante))
+  }, [])
 
   // --- Chargement des listes (une seule fois) ---------------------------------------------------
 
@@ -286,13 +317,14 @@ export function utiliserExport(): ResultatExport {
       setTexte(nouveauTexte)
       setFiltres((courants) => fusionnerFiltres(courants, comprise, apres))
       setFormat((courant) => fusionnerFormat(courant, comprise, apres))
+      oublierFichierEnregistre()
 
       // Le robot ecoute tant qu'on tape.
       setEnSaisie(true)
       window.clearTimeout(minuterieSaisie.current)
       minuterieSaisie.current = window.setTimeout(() => setEnSaisie(false), DELAI_ECOUTE_MS)
     },
-    [comprise, contexte],
+    [comprise, contexte, oublierFichierEnregistre],
   )
 
   useEffect(() => {
@@ -303,24 +335,32 @@ export function utiliserExport(): ResultatExport {
 
   // --- Choix a la main --------------------------------------------------------------------------
 
-  const choisirFormat = useCallback((nouveauFormat: FormatExport) => {
-    setFormat(nouveauFormat)
-  }, [])
+  const choisirFormat = useCallback(
+    (nouveauFormat: FormatExport) => {
+      setFormat(nouveauFormat)
+      oublierFichierEnregistre()
+    },
+    [oublierFichierEnregistre],
+  )
 
-  const changerFiltres = useCallback((changements: Partial<FiltresEcranExport>) => {
-    setFiltres((courants) => {
-      const suivants = { ...courants, ...changements }
-      // Un point de contact appartient a un site : changer de site vide le point (sauf s'il est donne).
-      if (
-        changements.site !== undefined &&
-        changements.site !== courants.site &&
-        changements.point === undefined
-      ) {
-        suivants.point = ''
-      }
-      return suivants
-    })
-  }, [])
+  const changerFiltres = useCallback(
+    (changements: Partial<FiltresEcranExport>) => {
+      oublierFichierEnregistre()
+      setFiltres((courants) => {
+        const suivants = { ...courants, ...changements }
+        // Un point de contact appartient a un site : changer de site vide le point (sauf s'il est donne).
+        if (
+          changements.site !== undefined &&
+          changements.site !== courants.site &&
+          changements.point === undefined
+        ) {
+          suivants.point = ''
+        }
+        return suivants
+      })
+    },
+    [oublierFichierEnregistre],
+  )
 
   // --- Filtres de l'API et periode --------------------------------------------------------------
 
@@ -388,7 +428,7 @@ export function utiliserExport(): ResultatExport {
           ? 'termine'
           : 'erreur'
 
-  // --- Creation et telechargement du fichier ----------------------------------------------------
+  // --- Creation du fichier, puis enregistrement -------------------------------------------------
 
   const cleGeneration = useMemo(
     () =>
@@ -398,7 +438,7 @@ export function utiliserExport(): ResultatExport {
     [format, filtresApi, langue],
   )
 
-  // Un fichier deja enregistre n'est plus "pret" des que le format, les filtres ou la langue changent.
+  // Un fichier deja cree n'est plus "pret" des que le format, les filtres ou la langue changent.
   const etatGeneration: EtatOperation =
     generation.etat === 'en_cours'
       ? 'en_cours'
@@ -414,19 +454,64 @@ export function utiliserExport(): ResultatExport {
       return
     }
 
-    setGeneration({ etat: 'en_cours', cle: cleGeneration, nom: null, erreur: null })
+    setGeneration({ etat: 'en_cours', cle: cleGeneration, fichier: null, enregistre: false, erreur: null })
     try {
-      const nom = await genererExport({ format, langue, filtres: filtresApi })
-      setGeneration({ etat: 'termine', cle: cleGeneration, nom, erreur: null })
+      // Le fichier est seulement cree : il sera enregistre au clic sur l'indication 4.
+      const fichier = await creerExport({ format, langue, filtres: filtresApi })
+      setGeneration({ etat: 'termine', cle: cleGeneration, fichier, enregistre: false, erreur: null })
     } catch (e) {
       const erreur = versErreurService(e)
       if (erreur.statut === 401) {
         void seDeconnecter()
         return
       }
-      setGeneration({ etat: 'erreur', cle: cleGeneration, nom: null, erreur })
+      setGeneration({ etat: 'erreur', cle: cleGeneration, fichier: null, enregistre: false, erreur })
     }
   }, [peutGenerer, format, filtresApi, cleGeneration, langue, seDeconnecter])
+
+  // Le fichier pret (etat 'termine') peut etre enregistre. Une fois enregistre, l'ecran revient
+  // a zero tout seul (voir "Remise a zero" plus bas) et le fichier est oublie.
+  const fichierPret = etatGeneration === 'termine' ? generationActuelle.fichier : null
+  const fichierEnregistre = fichierPret !== null && generationActuelle.enregistre
+
+  const telecharger = useCallback((): void => {
+    if (fichierPret === null) {
+      return
+    }
+    enregistrerExport(fichierPret)
+    // Seulement si c'est toujours le meme fichier : un nouveau fichier cree entre-temps garde son etat.
+    setGeneration((courante) =>
+      courante.fichier === fichierPret ? { ...courante, enregistre: true } : courante,
+    )
+  }, [fichierPret])
+
+  // --- Remise a zero apres l'enregistrement -----------------------------------------------------
+
+  // Tout revient au depart : barre vide, format et filtres par defaut, fichier oublie. Les
+  // indications repassent a 1 et le robot au repos (l'humeur et l'etape se calculent a partir de
+  // ces choix). Le robot n'ecoute plus : la minuterie de frappe est arretee.
+  const remettreAZero = useCallback((): void => {
+    window.clearTimeout(minuterieSaisie.current)
+    setTexte('')
+    setFormat(null)
+    setFiltres(filtresEcranParDefaut())
+    setEnSaisie(false)
+    setGeneration(GENERATION_AU_REPOS)
+  }, [])
+
+  // Une fois le fichier enregistre, les coches vertes restent visibles un instant, puis l'ecran
+  // revient a zero tout seul. Si l'utilisateur touche a un choix avant la fin, le fichier enregistre
+  // est oublie (oublierFichierEnregistre) : fichierEnregistre repasse a faux, l'effet est nettoye et
+  // la minuterie est arretee, sans remise a zero. Creer un nouveau fichier fait de meme.
+  useEffect(() => {
+    if (!fichierEnregistre) {
+      return
+    }
+    const minuterie = window.setTimeout(remettreAZero, DELAI_REMISE_A_ZERO_MS)
+    return () => {
+      window.clearTimeout(minuterie)
+    }
+  }, [fichierEnregistre, remettreAZero])
 
   // --- Robot et indications ---------------------------------------------------------------------
 
@@ -485,9 +570,11 @@ export function utiliserExport(): ResultatExport {
     erreurAnalyse,
     etatGeneration,
     erreurGeneration: generationActuelle.erreur,
-    nomFichier: generationActuelle.nom,
+    nomFichier: fichierPret === null ? null : fichierPret.nom,
+    fichierEnregistre,
     peutGenerer,
     generer,
+    telecharger,
     humeur,
     etape,
   }

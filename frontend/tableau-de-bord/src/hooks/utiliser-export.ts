@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ErreurService } from '../services/api'
-import { analyserAvis, genererExport } from '../services/exports'
+import { analyserAvis, creerExport, enregistrerExport } from '../services/exports'
 import { listerPointsContact } from '../services/points-contact'
 import { listerQuestionnaires } from '../services/questionnaires'
 import { listerSites } from '../services/sites'
+import type { FichierRecupere } from '../services/telechargement'
 import type {
   CodePointAnalyse,
   EtapeExport,
@@ -32,7 +33,8 @@ import { utiliserUtilisateur } from './utiliser-utilisateur'
 // - ce que l'utilisateur tape dans la barre, et ce que le robot en comprend (comprendre-recherche.ts) ;
 // - le format et les filtres choisis, a la main ou par le texte ;
 // - l'analyse des avis filtres (POST /exports/analyse), relancee toute seule quand les filtres changent ;
-// - la creation et le telechargement du fichier (POST /exports) ;
+// - la creation du fichier (POST /exports, indication 3), puis son enregistrement sur l'appareil
+//   (indication 4) : deux gestes distincts, le fichier est "pret" avant d'etre "enregistre" ;
 // - l'humeur du robot et l'indication en cours (1 Format, 2 Periode et filtres, 3 Generer, 4 Telecharger).
 // Le Responsable et le Gestionnaire utilisent l'ecran ; le Gestionnaire n'exporte que son perimetre
 // (le serveur le decide). L'administrateur DTS n'a pas d'organisation : le hook ne fait alors aucun
@@ -95,15 +97,21 @@ export type ResultatExport = {
   erreurAnalyse: ErreurService | null
 
   // --- Fichier ----------------------------------------------------------------------------------
-  // 'termine' : le fichier est enregistre sur l'appareil. Il repasse a 'repos' des qu'un choix change.
+  // 'termine' : le fichier est cree et pret (indication 4), pas forcement enregistre.
+  // Il repasse a 'repos' des qu'un choix change.
   etatGeneration: EtatOperation
   // Erreur 422 EXPORT_TROP_VOLUMINEUX : il faut reduire la periode (csv et excel).
   erreurGeneration: ErreurService | null
-  // Nom du fichier enregistre quand etatGeneration vaut 'termine'.
+  // Nom du fichier pret quand etatGeneration vaut 'termine'.
   nomFichier: string | null
+  // Vrai quand le fichier pret a ete enregistre sur l'appareil : les quatre indications sont faites.
+  fichierEnregistre: boolean
   // Format choisi, periode valide et aucune creation en cours.
   peutGenerer: boolean
+  // Indication 3 : cree le fichier. Il n'est pas enregistre : c'est le role de telecharger.
   generer: () => Promise<void>
+  // Indication 4 : enregistre sur l'appareil le fichier pret. Ne fait rien s'il n'y en a pas.
+  telecharger: () => void
 
   // --- Robot et indications ---------------------------------------------------------------------
   humeur: HumeurRobot
@@ -182,14 +190,18 @@ type EtatAnalyseStocke = {
 type EtatGenerationStocke = {
   etat: EtatOperation
   cle: string | null
-  nom: string | null
+  // Le fichier cree (indication 3), garde en memoire jusqu'a son enregistrement (indication 4).
+  fichier: FichierRecupere | null
+  // Vrai des que ce fichier a ete enregistre sur l'appareil.
+  enregistre: boolean
   erreur: ErreurService | null
 }
 
 const GENERATION_AU_REPOS: EtatGenerationStocke = {
   etat: 'repos',
   cle: null,
-  nom: null,
+  fichier: null,
+  enregistre: false,
   erreur: null,
 }
 
@@ -388,7 +400,7 @@ export function utiliserExport(): ResultatExport {
           ? 'termine'
           : 'erreur'
 
-  // --- Creation et telechargement du fichier ----------------------------------------------------
+  // --- Creation du fichier, puis enregistrement -------------------------------------------------
 
   const cleGeneration = useMemo(
     () =>
@@ -398,7 +410,7 @@ export function utiliserExport(): ResultatExport {
     [format, filtresApi, langue],
   )
 
-  // Un fichier deja enregistre n'est plus "pret" des que le format, les filtres ou la langue changent.
+  // Un fichier deja cree n'est plus "pret" des que le format, les filtres ou la langue changent.
   const etatGeneration: EtatOperation =
     generation.etat === 'en_cours'
       ? 'en_cours'
@@ -414,19 +426,35 @@ export function utiliserExport(): ResultatExport {
       return
     }
 
-    setGeneration({ etat: 'en_cours', cle: cleGeneration, nom: null, erreur: null })
+    setGeneration({ etat: 'en_cours', cle: cleGeneration, fichier: null, enregistre: false, erreur: null })
     try {
-      const nom = await genererExport({ format, langue, filtres: filtresApi })
-      setGeneration({ etat: 'termine', cle: cleGeneration, nom, erreur: null })
+      // Le fichier est seulement cree : il sera enregistre au clic sur l'indication 4.
+      const fichier = await creerExport({ format, langue, filtres: filtresApi })
+      setGeneration({ etat: 'termine', cle: cleGeneration, fichier, enregistre: false, erreur: null })
     } catch (e) {
       const erreur = versErreurService(e)
       if (erreur.statut === 401) {
         void seDeconnecter()
         return
       }
-      setGeneration({ etat: 'erreur', cle: cleGeneration, nom: null, erreur })
+      setGeneration({ etat: 'erreur', cle: cleGeneration, fichier: null, enregistre: false, erreur })
     }
   }, [peutGenerer, format, filtresApi, cleGeneration, langue, seDeconnecter])
+
+  // Le fichier pret (etat 'termine') peut etre enregistre, une fois ou plusieurs fois.
+  const fichierPret = etatGeneration === 'termine' ? generationActuelle.fichier : null
+  const fichierEnregistre = fichierPret !== null && generationActuelle.enregistre
+
+  const telecharger = useCallback((): void => {
+    if (fichierPret === null) {
+      return
+    }
+    enregistrerExport(fichierPret)
+    // Seulement si c'est toujours le meme fichier : un nouveau fichier cree entre-temps garde son etat.
+    setGeneration((courante) =>
+      courante.fichier === fichierPret ? { ...courante, enregistre: true } : courante,
+    )
+  }, [fichierPret])
 
   // --- Robot et indications ---------------------------------------------------------------------
 
@@ -485,9 +513,11 @@ export function utiliserExport(): ResultatExport {
     erreurAnalyse,
     etatGeneration,
     erreurGeneration: generationActuelle.erreur,
-    nomFichier: generationActuelle.nom,
+    nomFichier: fichierPret === null ? null : fichierPret.nom,
+    fichierEnregistre,
     peutGenerer,
     generer,
+    telecharger,
     humeur,
     etape,
   }

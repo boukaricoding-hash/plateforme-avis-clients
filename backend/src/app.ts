@@ -20,6 +20,7 @@ import { routesUtilisateurs } from "./modules/utilisateurs/routes/utilisateurs.r
 import { routesInvitations } from "./modules/utilisateurs/routes/invitations.routes";
 import { routesExports } from "./modules/rapports/routes/exports.routes";
 import { routesAdminOrganisations } from "./modules/administration/routes/organisations.routes";
+import { routesAdminSecteurs } from "./modules/secteurs/routes/secteurs.routes";
 
 export const app = express();
 // Nombre d'intermediaires (tunnel, Nginx) entre le client et le serveur.
@@ -117,6 +118,7 @@ app.use("/api/v1/dashboard", routesDashboard);
 app.use("/api/v1/exports", routesExports);
 // Back-office DTS : routes reservees a l'administrateur
 app.use("/api/v1/admin/organisations", routesAdminOrganisations);
+app.use("/api/v1/admin/secteurs", routesAdminSecteurs);
 // 404 : aucune route ne correspond
 app.use((_req: Request, res: Response) => {
   res.status(404).json({

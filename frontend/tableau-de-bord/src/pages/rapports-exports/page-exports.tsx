@@ -18,7 +18,7 @@ import type { EtapeExport, FormatExport } from '../../types/exports'
 // Le decor (90vh, centrage, transparence) est dans styles/exports.css, charge par la barre.
 // Un clic sur une indication fait l'etape :
 // 1 et 2 ouvrent les choix rapides (format, periode et filtres) sous la barre,
-// 3 cree et enregistre le fichier, 4 l'enregistre de nouveau quand il est pret.
+// 3 cree le fichier (il n'est pas enregistre), 4 l'enregistre sur l'appareil quand il est pret.
 // Choisir un format ouvre tout de suite l'etape 2, comme les indications le guident.
 // Le Responsable et le Gestionnaire utilisent l'ecran (le Gestionnaire n'exporte que son perimetre,
 // le serveur le decide). L'administrateur DTS n'a pas d'organisation : il est renvoye a l'accueil.
@@ -57,14 +57,19 @@ export function PageExports() {
   const phraseRobot = t(`exports.robot.humeur.${ecran.humeur}`)
   const messageErreur = messageErreurGeneration(ecran.erreurGeneration, t)
 
-  // Le clic sur une indication : 1 et 2 ouvrent ou ferment leur choix ; 3 et 4 enregistrent le fichier.
+  // Le clic sur une indication : 1 et 2 ouvrent ou ferment leur choix ; 3 cree le fichier ;
+  // 4 l'enregistre sur l'appareil (l'indication 4 est inactive tant que le fichier n'est pas pret).
   function choisirIndication(numero: EtapeExport): void {
     if (numero === 1 || numero === 2) {
       setOuverte((courante) => (courante === numero ? null : numero))
       return
     }
     setOuverte(null)
-    void ecran.generer()
+    if (numero === 3) {
+      void ecran.generer()
+      return
+    }
+    ecran.telecharger()
   }
 
   // Un format choisi : on passe a l'etape 2 (periode et filtres).
@@ -99,6 +104,7 @@ export function PageExports() {
             etape={ecran.etape}
             ouverte={ouverte}
             peutGenerer={ecran.peutGenerer}
+            fichierEnregistre={ecran.fichierEnregistre}
             onChoisir={choisirIndication}
           />
         </div>

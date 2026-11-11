@@ -7,10 +7,12 @@ import type { EtapeExport } from '../types/exports'
 // Chaque indication est un bouton : un clic fait l'etape.
 // - 1 et 2 ouvrent (ou ferment) les choix rapides sous la barre de recherche ;
 // - 3 cree le fichier (inactive tant qu'il n'y a pas de format, ou pendant la creation) ;
-// - 4 telecharge le fichier (inactive tant qu'il n'est pas pret).
+// - 4 enregistre le fichier sur l'appareil (inactive tant qu'il n'est pas cree).
 // Le composant ne calcule rien : l'etape vient du hook utiliserExport, et la page (fichier 5)
 // decide ce que fait chaque clic. Les etapes passees ont une coche, l'etape en cours est
-// remplie, les etapes a venir sont discretes. A l'etape 4, les quatre sont faites.
+// remplie, les etapes a venir sont discretes.
+// L'etape 4 n'est faite qu'une fois le fichier enregistre : tant qu'il est seulement pret,
+// les etapes 1 a 3 sont faites et la 4 est en cours (elle attend le clic).
 // Aucune bordure ni carte : tout le decor est dans styles/exports.css
 // (classes exports-etapes, exports-etape, exports-etape-numero, exports-etape-titre,
 // exports-etape-detail). Sur grand ecran les indications sont a droite de la barre, avec
@@ -25,6 +27,9 @@ type PropsEtapesExport = {
   ouverte: 1 | 2 | null
   // Vrai quand le fichier peut etre cree : format choisi, periode valide, aucune creation en cours.
   peutGenerer: boolean
+  // Vrai quand le fichier pret a ete enregistre sur l'appareil : les quatre etapes sont faites.
+  // Faux par defaut : le fichier est pret (etape 4) mais pas encore enregistre.
+  fichierEnregistre?: boolean
   onChoisir: (numero: EtapeExport) => void
 }
 
@@ -41,17 +46,25 @@ const INDICATIONS: readonly Indication[] = [
   { numero: 4, cleTitre: 'exports.etapes.telecharger', cleDetail: 'exports.etapes.telechargerDetail' },
 ]
 
-export function EtapesExport({ etape, ouverte, peutGenerer, onChoisir }: PropsEtapesExport) {
+export function EtapesExport({
+  etape,
+  ouverte,
+  peutGenerer,
+  fichierEnregistre = false,
+  onChoisir,
+}: PropsEtapesExport) {
   const { t } = utiliserLangue()
 
-  // A l'etape 4, le fichier est enregistre : tout est fait, et le telechargement est possible.
+  // A l'etape 4, le fichier est cree et pret : l'indication 4 peut enregistrer.
   const fichierPret = etape === 4
+  // Tout est fait seulement une fois ce fichier enregistre.
+  const toutFait = fichierPret && fichierEnregistre
 
   return (
     <ol aria-label={t('exports.etapes.titre')} className="exports-etapes">
       {INDICATIONS.map(({ numero, cleTitre, cleDetail }) => {
-        const terminee = numero < etape || fichierPret
-        const courante = numero === etape && !fichierPret
+        const terminee = numero < etape || toutFait
+        const courante = numero === etape && !toutFait
         const etat = terminee ? 'terminee' : courante ? 'courante' : 'avenir'
         const cleEtat = terminee
           ? 'exports.etapes.etatTerminee'

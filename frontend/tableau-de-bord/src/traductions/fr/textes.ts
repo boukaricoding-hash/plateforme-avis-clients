@@ -1003,6 +1003,101 @@ export const fr = {
     },
   },
 
+  // Ecran E16 : exports et rapports (jour 21).
+  // Les phrases de barre.suggestions sont tapees dans la barre quand on clique dessus :
+  // le robot les comprend (il comprend le francais et l'anglais).
+  exports: {
+    titre: 'Exports et rapports',
+    sousTitre: 'Téléchargez vos avis en CSV ou en Excel, ou un rapport PDF pour votre direction.',
+    robot: {
+      // Une phrase courte par humeur, lue aussi par les lecteurs d'ecran
+      humeur: {
+        repos: 'Je suis prêt. Dites-moi ce que vous voulez exporter.',
+        ecoute: 'Je vous écoute, continuez.',
+        reflechit: 'Je réfléchis, un instant…',
+        content: 'C’est prêt ! Votre fichier a été téléchargé.',
+        inquiet: 'Quelque chose me préoccupe : regardez les messages ci-dessous.',
+      },
+    },
+    etapes: {
+      titre: 'Les quatre étapes de l’export',
+      format: 'Format',
+      periode: 'Période et filtres',
+      generer: 'Générer',
+      telecharger: 'Télécharger',
+      etatTerminee: 'terminée',
+      etatEnCours: 'en cours',
+      etatAVenir: 'à venir',
+    },
+    formats: {
+      csv: 'CSV',
+      xlsx: 'Excel',
+      pdf: 'Rapport PDF',
+    },
+    barre: {
+      etiquette: 'Ce que vous voulez exporter',
+      placeholder: 'Ex. : excel 7 jours négatifs table 12',
+      effacer: 'Effacer',
+      motsComprisTitre: 'Ce que j’ai compris',
+      aide: 'Écrivez ce que vous voulez : le format, la période, un site, une table… Je règle les choix pour vous.',
+      suggestionsTitre: 'Exemples à essayer',
+      aucunMot: 'Je n’ai encore rien reconnu. Essayez « excel », « pdf » ou « 7 jours ».',
+      ambigu: '« {nom} » existe plusieurs fois. Précisez le site dans votre texte.',
+      suggestions: {
+        excelTrenteJours: 'excel 30 jours',
+        pdfSeptJours: 'rapport pdf 7 jours',
+        csvNegatifs: 'csv avis négatifs',
+        excelCommentaires: 'excel avec commentaires',
+      },
+      pastilles: {
+        tout: 'Toutes les dates',
+        negatifs: 'Négatifs',
+        commentaire: 'Avec commentaire',
+      },
+    },
+    choix: {
+      format: 'Format du fichier',
+      descriptions: {
+        csv: 'Un fichier texte, une ligne par avis. Les accents s’affichent bien dans Excel.',
+        xlsx: 'Un tableau Excel : une ligne par avis, une colonne par question, et une feuille d’analyse.',
+        pdf: 'Un rapport de synthèse : indicateurs, graphiques, trois points forts et trois points faibles.',
+      },
+      periode: 'Période',
+      toutesLesDates: 'Toutes les dates',
+      rapportTrenteJours: 'Aucune date choisie : le rapport PDF portera sur les 30 derniers jours.',
+      filtres: 'Filtres',
+    },
+    generer: {
+      titre: 'Créer le fichier',
+      bouton: 'Générer le fichier',
+      enCours: 'Création en cours…',
+      encore: 'Générer à nouveau',
+      choisirFormat: 'Choisissez d’abord un format.',
+      pret: 'Le fichier « {nom} » a été téléchargé.',
+      tropVolumineux: 'Cet export contient trop d’avis (plus de 50 000). Réduisez la période ou ajoutez un filtre.',
+      erreur: 'Le fichier n’a pas pu être créé. Merci de réessayer.',
+    },
+    analyse: {
+      titre: 'Ce que dit le robot de vos avis',
+      enAttente: 'Choisissez une période valide : j’analyserai vos avis dès qu’elle sera correcte.',
+      enCours: 'Analyse de vos avis en cours',
+      erreur: 'L’analyse n’a pas pu être faite. Vous pouvez quand même générer votre fichier.',
+      aucuneDonnee: 'Aucune donnée',
+      insuffisant: 'Seulement {nombre} avis sur cette période : trop peu pour tirer des conclusions fiables.',
+      chiffres: {
+        avis: 'Avis',
+        note: 'Note moyenne',
+        nps: 'NPS',
+        alertes: 'Alertes ouvertes',
+      },
+      pointsForts: 'Points forts',
+      pointsFaibles: 'Points faibles',
+      pistes: 'Pistes d’action',
+      negatifsParJour: 'Avis négatifs par jour de la semaine',
+      pic: 'Jour le plus chargé : {date} (avis négatifs : {nombre}).',
+    },
+  },
+
   tableau: {
     // Etats de l'ecran
     chargement: 'Chargement des indicateurs…',

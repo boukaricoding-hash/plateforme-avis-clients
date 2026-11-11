@@ -11,14 +11,14 @@ import { PageParametres } from './pages/parametres-organisation/page-parametres'
 import { PageQrCodes } from './pages/qr-codes/page-qr-codes'
 import { PageEditeurQuestionnaire } from './pages/questionnaires/page-editeur-questionnaire'
 import { PageQuestionnaires } from './pages/questionnaires/page-questionnaires'
+import { PageExports } from './pages/rapports-exports/page-exports'
 import { PageSites } from './pages/sites-points-de-contact/page-sites'
 import { PageAccueil } from './pages/tableau-de-bord/page-accueil'
 import { PageUtilisateurs } from './pages/utilisateurs/page-utilisateurs'
 
 // Ecrans prevus mais pas encore construits : chacun est remplace par son vrai ecran le jour venu.
-const ECRANS_A_VENIR = [
-  { chemin: 'exports', cle: 'menu.exports' },
-]
+// La liste est vide depuis le jour 21 (l'ecran des exports est en place).
+const ECRANS_A_VENIR: { chemin: string; cle: string }[] = []
 
 function EcranAVenir({ cle }: { cle: string }) {
   const { t } = utiliserLangue()
@@ -51,6 +51,7 @@ export default function App() {
           <Route path="questionnaires" element={<PageQuestionnaires />} />
           <Route path="questionnaires/:id" element={<PageEditeurQuestionnaire />} />
           <Route path="utilisateurs" element={<PageUtilisateurs />} />
+          <Route path="exports" element={<PageExports />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route
               key={ecran.chemin}

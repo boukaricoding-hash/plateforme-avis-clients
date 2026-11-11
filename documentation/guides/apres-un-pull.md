@@ -37,3 +37,9 @@ Ce guide dit quoi lancer apres avoir recupere le code. Il est mis a jour chaque 
   - Nouvelles routes backend : `POST /sites/:id/activer` et `POST /points-contact/:id/activer`. Avant de fusionner, lancer `npm test` dans `backend` (Docker Desktop ouvert, base demarree) : tous les tests doivent passer, y compris `isolation-sites-points.test.ts`.
   - Nouveaux ecrans du tableau de bord : `/sites` (E12, sites et tables) et `/qr-codes` (E11, QR codes et chevalets). Le demarrage ne change pas : terminal 1 = `cd backend` puis `npm run dev` ; terminal 2 = `cd frontend\tableau-de-bord` puis `npm run dev`.
   - Les QR codes affichent l'adresse `PUBLIC_BASE_URL/q/{code}`. Pour en scanner un depuis un telephone, `PUBLIC_BASE_URL` doit etre l'adresse du tunnel, pas `http://localhost:5173`.
+
+- Jour 21 : nouvelle dependance `exceljs` dans `backend` (export Excel). Apres un pull, lancer `npm ci` dans `backend`. Le tableau de bord n'a pas de nouvelle dependance. Aucune migration et aucune nouvelle variable : rien d'autre a lancer (ni `npx prisma migrate deploy`, ni modification du `.env`).
+  - Nouvelles routes backend : `POST /api/v1/exports` (le fichier csv, xlsx ou pdf) et `POST /api/v1/exports/analyse` (l'analyse en JSON pour le robot). Avant de fusionner, lancer `npm test` dans `backend` (Docker Desktop ouvert, base demarree) : tous les tests doivent passer, y compris `exports.test.ts` et `isolation-exports.test.ts`.
+  - Docker : `exceljs` est installe pendant la construction de l'image, donc reconstruire apres ce pull : `docker compose up -d --build` (depuis la racine du projet).
+  - Nouvel ecran du tableau de bord : `/exports` (E16, exports et rapports). Le demarrage ne change pas : terminal 1 = `cd backend` puis `npm run dev` ; terminal 2 = `cd frontend\tableau-de-bord` puis `npm run dev`.
+  - Un export de plus de 50 000 avis est refuse par le serveur : il faut reduire la periode ou ajouter un filtre.

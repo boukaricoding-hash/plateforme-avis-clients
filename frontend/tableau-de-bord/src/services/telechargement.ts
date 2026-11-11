@@ -29,14 +29,34 @@ function attendre(duree: number): Promise<void> {
   })
 }
 
+// Envoi POST facultatif (exports, jour 21) : l'adresse est alors appelee en POST avec ce corps JSON,
+// au lieu d'un GET. Sans envoi, rien ne change pour les QR codes et les chevalets.
+export type EnvoiPost = {
+  corps: unknown
+}
+
 // Telecharge le fichier a cette adresse et l'enregistre sur l'appareil.
 // Renvoie le nom du fichier enregistre ; nomParDefaut sert si le serveur n'en donne pas.
-export async function telechargerFichier(adresse: string, nomParDefaut: string): Promise<string> {
+export async function telechargerFichier(
+  adresse: string,
+  nomParDefaut: string,
+  envoi?: EnvoiPost,
+): Promise<string> {
   const debut = Date.now()
 
   let reponse: Response
   try {
-    reponse = await fetch(adresse, { credentials: 'same-origin' })
+    reponse = await fetch(
+      adresse,
+      envoi === undefined
+        ? { credentials: 'same-origin' }
+        : {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(envoi.corps),
+            credentials: 'same-origin',
+          },
+    )
   } catch {
     throw new ErreurService(0, 'HORS_CONNEXION', 'Connexion impossible.', null)
   }

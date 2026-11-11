@@ -1014,7 +1014,7 @@ export const fr = {
         repos: 'Je suis prêt. Dites-moi ce que vous voulez exporter.',
         ecoute: 'Je vous écoute, continuez.',
         reflechit: 'Je réfléchis, un instant…',
-        content: 'C’est prêt ! Votre fichier a été téléchargé.',
+        content: 'C’est prêt ! Votre fichier est créé, vous pouvez le télécharger.',
         inquiet: 'Quelque chose me préoccupe. Regardez ce que je vous signale.',
       },
       // Petit mot devant chaque conclusion que le robot lit sous lui
@@ -1037,7 +1037,7 @@ export const fr = {
       generer: 'Générer',
       genererDetail: 'Je crée votre fichier à partir des avis choisis, et j’y ajoute mon analyse.',
       telecharger: 'Télécharger',
-      telechargerDetail: 'Votre fichier est prêt. Cliquez pour l’enregistrer de nouveau sur votre appareil.',
+      telechargerDetail: 'Quand le fichier est prêt, cliquez pour l’enregistrer sur votre appareil.',
       etatTerminee: 'terminée',
       etatEnCours: 'en cours',
       etatAVenir: 'à venir',

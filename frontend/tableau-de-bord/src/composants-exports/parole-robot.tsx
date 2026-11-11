@@ -8,11 +8,16 @@ import type { EtatOperation, HumeurRobot, ReponseAnalyse } from '../types/export
 //   le resume, puis les points faibles, les points forts et les pistes d'action.
 //   Un clic sur la conclusion passe a la suivante. Les memes conclusions sont ecrites
 //   dans le rapport PDF et dans la feuille Analyse d'Excel.
+//   De tres petits points sous la conclusion montrent qu'il y en a d'autres a faire defiler :
+//   un point par conclusion, le point en cours est plus long et colore, le suivant un peu plus
+//   visible. Ils remplacent l'ancien compteur "1/9", trop discret. Les points sont decoratifs
+//   (aria-hidden) : la position est dite aux lecteurs d'ecran dans le texte du bouton.
 // Pendant qu'on tape ou que le robot reflechit, seule la phrase s'affiche : l'analyse
 // n'est pas a jour. Le composant ne calcule rien et ne charge rien : tout vient du hook
 // utiliserExport. Les textes des conclusions sont deja dans la langue demandee (ils viennent
 // du serveur), les autres textes viennent des traductions.
-// Style : classes exports-parole, exports-parole-texte, exports-parole-suite de styles/exports.css
+// Style : classes exports-parole, exports-parole-texte, exports-parole-suite, exports-parole-points
+// et exports-parole-point de styles/exports.css
 // (le fichier est charge par la barre de recherche). Aucun cadre, aucune bordure.
 // Textes : cles exports.robot.* (fichiers 6 et 7) : humeur.*, conclusion.fort, conclusion.faible,
 // conclusion.piste, suivant, peuDAvis et erreurAnalyse.
@@ -91,24 +96,32 @@ export function ParoleRobot({ humeur, analyse, etatAnalyse }: PropsParoleRobot) 
     if (analyse !== null && !analyse.suffisant) {
       suite = <p className="exports-parole-suite">{t('exports.robot.peuDAvis', { nombre: analyse.nb_avis })}</p>
     } else if (conclusion !== null) {
+      const plusieurs = conclusions.length > 1
+      // Les lecteurs d'ecran entendent la position ("2/9") puisque les points sont decoratifs.
+      const rang = plusieurs ? `${position + 1}/${conclusions.length}. ` : ''
       suite = (
-        <button
-          key={conclusion.cle}
-          type="button"
-          onClick={passerALaSuivante}
-          aria-label={`${conclusion.texte}. ${t('exports.robot.suivant')}`}
-          className="exports-parole-suite cursor-pointer rounded-md border-0 bg-transparent p-1 hover:text-texte"
-        >
-          {conclusion.etiquette !== null && (
-            <span className="font-semibold text-texte">{`${conclusion.etiquette} : `}</span>
-          )}
-          <span className="line-clamp-3">{conclusion.texte}</span>
-          {conclusions.length > 1 && (
-            <span aria-hidden="true" className="ml-1 text-xs text-texte-discret">
-              {`${position + 1}/${conclusions.length}`}
+        <>
+          <button
+            key={conclusion.cle}
+            type="button"
+            onClick={passerALaSuivante}
+            aria-label={`${rang}${conclusion.texte}. ${t('exports.robot.suivant')}`}
+            className="exports-parole-suite cursor-pointer rounded-md border-0 bg-transparent p-1 hover:text-texte"
+          >
+            {conclusion.etiquette !== null && (
+              <span className="font-semibold text-texte">{`${conclusion.etiquette} : `}</span>
+            )}
+            <span className="line-clamp-3">{conclusion.texte}</span>
+          </button>
+          {/* Les points ne sont pas dans le bouton : ils ne rejouent pas leur apparition a chaque clic */}
+          {plusieurs && (
+            <span aria-hidden="true" className="exports-parole-points">
+              {conclusions.map((autre, indice) => (
+                <span key={autre.cle} className="exports-parole-point" data-actif={indice === position} />
+              ))}
             </span>
           )}
-        </button>
+        </>
       )
     } else if (etatAnalyse === 'erreur') {
       suite = <p className="exports-parole-suite">{t('exports.robot.erreurAnalyse')}</p>

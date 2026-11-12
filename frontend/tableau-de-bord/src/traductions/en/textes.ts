@@ -999,6 +999,15 @@ export const en = {
         content: 'All done! Your file is created, you can download it.',
         inquiet: 'Something worries me: have a look at the messages below.',
       },
+      // Small word in front of each conclusion the robot reads under itself
+      conclusion: {
+        faible: 'Weak point',
+        fort: 'Strength',
+        piste: 'To do',
+      },
+      suivant: 'Click to read the next conclusion.',
+      peuDAvis: 'Only {nombre} reviews in this period: too few to draw reliable conclusions.',
+      erreurAnalyse: 'The analysis could not be done. You can still generate your file.',
     },
     etapes: {
       titre: 'The four export steps',

@@ -20,6 +20,9 @@ import type { ContenuAnalyse } from "./export-xlsx";
 //   Les autres filtres de l'export (statut, negatifs, note, recherche) ne s'y appliquent pas.
 // - Sans from ni to : les 30 derniers jours (comme le tableau de bord).
 // - Seuils de couleur du tableau de bord : vert a partir de 4,2, rouge sous 3,5.
+// - Les textes sont ecrits comme un conseiller le dirait au chef d'entreprise : en mots, sans
+//   score ni pourcentage (les chiffres sont dans le tableau de bord). Chaque point faible a sa
+//   piste d'action, concrete : quoi faire, avec qui, et quand verifier l'effet.
 
 const AVIS_MIN_ANALYSE = 5;
 const REPONSES_MIN_THEME = 5;
@@ -104,19 +107,6 @@ function choisir(langue: LangueExport, fr: string, en: string): string {
   return langue === "en" ? en : fr;
 }
 
-function nombre(valeur: number, decimales: number, langue: LangueExport): string {
-  const texte = String(Number(valeur.toFixed(decimales)));
-  return langue === "fr" ? texte.replace(".", ",") : texte;
-}
-
-function avecSigne(valeur: number, decimales: number, langue: LangueExport): string {
-  const texte = nombre(Math.abs(valeur), decimales, langue);
-  if (valeur > 0) {
-    return `+${texte}`;
-  }
-  return valeur < 0 ? `-${texte}` : texte;
-}
-
 const JOURS_SEMAINE: Record<LangueExport, string[]> = {
   fr: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
   en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
@@ -129,14 +119,6 @@ function dateEnTexte(jour: string, langue: LangueExport): string {
   }
   const [annee, mois, jourDuMois] = jour.split("-");
   return `${jourDuMois}/${mois}/${annee}`;
-}
-
-function dureeEnTexte(heures: number, langue: LangueExport): string {
-  if (heures >= 48) {
-    const jours = Math.floor(heures / 24);
-    return choisir(langue, `${jours} jours`, `${jours} days`);
-  }
-  return `${Math.max(1, Math.round(heures))} h`;
 }
 
 function libelleTheme(theme: ScoreTheme, langue: LangueExport): string {
@@ -197,10 +179,10 @@ function candidatsForts(donnees: DonneesAnalyse, langue: LangueExport): Candidat
       poids: 90,
       point: {
         code: "note_elevee",
-        titre: t("Note moyenne élevée", "High average rating"),
+        titre: t("Vos clients sont très satisfaits", "Your customers are very satisfied"),
         detail: t(
-          `${nombre(note, 2, langue)}/5 sur ${indicateurs.nb_avis} avis, au niveau « vert » (4,2 et plus).`,
-          `${nombre(note, 2, langue)}/5 over ${indicateurs.nb_avis} reviews, in the green zone (4.2 and above).`,
+          "Les avis sont très positifs : vous réussissez ce qui compte le plus. Gardez les habitudes qui marchent.",
+          "Reviews are very positive: you are getting what matters most right. Keep the habits that work.",
         ),
       },
     });
@@ -212,10 +194,10 @@ function candidatsForts(donnees: DonneesAnalyse, langue: LangueExport): Candidat
       poids: nps >= NPS_TRES_BON ? 85 : 70,
       point: {
         code: "nps_eleve",
-        titre: t("Clients très recommandeurs", "Customers who recommend you"),
+        titre: t("Vos clients vous recommandent", "Your customers recommend you"),
         detail: t(
-          `NPS de ${nombre(nps, 1, langue)} : les promoteurs sont bien plus nombreux que les détracteurs.`,
-          `NPS of ${nombre(nps, 1, langue)}: promoters clearly outnumber detractors.`,
+          "Beaucoup de clients parleraient de vous autour d’eux : c’est la meilleure publicité possible.",
+          "Many customers would speak of you to the people around them: that is the best advertising there is.",
         ),
       },
     });
@@ -227,10 +209,10 @@ function candidatsForts(donnees: DonneesAnalyse, langue: LangueExport): Candidat
       poids: 60,
       point: {
         code: "csat_eleve",
-        titre: t("Clients satisfaits", "Satisfied customers"),
+        titre: t("Vos clients repartent contents", "Your customers leave happy"),
         detail: t(
-          `${nombre(csat, 1, langue)} % des avis notés sont à 4 ou 5 sur 5.`,
-          `${nombre(csat, 1, langue)}% of rated reviews are 4 or 5 out of 5.`,
+          "La grande majorité des clients qui donnent une note sont satisfaits de leur passage chez vous.",
+          "Most customers who leave a rating are happy with their visit.",
         ),
       },
     });
@@ -242,10 +224,10 @@ function candidatsForts(donnees: DonneesAnalyse, langue: LangueExport): Candidat
       poids: 80,
       point: {
         code: "progression_note",
-        titre: t("Note en progression", "Rating going up"),
+        titre: t("La satisfaction progresse", "Satisfaction is improving"),
         detail: t(
-          `${avecSigne(evolutionNote, 2, langue)} point par rapport à la période précédente.`,
-          `${avecSigne(evolutionNote, 2, langue)} points compared with the previous period.`,
+          "Vos clients sont plus contents qu’avant : ce que vous avez changé récemment fonctionne.",
+          "Your customers are happier than before: what you changed recently is working.",
         ),
       },
     });
@@ -260,11 +242,16 @@ function candidatsForts(donnees: DonneesAnalyse, langue: LangueExport): Candidat
       poids: solide ? 75 : 40,
       point: {
         code: "meilleur_theme",
-        titre: t(`Thème le mieux noté : ${libelleTheme(meilleurTheme, langue)}`, `Best rated theme: ${libelleTheme(meilleurTheme, langue)}`),
-        detail: t(
-          `Score de ${nombre(meilleurTheme.score, 2, langue)}/5 sur ${meilleurTheme.nb_reponses} réponses${solide ? "." : " : c’est votre point le plus solide, même s’il peut encore progresser."}`,
-          `Score of ${nombre(meilleurTheme.score, 2, langue)}/5 over ${meilleurTheme.nb_reponses} answers${solide ? "." : ": your strongest area, although it can still improve."}`,
-        ),
+        titre: t(`Votre atout : ${libelleTheme(meilleurTheme, langue)}`, `Your strength: ${libelleTheme(meilleurTheme, langue)}`),
+        detail: solide
+          ? t(
+              "C’est ce que vos clients apprécient le plus chez vous. Mettez-le en avant et félicitez l’équipe.",
+              "This is what your customers appreciate most about you. Show it off and congratulate the team.",
+            )
+          : t(
+              "C’est ce qui marche le mieux chez vous, même si cela peut encore progresser.",
+              "This is what works best for you, although it can still improve.",
+            ),
       },
     });
   }
@@ -283,12 +270,12 @@ function candidatsForts(donnees: DonneesAnalyse, langue: LangueExport): Candidat
       point: {
         code: "meilleur_point",
         titre: t(
-          `Point de contact le mieux noté : ${meilleurPoint.nom}`,
-          `Best rated contact point: ${meilleurPoint.nom}`,
+          `Votre meilleur point de contact : ${meilleurPoint.nom}`,
+          `Your best contact point: ${meilleurPoint.nom}`,
         ),
         detail: t(
-          `${meilleurPoint.site_nom} : ${nombre(meilleurPoint.note_moyenne, 2, langue)}/5 sur ${meilleurPoint.nb_avis} avis.`,
-          `${meilleurPoint.site_nom}: ${nombre(meilleurPoint.note_moyenne, 2, langue)}/5 over ${meilleurPoint.nb_avis} reviews.`,
+          `${meilleurPoint.site_nom} : c’est là que les clients sont les plus contents. Regardez ce qui s’y fait de bien pour l’appliquer ailleurs.`,
+          `${meilleurPoint.site_nom}: this is where customers are happiest. Look at what is done well there and apply it elsewhere.`,
         ),
       },
     });
@@ -299,10 +286,10 @@ function candidatsForts(donnees: DonneesAnalyse, langue: LangueExport): Candidat
       poids: 50,
       point: {
         code: "aucune_alerte",
-        titre: t("Aucune alerte en attente", "No pending alert"),
+        titre: t("Aucun client mécontent en attente", "No unhappy customer waiting"),
         detail: t(
-          "Toutes les alertes ont été prises en charge : aucun avis négatif ne reste sans réponse.",
-          "All alerts have been handled: no negative review is left unanswered.",
+          "Tous les clients mécontents ont reçu une réponse : continuez à réagir aussi vite.",
+          "Every unhappy customer has had an answer: keep reacting this quickly.",
         ),
       },
     });
@@ -314,10 +301,10 @@ function candidatsForts(donnees: DonneesAnalyse, langue: LangueExport): Candidat
       poids: 45,
       point: {
         code: "taux_reponse_eleve",
-        titre: t("Bon taux de réponse", "Good response rate"),
+        titre: t("Vos clients répondent volontiers", "Your customers gladly answer"),
         detail: t(
-          `${nombre(tauxReponse, 1, langue)} % des clients qui scannent le QR code envoient leur avis.`,
-          `${nombre(tauxReponse, 1, langue)}% of customers who scan the QR code send their review.`,
+          "Beaucoup de clients qui scannent le QR code vont jusqu’au bout et laissent leur avis : votre invitation est bien placée.",
+          "Many customers who scan the QR code go all the way and leave a review: your invitation is well placed.",
         ),
       },
     });
@@ -342,10 +329,10 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
       poids: 95,
       point: {
         code: "note_basse",
-        titre: t("Note moyenne basse", "Low average rating"),
+        titre: t("Vos clients sont mécontents", "Your customers are unhappy"),
         detail: t(
-          `${nombre(note, 2, langue)}/5 sur ${indicateurs.nb_avis} avis, au niveau « rouge » (sous 3,5).`,
-          `${nombre(note, 2, langue)}/5 over ${indicateurs.nb_avis} reviews, in the red zone (below 3.5).`,
+          "Trop d’avis sont mauvais : c’est le signal le plus urgent à traiter.",
+          "Too many reviews are bad: this is the most urgent signal to deal with.",
         ),
       },
     });
@@ -354,10 +341,10 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
       poids: 45,
       point: {
         code: "note_moyenne",
-        titre: t("Note moyenne à améliorer", "Average rating to improve"),
+        titre: t("La satisfaction peut mieux faire", "Satisfaction could be better"),
         detail: t(
-          `${nombre(note, 2, langue)}/5 sur ${indicateurs.nb_avis} avis, au niveau « orange » (entre 3,5 et 4,2).`,
-          `${nombre(note, 2, langue)}/5 over ${indicateurs.nb_avis} reviews, in the orange zone (between 3.5 and 4.2).`,
+          "Vos clients sont moyennement contents : il manque peu de choses pour qu’ils soient vraiment satisfaits.",
+          "Your customers are only fairly happy: it would not take much to make them truly satisfied.",
         ),
       },
     });
@@ -369,10 +356,10 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
       poids: 85,
       point: {
         code: "baisse_note",
-        titre: t("Note en baisse", "Rating going down"),
+        titre: t("La satisfaction recule", "Satisfaction is dropping"),
         detail: t(
-          `${avecSigne(evolutionNote, 2, langue)} point par rapport à la période précédente.`,
-          `${avecSigne(evolutionNote, 2, langue)} points compared with the previous period.`,
+          "Vos clients sont moins contents qu’avant : quelque chose a changé depuis la période précédente.",
+          "Your customers are less happy than before: something has changed since the previous period.",
         ),
       },
     });
@@ -384,10 +371,10 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
       poids: 80,
       point: {
         code: "nps_negatif",
-        titre: t("Plus de détracteurs que de promoteurs", "More detractors than promoters"),
+        titre: t("Plus de clients déçus que de clients fidèles", "More disappointed customers than loyal ones"),
         detail: t(
-          `NPS de ${nombre(nps, 1, langue)} : ${indicateurs.nb_detracteurs} détracteurs contre ${indicateurs.nb_promoteurs} promoteurs.`,
-          `NPS of ${nombre(nps, 1, langue)}: ${indicateurs.nb_detracteurs} detractors against ${indicateurs.nb_promoteurs} promoters.`,
+          "Peu de clients vous recommanderaient aujourd’hui : il faut regagner leur confiance.",
+          "Few customers would recommend you today: you need to win back their trust.",
         ),
       },
     });
@@ -396,16 +383,20 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
   // Theme le plus faible : le premier de la liste (triee du plus faible au meilleur) avec assez de reponses.
   const themesFiables = themes.filter((theme) => theme.nb_reponses >= REPONSES_MIN_THEME);
   const pireTheme = themesFiables[0];
-  if (pireTheme !== undefined && (themesFiables.length > 1 || pireTheme.score < NOTE_ROUGE)) {
-    const poids = pireTheme.score < NOTE_ROUGE ? 90 : pireTheme.score < NOTE_VERTE ? 60 : 25;
+  // Un theme n'est un point faible que s'il decoit vraiment (sous le vert) : en mots, un theme tres bien
+  // note ne peut pas etre "ce qui decoit le plus".
+  if (pireTheme !== undefined && pireTheme.score < NOTE_VERTE && (themesFiables.length > 1 || pireTheme.score < NOTE_ROUGE)) {
     candidats.push({
-      poids,
+      poids: pireTheme.score < NOTE_ROUGE ? 90 : 60,
       point: {
         code: "theme_faible",
-        titre: t(`Thème le moins bien noté : ${libelleTheme(pireTheme, langue)}`, `Lowest rated theme: ${libelleTheme(pireTheme, langue)}`),
+        titre: t(
+          `${libelleTheme(pireTheme, langue)} : ce qui déçoit le plus`,
+          `${libelleTheme(pireTheme, langue)}: what disappoints the most`,
+        ),
         detail: t(
-          `Score de ${nombre(pireTheme.score, 2, langue)}/5 sur ${pireTheme.nb_reponses} réponses, le plus bas des ${themesFiables.length} thèmes.`,
-          `Score of ${nombre(pireTheme.score, 2, langue)}/5 over ${pireTheme.nb_reponses} answers, the lowest of ${themesFiables.length} themes.`,
+          "C’est le point sur lequel vos clients sont le moins satisfaits en ce moment.",
+          "This is where your customers are the least satisfied right now.",
         ),
       },
     });
@@ -414,23 +405,24 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
   // Point de contact le plus faible : le dernier du classement avec assez d'avis.
   const pointsFiables = classement.filter((point) => point.note_moyenne !== null && point.nb_avis >= AVIS_MIN_POINT);
   const pirePoint = pointsFiables.at(-1);
+  // Meme regle : un point de contact bien note (vert) n'est pas un point faible.
   if (
     pirePoint !== undefined &&
     pirePoint.note_moyenne !== null &&
+    pirePoint.note_moyenne < NOTE_VERTE &&
     (pointsFiables.length > 1 || pirePoint.note_moyenne < NOTE_ROUGE)
   ) {
-    const poids = pirePoint.note_moyenne < NOTE_ROUGE ? 85 : pirePoint.note_moyenne < NOTE_VERTE ? 55 : 20;
     candidats.push({
-      poids,
+      poids: pirePoint.note_moyenne < NOTE_ROUGE ? 85 : 55,
       point: {
         code: "point_faible",
         titre: t(
-          `Point de contact le moins bien noté : ${pirePoint.nom}`,
-          `Lowest rated contact point: ${pirePoint.nom}`,
+          `Un point de contact à surveiller : ${pirePoint.nom}`,
+          `A contact point to watch: ${pirePoint.nom}`,
         ),
         detail: t(
-          `${pirePoint.site_nom} : ${nombre(pirePoint.note_moyenne, 2, langue)}/5 sur ${pirePoint.nb_avis} avis.`,
-          `${pirePoint.site_nom}: ${nombre(pirePoint.note_moyenne, 2, langue)}/5 over ${pirePoint.nb_avis} reviews.`,
+          `${pirePoint.site_nom} : c’est là que les clients sont le moins satisfaits.`,
+          `${pirePoint.site_nom}: this is where customers are the least satisfied.`,
         ),
       },
     });
@@ -445,15 +437,17 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
       point: {
         code: "alertes_qui_trainent",
         titre: traine
-          ? t("Alertes qui traînent", "Alerts left waiting")
-          : t("Alertes en attente", "Pending alerts"),
-        detail:
-          heures !== null
-            ? t(
-                `${alertes.nombre} alerte(s) ouverte(s), la plus ancienne depuis ${dureeEnTexte(heures, langue)}.`,
-                `${alertes.nombre} open alert(s), the oldest one for ${dureeEnTexte(heures, langue)}.`,
-              )
-            : t(`${alertes.nombre} alerte(s) ouverte(s).`, `${alertes.nombre} open alert(s).`),
+          ? t("Des clients mécontents attendent", "Unhappy customers are waiting")
+          : t("Des clients mécontents à rappeler", "Unhappy customers to call back"),
+        detail: traine
+          ? t(
+              "Certains attendent une réponse depuis plusieurs jours : plus vous tardez, plus ils risquent de partir.",
+              "Some have been waiting for an answer for several days: the longer you wait, the more likely they are to leave.",
+            )
+          : t(
+              "Des clients mécontents n’ont pas encore reçu de réponse : répondre vite change tout.",
+              "Some unhappy customers have not had an answer yet: answering quickly makes all the difference.",
+            ),
       },
     });
   }
@@ -470,21 +464,14 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
     const part = nombreJour / negatifs.total;
     if (nombreJour >= NEGATIFS_MIN_JOUR && part >= PART_JOUR_CONCENTRE) {
       const nomJour = JOURS_SEMAINE[langue][jourMax] ?? "";
-      const pic =
-        negatifs.pic !== null && negatifs.pic.nombre >= NEGATIFS_MIN_JOUR
-          ? t(
-              ` Pic le ${dateEnTexte(negatifs.pic.date, langue)} : ${negatifs.pic.nombre} avis négatifs.`,
-              ` Peak on ${dateEnTexte(negatifs.pic.date, langue)}: ${negatifs.pic.nombre} negative reviews.`,
-            )
-          : "";
       candidats.push({
         poids: 65,
         point: {
           code: "negatifs_concentres",
-          titre: t(`Avis négatifs concentrés le ${nomJour}`, `Negative reviews concentrated on ${nomJour}s`),
+          titre: t(`Les clients se plaignent surtout le ${nomJour}`, `Customers complain mostly on ${nomJour}s`),
           detail: t(
-            `${nombreJour} des ${negatifs.total} avis négatifs (${nombre(part * 100, 0, langue)} %) arrivent ce jour-là.${pic}`,
-            `${nombreJour} of the ${negatifs.total} negative reviews (${nombre(part * 100, 0, langue)}%) come on that day.${pic}`,
+            "Une grande partie des avis négatifs arrive ce jour-là : quelque chose ne va pas particulièrement ce jour-là.",
+            "A large share of the negative reviews comes on that day: something goes wrong on that day in particular.",
           ),
         },
       });
@@ -497,10 +484,10 @@ function candidatsFaibles(donnees: DonneesAnalyse, langue: LangueExport): Candid
       poids: 45,
       point: {
         code: "taux_reponse_faible",
-        titre: t("Taux de réponse faible", "Low response rate"),
+        titre: t("Peu de clients laissent un avis", "Few customers leave a review"),
         detail: t(
-          `Seulement ${nombre(tauxReponse, 1, langue)} % des clients qui scannent le QR code envoient leur avis.`,
-          `Only ${nombre(tauxReponse, 1, langue)}% of customers who scan the QR code send their review.`,
+          "Beaucoup de clients scannent le QR code sans aller jusqu’au bout : vous perdez des avis utiles.",
+          "Many customers scan the QR code without going all the way: you are losing useful reviews.",
         ),
       },
     });
@@ -523,7 +510,7 @@ function retenir(candidats: Candidat[]): PointAnalyse[] {
 
 function pisteDuPoint(point: PointAnalyse, donnees: DonneesAnalyse, langue: LangueExport): PointAnalyse {
   const t = (fr: string, en: string): string => choisir(langue, fr, en);
-  const { kpis, themes, classement, negatifs } = donnees;
+  const { themes, classement, negatifs } = donnees;
 
   let titre: string;
   let detail: string;
@@ -531,51 +518,51 @@ function pisteDuPoint(point: PointAnalyse, donnees: DonneesAnalyse, langue: Lang
   switch (point.code) {
     case "note_basse":
     case "note_moyenne":
-      titre = t("Relire les avis les plus bas", "Read the lowest reviews");
+      titre = t("Comprendre ce qui déçoit", "Understand what disappoints");
       detail = t(
-        "Lisez les commentaires des avis notés 1 et 2, repérez ce qui revient et choisissez une action simple à lancer cette semaine.",
-        "Read the comments of the reviews rated 1 and 2, spot what comes back and pick one simple action to start this week.",
+        "Cette semaine, lisez les commentaires des clients mécontents et repérez le problème qui revient le plus souvent. Corrigez-le en premier, puis regardez dans 15 jours si les avis s’améliorent.",
+        "This week, read the comments from unhappy customers and spot the problem that comes up most often. Fix it first, then check in 15 days whether the reviews improve.",
       );
       break;
     case "baisse_note":
-      titre = t("Comprendre la baisse", "Understand the drop");
+      titre = t("Trouver ce qui a changé", "Find out what changed");
       detail = t(
-        "Comparez avec la période précédente : qu’est-ce qui a changé (équipe, offre, affluence, travaux) ? Corrigez le plus vite ce qui explique l’écart.",
-        "Compare with the previous period: what changed (team, offer, crowds, works)? Fix as soon as possible what explains the gap.",
+        "Demandez à l’équipe ce qui a changé depuis la période précédente (personnel, offre, affluence, travaux). Remettez en place sans attendre ce qui marchait avant.",
+        "Ask the team what has changed since the previous period (staff, offer, crowds, works). Put back in place, without waiting, what worked before.",
       );
       break;
     case "nps_negatif":
-      titre = t("Écouter les détracteurs", "Listen to detractors");
+      titre = t("Reconquérir les clients déçus", "Win back disappointed customers");
       detail = t(
-        "Rappelez les clients mécontents qui ont laissé leurs coordonnées pour comprendre leurs raisons et leur proposer un geste.",
-        "Call back the unhappy customers who left their contact details to understand their reasons and offer a gesture.",
+        "Contactez les clients mécontents qui ont laissé leurs coordonnées : écoutez-les, excusez-vous et proposez un geste (remise, remplacement). Un client rattrapé revient souvent.",
+        "Contact the unhappy customers who left their contact details: listen to them, apologise and offer a gesture (discount, replacement). A customer you win back often returns.",
       );
       break;
     case "theme_faible": {
       const pire = themes.filter((theme) => theme.nb_reponses >= REPONSES_MIN_THEME)[0];
       const nom = pire !== undefined ? libelleTheme(pire, langue) : "";
-      titre = t(`Agir sur le thème « ${nom} »`, `Act on the theme "${nom}"`);
+      titre = t(`Améliorer : ${nom}`, `Improve: ${nom}`);
       detail = t(
-        "Regardez le détail par question de ce thème dans le tableau de bord, puis fixez une action corrective avec l’équipe concernée.",
-        "Look at the per-question detail of this theme in the dashboard, then agree on a corrective action with the team concerned.",
+        "Réunissez cette semaine l’équipe concernée, demandez-lui ce qui bloque et choisissez une seule amélioration simple. Regardez dans 15 jours si les clients le ressentent.",
+        "This week, bring together the team concerned, ask them what is getting in the way and pick a single simple improvement. Check in 15 days whether customers notice it.",
       );
       break;
     }
     case "point_faible": {
       const pire = classement.filter((ligne) => ligne.note_moyenne !== null && ligne.nb_avis >= AVIS_MIN_POINT).at(-1);
       const nom = pire !== undefined ? pire.nom : "";
-      titre = t(`Aller voir « ${nom} »`, `Go and check "${nom}"`);
+      titre = t(`Aller voir sur place : ${nom}`, `Go and see on site: ${nom}`);
       detail = t(
-        "Passez sur place et lisez ses derniers commentaires pour comprendre ce qui déçoit les clients à cet endroit.",
-        "Visit it and read its latest comments to understand what disappoints customers there.",
+        "Passez-y cette semaine, observez ce qui se passe et lisez les derniers commentaires. Parlez avec l’équipe sur place pour corriger ce qui déçoit les clients.",
+        "Go there this week, watch what happens and read the latest comments. Talk with the team on site to fix what disappoints customers.",
       );
       break;
     }
     case "alertes_qui_trainent":
-      titre = t("Traiter les alertes ouvertes", "Handle the open alerts");
+      titre = t("Répondre aux clients mécontents", "Answer unhappy customers");
       detail = t(
-        `Traitez en premier les ${kpis.alertes_ouvertes.nombre} alerte(s) ouverte(s), de la plus ancienne à la plus récente, puis passez les avis en « Traité ».`,
-        `Handle the ${kpis.alertes_ouvertes.nombre} open alert(s) first, from the oldest to the newest, then set the reviews to "Resolved".`,
+        "Aujourd’hui, contactez les clients mécontents, en commençant par celui qui attend depuis le plus longtemps. Passez ensuite chaque avis en « Traité ».",
+        "Today, contact the unhappy customers, starting with the one who has been waiting the longest. Then set each review to “Resolved”.",
       );
       break;
     case "negatifs_concentres": {
@@ -586,23 +573,26 @@ function pisteDuPoint(point: PointAnalyse, donnees: DonneesAnalyse, langue: Lang
         }
       }
       const nomJour = JOURS_SEMAINE[langue][jourMax] ?? "";
-      titre = t(`Renforcer le ${nomJour}`, `Strengthen ${nomJour}s`);
+      titre = t(`Renforcer l’équipe le ${nomJour}`, `Strengthen the team on ${nomJour}s`);
       detail = t(
-        `Prévoyez plus d’équipe ou une vigilance particulière le ${nomJour} : c’est là que les clients se plaignent le plus.`,
-        `Plan more staff or extra care on ${nomJour}s: that is when customers complain the most.`,
+        "Prévoyez plus de personnel ou un responsable présent ce jour-là, et demandez à l’équipe ce qui se passe de différent ce jour-là.",
+        "Plan more staff or a manager on duty that day, and ask the team what is different about that day.",
       );
       break;
     }
     case "taux_reponse_faible":
-      titre = t("Mieux montrer le QR code", "Make the QR code more visible");
+      titre = t("Encourager les clients à répondre", "Encourage customers to answer");
       detail = t(
-        "Placez le QR code plus en vue (3 x 3 cm minimum, bon contraste, support mat) et invitez les clients à scanner.",
-        "Place the QR code where it is easier to see (3 x 3 cm minimum, good contrast, matte surface) and invite customers to scan.",
+        "Placez le QR code bien en vue, à hauteur des yeux, et invitez les clients à scanner : « Une minute pour nous aider à progresser ? ». Raccourcissez le questionnaire s’il est long.",
+        "Place the QR code in plain sight, at eye level, and invite customers to scan it: “One minute to help us improve?”. Shorten the questionnaire if it is long.",
       );
       break;
     default:
       titre = t("Suivre ce point", "Keep an eye on this");
-      detail = t("Surveillez cet indicateur à la prochaine période.", "Watch this indicator over the next period.");
+      detail = t(
+        "Surveillez ce point à la prochaine période.",
+        "Watch this point over the next period.",
+      );
   }
 
   return { code: point.code, titre, detail };
@@ -643,39 +633,55 @@ export function construireAnalyse(donnees: DonneesAnalyse, langue: LangueExport)
     };
   }
 
-  // Resume : volume, note avec son evolution, NPS.
-  const note = indicateurs.note_moyenne;
-  const evolution = kpis.evolution.note_moyenne.difference;
-  let texteNote: string;
-  if (note === null) {
-    texteNote = t("aucune note", "no rating");
-  } else if (evolution === null) {
-    texteNote = `${nombre(note, 2, langue)}/5`;
-  } else if (evolution === 0) {
-    texteNote = t(
-      `${nombre(note, 2, langue)}/5 (stable par rapport à la période précédente)`,
-      `${nombre(note, 2, langue)}/5 (stable compared with the previous period)`,
-    );
-  } else {
-    texteNote = t(
-      `${nombre(note, 2, langue)}/5 (${avecSigne(evolution, 2, langue)} par rapport à la période précédente)`,
-      `${nombre(note, 2, langue)}/5 (${avecSigne(evolution, 2, langue)} compared with the previous period)`,
-    );
-  }
-  const texteNps =
-    indicateurs.nps === null ? t("aucun NPS", "no NPS") : `NPS ${nombre(indicateurs.nps, 1, langue)}`;
-
   const pointsFaibles = retenir(candidatsFaibles(donnees, langue));
   const pistes = pointsFaibles.map((point) => pisteDuPoint(point, donnees, langue));
   if (pistes.length === 0) {
     pistes.push({
       code: "maintenir",
-      titre: t("Maintenir le niveau", "Keep up the level"),
+      titre: t("Continuer sur cette lancée", "Keep going"),
       detail: t(
-        "Rien d’inquiétant sur la période : continuez ainsi et partagez les bonnes pratiques avec toute l’équipe.",
-        "Nothing worrying over the period: keep going and share good practices with the whole team.",
+        "Rien d’inquiétant : continuez ainsi, félicitez l’équipe et partagez ce qui marche avec tout le monde.",
+        "Nothing worrying: keep going, congratulate the team and share what works with everyone.",
       ),
     });
+  }
+
+  // Resume : un avis d'ensemble en mots (satisfaction, tendance), sans chiffre. Seule la periode reste.
+  const note = indicateurs.note_moyenne;
+  const evolution = kpis.evolution.note_moyenne.difference;
+  const niveauVert = note !== null && note >= NOTE_VERTE;
+  let satisfaction: string;
+  if (note === null) {
+    satisfaction = t(
+      "il n’y a pas encore assez de notes pour juger la satisfaction",
+      "there are not enough ratings yet to judge satisfaction",
+    );
+  } else if (note >= NOTE_VERTE) {
+    satisfaction = t("vos clients sont très satisfaits", "your customers are very satisfied");
+  } else if (note >= NOTE_ROUGE) {
+    satisfaction = t("vos clients sont moyennement satisfaits", "your customers are only fairly satisfied");
+  } else {
+    satisfaction = t("vos clients sont mécontents", "your customers are unhappy");
+  }
+
+  let tendance = "";
+  if (note !== null && evolution !== null && evolution >= ECART_NOTE_SIGNIFICATIF) {
+    tendance = niveauVert
+      ? t(", et la satisfaction progresse", ", and satisfaction is improving")
+      : t(", mais la satisfaction progresse", ", but satisfaction is improving");
+  } else if (note !== null && evolution !== null && evolution <= -ECART_NOTE_SIGNIFICATIF) {
+    tendance = niveauVert
+      ? t(", mais la satisfaction recule", ", but satisfaction is dropping")
+      : t(", et la satisfaction recule", ", and satisfaction is dropping");
+  }
+
+  let suite: string;
+  if (pointsFaibles.length === 0) {
+    suite = t("Rien d’inquiétant : continuez ainsi.", "Nothing worrying: keep it up.");
+  } else if (niveauVert) {
+    suite = t("Quelques points restent à surveiller.", "A few points remain to keep an eye on.");
+  } else {
+    suite = t("Voici ce qu’il faut améliorer en premier.", "Here is what to improve first.");
   }
 
   return {
@@ -683,10 +689,7 @@ export function construireAnalyse(donnees: DonneesAnalyse, langue: LangueExport)
     periode,
     nb_avis: indicateurs.nb_avis,
     suffisant: true,
-    resume: t(
-      `${intervalle} : ${indicateurs.nb_avis} avis, note moyenne ${texteNote}, ${texteNps}.`,
-      `${intervalle}: ${indicateurs.nb_avis} reviews, average rating ${texteNote}, ${texteNps}.`,
-    ),
+    resume: `${intervalle}${langue === "fr" ? " : " : ": "}${satisfaction}${tendance}. ${suite}`,
     points_forts: retenir(candidatsForts(donnees, langue)),
     points_faibles: pointsFaibles,
     pistes,

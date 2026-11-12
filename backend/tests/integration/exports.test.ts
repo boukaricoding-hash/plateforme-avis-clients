@@ -846,7 +846,7 @@ describe("1 000 avis d'aout", () => {
     const analyse = classeur.getWorksheet("Analyse");
     expect(analyse).toBeDefined();
     expect(String(analyse?.getRow(3).getCell(1).value ?? "")).toContain("Résumé");
-    expect(String(analyse?.getRow(4).getCell(1).value ?? "")).toContain("1000 avis");
+    expect(String(analyse?.getRow(4).getCell(1).value ?? "")).toContain("Du 01/08/2026 au 31/08/2026");
   }, 60000);
 
   it("exporte aussi le csv et le rapport pdf sans attendre", async () => {

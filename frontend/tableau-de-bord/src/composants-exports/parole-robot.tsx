@@ -5,7 +5,10 @@ import type { EtatOperation, HumeurRobot, ReponseAnalyse } from '../types/export
 // Ce que dit le robot, juste sous lui (jour 21, fichier 4 sur 9 du design) :
 // - une phrase courte selon son humeur (je t'ecoute, je reflechis, c'est pret...) ;
 // - quand l'analyse des avis est prete, une conclusion a la fois, sous la phrase :
-//   le resume, puis les points faibles, les points forts et les pistes d'action.
+//   le resume, puis chaque point faible suivi tout de suite de son action (le probleme, puis quoi
+//   faire), puis les points forts. Les actions sont donc lues a cote du probleme qu'elles
+//   reglent, et non tout a la fin. Quand rien ne va mal, la seule piste ("continuer ainsi")
+//   ferme le carrousel, apres les points forts.
 //   Un clic sur la conclusion passe a la suivante. Les memes conclusions sont ecrites
 //   dans le rapport PDF et dans la feuille Analyse d'Excel.
 //   De tres petits points sous la conclusion montrent qu'il y en a d'autres a faire defiler :
@@ -42,19 +45,31 @@ type FonctionTexte = (cle: string, valeurs?: Record<string, string | number>) =>
 const HUMEURS_AVEC_CONCLUSION: readonly HumeurRobot[] = ['repos', 'content', 'inquiet']
 
 // Les conclusions, dans l'ordre ou le robot les dit : ce dont l'entreprise a besoin d'abord.
+// Le serveur donne une piste par point faible, dans le meme ordre (la deuxieme piste repond au
+// deuxieme point faible, etc.) : on les lit donc par paires, le probleme puis son action.
 function listerConclusions(analyse: ReponseAnalyse, t: FonctionTexte): Conclusion[] {
   const conclusions: Conclusion[] = []
 
   if (analyse.resume.trim() !== '') {
     conclusions.push({ cle: 'resume', etiquette: null, texte: analyse.resume })
   }
-  for (const point of analyse.points_faibles) {
+
+  analyse.points_faibles.forEach((point, indice) => {
     conclusions.push({
       cle: `faible-${point.code}`,
       etiquette: t('exports.robot.conclusion.faible'),
       texte: `${point.titre} — ${point.detail}`,
     })
-  }
+    const piste = analyse.pistes[indice]
+    if (piste !== undefined) {
+      conclusions.push({
+        cle: `piste-${piste.code}`,
+        etiquette: t('exports.robot.conclusion.piste'),
+        texte: `${piste.titre} — ${piste.detail}`,
+      })
+    }
+  })
+
   for (const point of analyse.points_forts) {
     conclusions.push({
       cle: `fort-${point.code}`,
@@ -62,11 +77,13 @@ function listerConclusions(analyse: ReponseAnalyse, t: FonctionTexte): Conclusio
       texte: `${point.titre} — ${point.detail}`,
     })
   }
-  for (const point of analyse.pistes) {
+
+  // Les pistes sans point faible (la seule piste "continuer ainsi" quand rien ne va mal) viennent a la fin.
+  for (const piste of analyse.pistes.slice(analyse.points_faibles.length)) {
     conclusions.push({
-      cle: `piste-${point.code}`,
+      cle: `piste-${piste.code}`,
       etiquette: t('exports.robot.conclusion.piste'),
-      texte: `${point.titre} — ${point.detail}`,
+      texte: `${piste.titre} — ${piste.detail}`,
     })
   }
   return conclusions
@@ -111,7 +128,8 @@ export function ParoleRobot({ humeur, analyse, etatAnalyse }: PropsParoleRobot) 
             {conclusion.etiquette !== null && (
               <span className="font-semibold text-texte">{`${conclusion.etiquette} : `}</span>
             )}
-            <span className="line-clamp-3">{conclusion.texte}</span>
+            {/* Six lignes : les conseils sont plus longs qu'un chiffre et la fin dit quand verifier l'effet */}
+            <span className="line-clamp-6">{conclusion.texte}</span>
           </button>
           {/* Les points ne sont pas dans le bouton : ils ne rejouent pas leur apparition a chaque clic */}
           {plusieurs && (

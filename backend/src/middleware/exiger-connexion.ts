@@ -35,7 +35,13 @@ export async function exigerConnexion(
   const utilisateur = session
     ? await prisma.utilisateur.findFirst({
         where: { id: session.utilisateur_id, actif: true, supprime_le: null },
-        select: { id: true, email: true, role: true, organisation_id: true },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          organisation_id: true,
+          organisation: { select: { statut: true } },
+        },
       })
     : null;
 
@@ -43,6 +49,16 @@ export async function exigerConnexion(
     res.status(401).json({
       code: "NON_CONNECTE",
       message: "Vous n'etes pas connecte.",
+      details: null,
+    });
+    return;
+  }
+
+  // Organisation suspendue : la session en cours est refusee (le compte DTS n'a pas d'organisation)
+  if (utilisateur.organisation?.statut === "SUSPENDU") {
+    res.status(401).json({
+      code: "ORGANISATION_SUSPENDUE",
+      message: "Votre organisation est suspendue. Contactez DATA TRACE SERVICE.",
       details: null,
     });
     return;

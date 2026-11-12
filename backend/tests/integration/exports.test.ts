@@ -570,8 +570,9 @@ describe("export excel", () => {
     const tout = texte.join("\n");
 
     expect(texte[0]).toBe("Analyse des avis");
-    expect(tout).toContain("Du 01/10/2026 au 31/10/2026 : 6 avis");
-    expect(tout).toContain("3,75/5");
+    expect(tout).toContain("Du 01/10/2026 au 31/10/2026 : vos clients sont moyennement satisfaits");
+    // Le robot parle en mots, pas en chiffres : la note reste dans la feuille des avis et le tableau de bord.
+    expect(tout).not.toContain("3,75/5");
     expect(tout).toContain("Points forts");
     expect(tout).toContain("Points faibles");
     expect(tout).toContain("Pistes d’action");
@@ -643,7 +644,8 @@ describe("analyse", () => {
     expect(analyse.periode).toMatchObject({ from: "2026-10-01", to: "2026-10-31", nombre_jours: 31 });
     expect(analyse.nb_avis).toBe(6);
     expect(analyse.suffisant).toBe(true);
-    expect(analyse.resume).toContain("6 avis");
+    // Note de 3,75 : entre l'orange et le vert, donc "moyennement satisfaits" (sans chiffre).
+    expect(analyse.resume).toContain("Du 01/10/2026 au 31/10/2026 : vos clients sont moyennement satisfaits");
     expect(analyse.points_forts.length).toBeLessThanOrEqual(3);
     expect(analyse.points_faibles.length).toBeLessThanOrEqual(3);
     expect(analyse.points_forts.length + analyse.points_faibles.length).toBeGreaterThan(0);
@@ -654,6 +656,17 @@ describe("analyse", () => {
     }
   });
 
+  it("parle en mots et non en chiffres, et relie chaque point faible a une action", async () => {
+    const analyse = (await agentResponsable.post("/api/v1/exports/analyse").send({ filtres: PERIODE_OCTOBRE }).expect(200)).body;
+
+    const textes = [analyse.resume, ...[...analyse.points_forts, ...analyse.points_faibles, ...analyse.pistes].flatMap((p) => [p.titre, p.detail])];
+    for (const texte of textes) {
+      // Ni score (4,2/5), ni pourcentage (30 %), ni sigle NPS : les chiffres sont dans le tableau de bord.
+      expect(texte).not.toMatch(/\d\s?(\/5|%)|NPS/);
+    }
+    // Une piste d'action par point faible (ou une seule piste "maintenir" quand rien ne va mal).
+    expect(analyse.pistes.length).toBe(Math.max(1, analyse.points_faibles.length));
+  });
   it("donne les memes chiffres que le tableau de bord (calcul a la main : note 3,75, NPS 33,3)", async () => {
     const analyse = (await agentResponsable.post("/api/v1/exports/analyse").send({ filtres: PERIODE_OCTOBRE }).expect(200)).body;
     const tableau = (
@@ -676,7 +689,7 @@ describe("analyse", () => {
       .expect(200);
 
     expect(reponse.body.langue).toBe("en");
-    expect(reponse.body.resume).toContain("From 2026-10-01 to 2026-10-31: 6 reviews");
+    expect(reponse.body.resume).toContain("From 2026-10-01 to 2026-10-31: your customers are only fairly satisfied");
   });
 
   it("dit qu'il n'y a pas assez d'avis plutot que d'inventer une conclusion", async () => {
@@ -833,7 +846,7 @@ describe("1 000 avis d'aout", () => {
     const analyse = classeur.getWorksheet("Analyse");
     expect(analyse).toBeDefined();
     expect(String(analyse?.getRow(3).getCell(1).value ?? "")).toContain("Résumé");
-    expect(String(analyse?.getRow(4).getCell(1).value ?? "")).toContain("1000 avis");
+    expect(String(analyse?.getRow(4).getCell(1).value ?? "")).toContain("Du 01/08/2026 au 31/08/2026");
   }, 60000);
 
   it("exporte aussi le csv et le rapport pdf sans attendre", async () => {

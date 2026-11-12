@@ -1021,7 +1021,7 @@ export const fr = {
       conclusion: {
         faible: 'Point faible',
         fort: 'Point fort',
-        piste: 'Piste d’action',
+        piste: 'À faire',
       },
       suivant: 'Cliquez pour lire la conclusion suivante.',
       peuDAvis: 'Seulement {nombre} avis sur cette période : trop peu pour tirer des conclusions fiables.',

@@ -19,6 +19,16 @@ const MESSAGE_IDENTIFIANTS_INVALIDES = "E-mail ou mot de passe incorrect.";
 // n'existe pas : on ne doit pas pouvoir deviner quelles adresses existent.
 const hashFactice = hacherMotDePasse("mot-de-passe-factice-sans-valeur");
 
+// Une organisation suspendue ne peut plus se connecter (le compte DTS n'a pas d'organisation)
+async function organisationEstSuspendue(organisationId: string | null): Promise<boolean> {
+  if (!organisationId) return false;
+  const organisation = await prisma.organisation.findUnique({
+    where: { id: organisationId },
+    select: { statut: true },
+  });
+  return organisation?.statut === "SUSPENDU";
+}
+
 export async function connexion(req: Request, res: Response): Promise<void> {
   const lecture = schemaConnexion.safeParse(req.body);
   if (!lecture.success) {
@@ -58,6 +68,16 @@ export async function connexion(req: Request, res: Response): Promise<void> {
     res.status(401).json({
       code: "IDENTIFIANTS_INVALIDES",
       message: MESSAGE_IDENTIFIANTS_INVALIDES,
+      details: null,
+    });
+    return;
+  }
+
+  // Mot de passe valide mais organisation suspendue : acces refuse (apres la verification, pour ne rien reveler avant)
+  if (await organisationEstSuspendue(utilisateur.organisation_id)) {
+    res.status(403).json({
+      code: "ORGANISATION_SUSPENDUE",
+      message: "Votre organisation est suspendue. Contactez DATA TRACE SERVICE.",
       details: null,
     });
     return;
@@ -135,6 +155,15 @@ export async function moi(req: Request, res: Response): Promise<void> {
     res.status(401).json({
       code: "NON_CONNECTE",
       message: "Vous n'etes pas connecte.",
+      details: null,
+    });
+    return;
+  }
+
+  if (await organisationEstSuspendue(utilisateur.organisation_id)) {
+    res.status(401).json({
+      code: "ORGANISATION_SUSPENDUE",
+      message: "Votre organisation est suspendue. Contactez DATA TRACE SERVICE.",
       details: null,
     });
     return;

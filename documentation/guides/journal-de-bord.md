@@ -484,3 +484,35 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 **Points d'attention**
 - `npx eslint src` sur tout le dossier signale environ 230 erreurs `react-hooks/rules-of-hooks` dans les anciens hooks nommes `utiliser...`, y compris `utiliser-langue.ts` qui date d'avant le jour 21. Aucune dans les fichiers du jour 21.
 - Si le planning prend du retard, le rapport PDF est la premiere chose a couper (on garde les exports CSV et Excel).
+
+
+## Jour 22 - jeudi 12 novembre 2026 : back-office DTS, organisations et modeles sectoriels
+
+**Fait**
+- Backend, module `modules/administration` : `validations/organisations.ts`, `services/organisations.ts` (creer avec clonage du modele du secteur, lister, lire, modifier, suspendre, reactiver), `services/premier-responsable.ts` (invitation avec `creerInvitation` du jour 18), `controleurs/organisations.controleur.ts` et `routes/organisations.routes.ts`, branchee dans `app.ts` sur `/api/v1/admin/organisations`.
+- Suspension : `middleware/exiger-connexion.ts` refuse la session en cours d'une organisation suspendue (401 `ORGANISATION_SUSPENDUE`), `auth.controleur.ts` refuse la connexion (403 `ORGANISATION_SUSPENDUE`, apres la verification du mot de passe) et `/auth/moi` renvoie 401. Le QR code utilisait deja la page claire du serveur.
+- Backend, module `modules/secteurs` : `validations/secteurs.ts`, `services/secteurs.ts` (lister, lire, creer, modifier, themes, questionnaires types), `controleurs/secteurs.controleur.ts` et `routes/secteurs.routes.ts`, branchee dans `app.ts` sur `/api/v1/admin/secteurs`.
+- Donnees de depart : `prisma/donnees-initiales/secteurs/modeles-sectoriels.ts` (themes et questions des 6 modeles, annexe A1 a A5 et general, en francais et en anglais) et `prisma/seed.ts` reecrit : il installe les themes et les modeles manquants et peut etre relance sans doublon.
+- Tests : `admin-organisations.test.ts` (13 tests : creation, suspension avec connexion et QR bloques, reactivation, invitation), `admin-secteurs.test.ts` (12 tests) et `isolation-admin.test.ts` (4 tests : 401 pour un visiteur sur les 14 routes admin, 403 pour un Responsable et un Gestionnaire avec la base inchangee, controle positif de l'administrateur). `isolation-admin.test.ts` : 1 fichier, 4 tests passes.
+- Aucun fichier frontend aujourd'hui (la page de suspension et ses textes existaient deja).
+
+**Decisions**
+- Routes reservees a l'administrateur DTS : `exigerConnexion` puis `exigerRole("ADMINISTRATEUR")`, sans `exigerOrganisation` (le compte DTS n'a pas d'organisation). Les offres (`/admin/offres`) ne font pas partie du jour.
+- Pas de logo a la creation : le premier responsable l'ajoute dans l'ecran E14.
+- Statut a la creation : ESSAI (par defaut) ou ACTIF. Le secteur et le statut ne se modifient pas par `PATCH` : la suspension et la reactivation ont leurs routes. La reactivation remet toujours ACTIF.
+- Premier responsable : invite par `POST /admin/organisations/{id}/inviter-responsable` avec seulement l'e-mail (role Responsable, sans site). Une invitation qui echoue ne bloque pas la creation et on peut la renvoyer. Refus 409 si l'organisation a deja un responsable actif.
+- A la creation, le modele du secteur est copie automatiquement dans l'organisation, en brouillon (scenario 13 : organisation sante operationnelle en moins de 15 minutes).
+- Modele general : l'annexe A ne le decrit pas, il reprend les 4 themes du seed (accueil, service, proprete, prix) en etoiles, plus le NPS.
+- Avertissement sante : dans le message d'accueil du modele, en francais et en anglais, donc affiche sur l'ecran E1.
+- Le code d'un secteur et celui d'un theme ne changent jamais (le seed et le clonage s'appuient dessus). Un secteur desactive n'est plus propose a la creation d'une organisation.
+
+**A faire ensuite**
+- Fichier 17 : entree dans `apres-un-pull.md` (relancer le seed apres un pull pour installer les modeles).
+- Verifications du soir, a faire a la main : creer une organisation sante par l'API (modele present, avec l'avertissement) ; inviter son premier responsable (e-mail dans Mailpit) ; organisation suspendue bloquee (connexion refusee, QR code avec la page claire) puis reactivee ; un Responsable recoit 403 sur les routes admin ; seed lance deux fois sans doublon.
+- Lancer `npm test` dans `backend` (Docker Desktop ouvert, base demarree) et noter le resultat.
+- Cloture : pull request vers main, fusion, `git checkout main` puis `git pull`. Ensuite jour 23 (back-office DTS : ecrans E17 et E18).
+
+**Points d'attention**
+- `npx tsc --noEmit` dans `backend` ne verifie pas le dossier `tests` (le `tsconfig` n'inclut que `src`) : les fichiers de test ne sont controles que par `vitest`.
+- La connexion est limitee a 10 essais par minute : chaque fichier de test en garde le compte dans son en-tete (6 pour `admin-organisations.test.ts`, 4 pour `isolation-admin.test.ts`).
+- Le service d'e-mails de DTS n'est pas encore choisi : on garde Mailpit.

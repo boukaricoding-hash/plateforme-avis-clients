@@ -3,6 +3,12 @@ import { randomBytes } from "node:crypto";
 import { hash } from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
+import {
+  MODELES_SECTORIELS,
+  THEMES_PAR_SECTEUR,
+  type ModeleSectoriel,
+  type QuestionModele,
+} from "./donnees-initiales/secteurs/modeles-sectoriels";
 
 const adapter = new PrismaPg({ connectionString: process.env["DATABASE_URL"] });
 const prisma = new PrismaClient({ adapter });
@@ -12,83 +18,83 @@ const NOM_ORGANISATION = "Restaurant Demo";
 const NOM_SITE = "Salle principale";
 const NOMBRE_TABLES = 10;
 
-type ThemeDepart = { code: string; libelle_fr: string; libelle_en: string };
 type SecteurDepart = {
   code: string;
   nom_fr: string;
   nom_en: string;
   vocabulaire: Record<string, string>;
-  themes: ThemeDepart[];
 };
 
-// Les themes des secteurs autres que restauration et general
-// seront completes avec l'annexe A du cahier des charges (jour 22).
+// Les themes et les questionnaires types viennent de
+// prisma/donnees-initiales/secteurs/modeles-sectoriels.ts (annexe A du cahier des charges).
 const SECTEURS: SecteurDepart[] = [
-  {
-    code: "restauration",
-    nom_fr: "Restauration",
-    nom_en: "Restaurant",
-    vocabulaire: { point_contact: "table" },
-    themes: [
-      { code: "accueil", libelle_fr: "Accueil", libelle_en: "Welcome" },
-      { code: "qualite_plats", libelle_fr: "Qualite des plats", libelle_en: "Food quality" },
-      { code: "rapidite", libelle_fr: "Rapidite", libelle_en: "Speed" },
-      { code: "proprete", libelle_fr: "Proprete", libelle_en: "Cleanliness" },
-      { code: "prix", libelle_fr: "Prix", libelle_en: "Price" },
-      { code: "ambiance", libelle_fr: "Ambiance", libelle_en: "Atmosphere" },
-    ],
-  },
-  {
-    code: "sante",
-    nom_fr: "Sante",
-    nom_en: "Healthcare",
-    vocabulaire: { point_contact: "chambre" },
-    themes: [],
-  },
-  {
-    code: "education",
-    nom_fr: "Education",
-    nom_en: "Education",
-    vocabulaire: { point_contact: "salle" },
-    themes: [],
-  },
-  {
-    code: "agroalimentaire",
-    nom_fr: "Agroalimentaire",
-    nom_en: "Food industry",
-    vocabulaire: { point_contact: "produit" },
-    themes: [],
-  },
-  {
-    code: "evenement",
-    nom_fr: "Evenement",
-    nom_en: "Event",
-    vocabulaire: { point_contact: "stand" },
-    themes: [],
-  },
-  {
-    code: "general",
-    nom_fr: "General",
-    nom_en: "General",
-    vocabulaire: { point_contact: "point de contact" },
-    themes: [
-      { code: "accueil", libelle_fr: "Accueil", libelle_en: "Welcome" },
-      { code: "service", libelle_fr: "Service", libelle_en: "Service" },
-      { code: "proprete", libelle_fr: "Proprete", libelle_en: "Cleanliness" },
-      { code: "prix", libelle_fr: "Prix", libelle_en: "Price" },
-    ],
-  },
+  { code: "restauration", nom_fr: "Restauration", nom_en: "Restaurant", vocabulaire: { point_contact: "table" } },
+  { code: "sante", nom_fr: "Santé", nom_en: "Healthcare", vocabulaire: { point_contact: "chambre" } },
+  { code: "education", nom_fr: "Éducation", nom_en: "Education", vocabulaire: { point_contact: "salle" } },
+  { code: "agroalimentaire", nom_fr: "Agroalimentaire", nom_en: "Food industry", vocabulaire: { point_contact: "produit" } },
+  { code: "evenement", nom_fr: "Événement", nom_en: "Event", vocabulaire: { point_contact: "stand" } },
+  { code: "general", nom_fr: "Général", nom_en: "General", vocabulaire: { point_contact: "point de contact" } },
 ];
 
-// Annexe A1 du cahier des charges : questions en etoiles, avec leur theme.
-const QUESTIONS_ETOILES_RESTAURATION = [
-  ["accueil", "Comment avez-vous trouvé notre accueil ?", "How was our welcome?"],
-  ["qualite_plats", "Comment avez-vous trouvé la qualité des plats ?", "How was the food quality?"],
-  ["rapidite", "Comment avez-vous trouvé la rapidité du service ?", "How was the speed of service?"],
-  ["proprete", "Comment avez-vous trouvé la propreté du lieu ?", "How clean was the place?"],
-  ["prix", "Comment jugez-vous le rapport qualité-prix ?", "How would you rate the value for money?"],
-  ["ambiance", "Comment avez-vous trouvé l'ambiance ?", "How was the atmosphere?"],
-] as const;
+// Une question du modele devient une question de la base (echelle selon le type).
+function questionDepart(
+  question: QuestionModele,
+  index: number,
+  idsThemes: Map<string, string>,
+) {
+  let theme_id: string | undefined;
+  if (question.theme !== undefined) {
+    theme_id = idsThemes.get(question.theme);
+    if (!theme_id) throw new Error("Theme introuvable : " + question.theme);
+  }
+  return {
+    ordre: index + 1,
+    type: question.type,
+    libelle: question.libelle,
+    obligatoire: question.obligatoire,
+    ...(theme_id !== undefined ? { theme_id } : {}),
+    ...(question.aide !== undefined ? { aide: question.aide } : {}),
+    ...(question.options !== undefined ? { options: question.options } : {}),
+    ...(question.type === "ETOILES" ? { echelle_min: 1, echelle_max: 5 } : {}),
+    ...(question.type === "NPS" ? { echelle_min: 0, echelle_max: 10 } : {}),
+  };
+}
+
+// Cree le modele du secteur s'il n'existe pas encore (un modele existant n'est jamais modifie).
+async function installerModele(
+  modele: ModeleSectoriel,
+  secteurId: string,
+  idsThemes: Map<string, string>,
+): Promise<void> {
+  const existant = await prisma.questionnaire.findFirst({
+    where: { est_modele: true, secteur_id: secteurId, supprime_le: null },
+    select: { id: true },
+  });
+  if (existant) return;
+
+  await prisma.questionnaire.create({
+    data: {
+      est_modele: true,
+      secteur_id: secteurId,
+      titre: modele.titre,
+      message_accueil: modele.message_accueil,
+      message_remerciement: modele.message_remerciement,
+      langue_defaut: "fr",
+      statut: "ACTIF",
+      versions: {
+        create: {
+          numero: 1,
+          publie_le: new Date(),
+          questions: {
+            create: modele.questions.map((question, index) =>
+              questionDepart(question, index, idsThemes),
+            ),
+          },
+        },
+      },
+    },
+  });
+}
 
 function lireVariable(nom: string): string {
   const valeur = process.env[nom];
@@ -109,7 +115,7 @@ async function main() {
   const emailResponsable = lireVariable("SEED_RESPONSABLE_EMAIL");
   const mdpResponsable = lireVariable("SEED_RESPONSABLE_MOT_DE_PASSE");
 
-  // 1. Secteurs et themes (cree s'ils n'existent pas, sinon mis a jour)
+  // 1. Secteurs, themes et modeles de questionnaires (relancable sans doublon)
   const idsSecteurs = new Map<string, string>();
   for (const s of SECTEURS) {
     const secteur = await prisma.secteur.upsert({
@@ -124,8 +130,9 @@ async function main() {
     });
     idsSecteurs.set(s.code, secteur.id);
 
-    for (const [index, t] of s.themes.entries()) {
-      await prisma.theme.upsert({
+    const idsThemes = new Map<string, string>();
+    for (const [index, t] of (THEMES_PAR_SECTEUR[s.code] ?? []).entries()) {
+      const theme = await prisma.theme.upsert({
         where: { secteur_id_code: { secteur_id: secteur.id, code: t.code } },
         update: { libelle_fr: t.libelle_fr, libelle_en: t.libelle_en, ordre: index + 1 },
         create: {
@@ -136,76 +143,16 @@ async function main() {
           ordre: index + 1,
         },
       });
+      idsThemes.set(t.code, theme.id);
     }
+
+    const modele = MODELES_SECTORIELS.find((m) => m.secteur === s.code);
+    if (!modele) throw new Error("Modele introuvable pour le secteur : " + s.code);
+    await installerModele(modele, secteur.id, idsThemes);
   }
 
   const idRestauration = idsSecteurs.get("restauration");
   if (!idRestauration) throw new Error("Secteur restauration introuvable.");
-
-  // 1b. Modele de questionnaire restauration (annexe A1), cree une seule fois
-  const modeleExistant = await prisma.questionnaire.findFirst({
-    where: { est_modele: true, secteur_id: idRestauration, supprime_le: null },
-    select: { id: true },
-  });
-  if (!modeleExistant) {
-    const themesRestauration = await prisma.theme.findMany({
-      where: { secteur_id: idRestauration },
-      select: { id: true, code: true },
-    });
-    const idTheme = (code: string): string => {
-      const theme = themesRestauration.find((t) => t.code === code);
-      if (!theme) throw new Error("Theme introuvable : " + code);
-      return theme.id;
-    };
-
-    await prisma.questionnaire.create({
-      data: {
-        est_modele: true,
-        secteur_id: idRestauration,
-        titre: { fr: "Avis restaurant", en: "Restaurant review" },
-        message_accueil: {
-          fr: "Votre avis nous aide à nous améliorer. Cela prend moins d'une minute.",
-          en: "Your feedback helps us improve. It takes less than a minute.",
-        },
-        message_remerciement: {
-          fr: "Merci pour votre avis !",
-          en: "Thank you for your feedback!",
-        },
-        langue_defaut: "fr",
-        statut: "ACTIF",
-        versions: {
-          create: {
-            numero: 1,
-            publie_le: new Date(),
-            questions: {
-              create: [
-                ...QUESTIONS_ETOILES_RESTAURATION.map(([code, fr, en], index) => ({
-                  ordre: index + 1,
-                  type: "ETOILES" as const,
-                  libelle: { fr, en },
-                  theme_id: idTheme(code),
-                  obligatoire: true,
-                  echelle_min: 1,
-                  echelle_max: 5,
-                })),
-                {
-                  ordre: QUESTIONS_ETOILES_RESTAURATION.length + 1,
-                  type: "NPS" as const,
-                  libelle: {
-                    fr: "De 0 à 10, recommanderiez-vous notre restaurant à un proche ?",
-                    en: "From 0 to 10, how likely are you to recommend our restaurant to a friend?",
-                  },
-                  obligatoire: true,
-                  echelle_min: 0,
-                  echelle_max: 10,
-                },
-              ],
-            },
-          },
-        },
-      },
-    });
-  }
 
   // 2. Organisation fictive (cherchee par nom, creee si absente)
   let organisation = await prisma.organisation.findFirst({

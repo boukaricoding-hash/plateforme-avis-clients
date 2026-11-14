@@ -12,8 +12,8 @@ const COULEURS_BARRE: Record<Theme, string> = {
   sombre: '#080808',
 }
 
-// Theme de depart : le choix deja fait sur cet appareil, sinon le reglage du systeme
-// (clair si le systeme est en clair, sombre dans tous les autres cas).
+// Theme de depart : le choix deja fait sur cet appareil, sinon le theme sombre (noir).
+// Le reglage clair ou sombre de l'appareil n'est pas suivi : le sombre est le theme par defaut.
 function themeDeDepart(): Theme {
   try {
     const memorise = window.localStorage.getItem(CLE_STOCKAGE)
@@ -21,10 +21,7 @@ function themeDeDepart(): Theme {
       return memorise
     }
   } catch {
-    // Stockage indisponible : on retombe sur le reglage du systeme.
-  }
-  if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    return 'clair'
+    // Stockage indisponible : on garde le theme par defaut.
   }
   return 'sombre'
 }

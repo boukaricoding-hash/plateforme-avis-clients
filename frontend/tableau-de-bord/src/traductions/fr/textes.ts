@@ -95,6 +95,76 @@ export const fr = {
     garantie1: 'Données séparées par organisation',
     garantie2: 'Alertes en temps réel',
   },
+  // Bouton "Demander une demo" (composants-communs/bouton-contact.tsx)
+  contact: {
+    demande: 'Demander une démo',
+    canalWhatsapp: 'via WhatsApp',
+    parEmail: 'ou par e-mail',
+    sujetDemo: 'Demande de démonstration – plateforme d’avis clients',
+    messageDemo:
+      'Bonjour, je souhaite une démonstration de la plateforme d’avis clients par QR code. Merci de me recontacter.',
+  },
+  // Pied de page des ecrans publics (composants-communs/pied-de-page-confiance.tsx)
+  pied: {
+    navigation: 'Informations légales et contact',
+    mentionsLegales: 'Mentions légales',
+    confidentialite: 'Confidentialité',
+    contact: 'Contact',
+  },
+  // Mentions legales (pages/legal/page-mentions-legales.tsx)
+  mentions: {
+    titre: 'Mentions légales',
+    intro: 'Informations légales concernant ce site et la plateforme d’avis clients.',
+    editeurTitre: 'Éditeur du site',
+    libelleEditeur: 'Éditeur',
+    libelleResponsable: 'Responsable de la publication',
+    libelleAdresse: 'Adresse',
+    libelleEmail: 'E-mail',
+    libelleWhatsapp: 'WhatsApp',
+    hebergementTitre: 'Hébergement',
+    hebergementTexte: 'Ce site est hébergé par {nom}.',
+    proprieteTitre: 'Propriété intellectuelle',
+    proprieteTexte:
+      'Les textes, logos, images et éléments graphiques de ce site sont la propriété de {nom}, sauf mention contraire. Toute reproduction sans autorisation écrite préalable est interdite.',
+    responsabiliteTitre: 'Responsabilité',
+    responsabiliteTexte:
+      '{nom} s’efforce de fournir des informations exactes et à jour, mais ne peut garantir que le site soit exempt d’erreurs ou accessible sans interruption. Les avis recueillis par la plateforme sont rédigés par les clients des organisations qui l’utilisent ; {nom} n’en est pas l’auteur.',
+    donneesTitre: 'Données personnelles',
+    donneesTexte: 'Les informations enregistrées par la plateforme et vos droits sont décrits dans notre',
+    donneesLien: 'politique de confidentialité',
+  },
+  // Politique de confidentialite (pages/legal/page-confidentialite.tsx)
+  confidentialite: {
+    titre: 'Politique de confidentialité',
+    intro:
+      'Cette page explique quelles informations la plateforme d’avis clients enregistre, à quoi elles servent et combien de temps certaines sont gardées.',
+    responsableTitre: 'Qui édite la plateforme',
+    responsableTexte:
+      '{nom} édite et exploite la plateforme. Chaque organisation cliente l’utilise pour recueillir les avis de ses propres clients.',
+    comptesTitre: 'Comptes des responsables',
+    comptesTexte:
+      'Pour se connecter au tableau de bord, la plateforme enregistre le nom, l’adresse e-mail, le rôle et la langue de chaque utilisateur, ainsi que la date de sa dernière connexion.',
+    motDePasseTexte:
+      'Le mot de passe n’est jamais enregistré en clair : seule une empreinte chiffrée, impossible à inverser, est conservée.',
+    journalTexte:
+      'Les actions sensibles, comme les connexions et les accès du support, sont inscrites dans un journal avec la date, l’utilisateur concerné et l’adresse IP, pour la sécurité et le suivi.',
+    avisTitre: 'Avis des clients',
+    avisTexte:
+      'Le nom, le téléphone et l’adresse e-mail d’une personne qui donne son avis ne sont enregistrés que si elle choisit de les indiquer et donne son accord.',
+    avisContactTexte:
+      'Pour limiter les avis en double, une empreinte chiffrée de l’appareil et du réseau est gardée avec l’avis. L’adresse IP n’est jamais gardée en clair, et cette empreinte est effacée après 7 jours.',
+    cookiesTitre: 'Cookies et stockage sur l’appareil',
+    cookiesIntro:
+      'La plateforme n’utilise ni cookie publicitaire ni outil de suivi. Elle garde seulement :',
+    cookieSession:
+      'un cookie de connexion, nécessaire pour rester identifié : il disparaît à la fermeture du navigateur, ou au bout de 7 jours si « Se souvenir de moi » est coché. Sans cette option, la session se ferme après 30 minutes d’inactivité.',
+    cookieAppareil:
+      'sur l’appareil : un cookie de 180 jours sur la page d’avis, pour limiter les doublons, et quelques préférences (langue, thème, brouillon d’avis hors connexion).',
+    droitsTitre: 'Vos droits',
+    droitsTexte:
+      'Vous pouvez demander à consulter, corriger ou supprimer les informations qui vous concernent en nous contactant. Nos coordonnées figurent dans les',
+    droitsLien: 'mentions légales',
+  },
   motDePasseOublie: {
     titre: 'Mot de passe oublié',
     explication:

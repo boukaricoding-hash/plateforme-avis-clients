@@ -95,6 +95,75 @@ export const en = {
     garantie1: 'Data separated by organization',
     garantie2: 'Real-time alerts',
   },
+  // "Request a demo" button (composants-communs/bouton-contact.tsx)
+  contact: {
+    demande: 'Request a demo',
+    canalWhatsapp: 'via WhatsApp',
+    parEmail: 'or by email',
+    sujetDemo: 'Demo request – customer feedback platform',
+    messageDemo:
+      'Hello, I would like a demo of the customer feedback platform with QR codes. Please get back to me.',
+  },
+  // Footer of the public screens (composants-communs/pied-de-page-confiance.tsx)
+  pied: {
+    navigation: 'Legal information and contact',
+    mentionsLegales: 'Legal notice',
+    confidentialite: 'Privacy',
+    contact: 'Contact',
+  },
+  // Legal notice (pages/legal/page-mentions-legales.tsx)
+  mentions: {
+    titre: 'Legal notice',
+    intro: 'Legal information about this website and the customer feedback platform.',
+    editeurTitre: 'Site publisher',
+    libelleEditeur: 'Publisher',
+    libelleResponsable: 'Publication manager',
+    libelleAdresse: 'Address',
+    libelleEmail: 'Email',
+    libelleWhatsapp: 'WhatsApp',
+    hebergementTitre: 'Hosting',
+    hebergementTexte: 'This site is hosted by {nom}.',
+    proprieteTitre: 'Intellectual property',
+    proprieteTexte:
+      'The texts, logos, images and graphics on this site are the property of {nom}, unless stated otherwise. Any reproduction without prior written permission is prohibited.',
+    responsabiliteTitre: 'Liability',
+    responsabiliteTexte:
+      '{nom} strives to provide accurate and up-to-date information, but cannot guarantee that the site is free of errors or available without interruption. The feedback collected by the platform is written by the customers of the organizations that use it; {nom} is not its author.',
+    donneesTitre: 'Personal data',
+    donneesTexte: 'The information the platform records and your rights are described in our',
+    donneesLien: 'privacy policy',
+  },
+  // Privacy policy (pages/legal/page-confidentialite.tsx)
+  confidentialite: {
+    titre: 'Privacy policy',
+    intro:
+      'This page explains what information the customer feedback platform records, what it is used for and how long some of it is kept.',
+    responsableTitre: 'Who runs the platform',
+    responsableTexte:
+      '{nom} publishes and operates the platform. Each client organization uses it to collect feedback from its own customers.',
+    comptesTitre: 'Manager accounts',
+    comptesTexte:
+      'To sign in to the dashboard, the platform records each user’s name, email address, role and language, as well as the date of their last sign-in.',
+    motDePasseTexte:
+      'Passwords are never stored in plain text: only an encrypted fingerprint that cannot be reversed is kept.',
+    journalTexte:
+      'Sensitive actions, such as sign-ins and support access, are recorded in a log with the date, the user concerned and the IP address, for security and monitoring.',
+    avisTitre: 'Customer feedback',
+    avisTexte:
+      'The name, phone number and email address of a person leaving feedback are recorded only if they choose to provide them and give their consent.',
+    avisContactTexte:
+      'To limit duplicate feedback, an encrypted fingerprint of the device and network is kept with the feedback. The IP address is never kept in plain text, and this fingerprint is erased after 7 days.',
+    cookiesTitre: 'Cookies and on-device storage',
+    cookiesIntro: 'The platform uses no advertising cookies or tracking tools. It only keeps:',
+    cookieSession:
+      'a sign-in cookie, needed to stay identified: it disappears when the browser is closed, or after 7 days if “Remember me” is ticked. Without this option, the session ends after 30 minutes of inactivity.',
+    cookieAppareil:
+      'on the device: a 180-day cookie on the feedback page, to limit duplicates, and a few preferences (language, theme, offline feedback draft).',
+    droitsTitre: 'Your rights',
+    droitsTexte:
+      'You can ask to view, correct or delete the information about you by contacting us. Our contact details are in the',
+    droitsLien: 'legal notice',
+  },
   motDePasseOublie: {
     titre: 'Forgot your password',
     explication:

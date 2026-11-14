@@ -1,7 +1,10 @@
 // Textes du tableau de bord en francais (jour 13 : cadre, connexion, mot de passe oublie ;
 // jour 14 : ecran E7, indicateurs et graphiques ; refonte de l'accueil : raccourcis et groupes de cartes).
 // Les textes entre accolades, comme {minutes}, sont remplaces par le code.
+import { adminFr } from './admin'
+
 export const fr = {
+  admin: adminFr,
   commun: {
     chargement: 'Chargement…',
     langue: 'Langue',

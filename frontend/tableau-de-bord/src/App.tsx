@@ -2,8 +2,11 @@ import { Navigate, Route, Routes } from 'react-router'
 import { utiliserLangue } from './hooks/utiliser-langue'
 import { CadreApplication } from './mise-en-page/cadre-application'
 import { CadreProtege } from './mise-en-page/cadre-protege'
+import { PageJournalAudit } from './pages/administration/journal-audit-vue-globale/page-journal-audit'
+import { PageVueGlobale } from './pages/administration/journal-audit-vue-globale/page-vue-globale'
 import { PageModelesSectoriels } from './pages/administration/modeles-sectoriels/page-modeles-sectoriels'
 import { PageOrganisations } from './pages/administration/organisations/page-organisations'
+import { PageSupportOrganisation } from './pages/administration/support/page-support-organisation'
 import { PageConnexion } from './pages/connexion/page-connexion'
 import { PageAccepterInvitation } from './pages/invitation/page-accepter-invitation'
 import { PageMotDePasseOublie } from './pages/connexion/page-mot-de-passe-oublie'
@@ -56,6 +59,9 @@ export default function App() {
           <Route path="exports" element={<PageExports />} />
           <Route path="admin/organisations" element={<PageOrganisations />} />
           <Route path="admin/secteurs" element={<PageModelesSectoriels />} />
+          <Route path="admin/journal-audit" element={<PageJournalAudit />} />
+          <Route path="admin/vue-globale" element={<PageVueGlobale />} />
+          <Route path="admin/organisations/:id/support" element={<PageSupportOrganisation />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route
               key={ecran.chemin}

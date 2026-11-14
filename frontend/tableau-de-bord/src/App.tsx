@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { utiliserLangue } from './hooks/utiliser-langue'
+import { utiliserUtilisateur } from './hooks/utiliser-utilisateur'
 import { CadreApplication } from './mise-en-page/cadre-application'
 import { CadreProtege } from './mise-en-page/cadre-protege'
 import { PageJournalAudit } from './pages/administration/journal-audit-vue-globale/page-journal-audit'
@@ -35,6 +36,15 @@ function EcranAVenir({ cle }: { cle: string }) {
   )
 }
 
+// Accueil selon le role : l'administrateur DTS n'a pas d'organisation, donc pas de tableau de bord
+// d'organisation. Il arrive sur la vue globale (E19).
+function AccueilSelonRole() {
+  const { utilisateur } = utiliserUtilisateur()
+  if (utilisateur?.role === 'ADMINISTRATEUR') {
+    return <Navigate to="/admin/vue-globale" replace />
+  }
+  return <PageAccueil />
+}
 export default function App() {
   return (
     <Routes>
@@ -47,7 +57,7 @@ export default function App() {
       {/* Ecrans reserves aux utilisateurs connectes */}
       <Route element={<CadreProtege />}>
         <Route element={<CadreApplication />}>
-          <Route index element={<PageAccueil />} />
+          <Route index element={<AccueilSelonRole />} />
           <Route path="avis" element={<PageListeAvis />} />
           <Route path="avis/:id" element={<PageListeAvis />} />
           <Route path="parametres" element={<PageParametres />} />

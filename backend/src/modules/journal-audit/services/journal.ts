@@ -9,6 +9,8 @@ export async function enregistrerAudit(params: {
   utilisateurId?: string | null;
   organisationId?: string | null;
   ip?: string | undefined;
+  entite?: string | null;
+  entiteId?: string | null;
   details?: DetailsAudit;
 }): Promise<void> {
   try {
@@ -18,6 +20,8 @@ export async function enregistrerAudit(params: {
         utilisateur_id: params.utilisateurId ?? null,
         organisation_id: params.organisationId ?? null,
         ip: params.ip ?? null,
+        entite: params.entite ?? null,
+        entite_id: params.entiteId ?? null,
         ...(params.details ? { details: params.details } : {}),
       },
     });

@@ -516,3 +516,35 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - `npx tsc --noEmit` dans `backend` ne verifie pas le dossier `tests` (le `tsconfig` n'inclut que `src`) : les fichiers de test ne sont controles que par `vitest`.
 - La connexion est limitee a 10 essais par minute : chaque fichier de test en garde le compte dans son en-tete (6 pour `admin-organisations.test.ts`, 4 pour `isolation-admin.test.ts`).
 - Le service d'e-mails de DTS n'est pas encore choisi : on garde Mailpit.
+
+
+## Jour 23 - samedi 14 novembre 2026 : back-office DTS, ecrans E17 (organisations) et E18 (modeles sectoriels)
+
+**Fait**
+- Tableau de bord (`frontend/tableau-de-bord/src`), donnees et appels : `types/admin.ts` et `services/admin.ts` (appels `/admin/organisations` et `/admin/secteurs`).
+- Hooks : `hooks/utiliser-organisations-admin.ts` (liste, creation, suspension, invitation) et `hooks/utiliser-secteurs-admin.ts` (liste, fiche, themes, modeles types).
+- Ecran E17 : `pages/administration/organisations/page-organisations.tsx`, avec `composants-admin/pastille-statut-organisation.tsx`, `formulaire-organisation.tsx` (creation et modification), `formulaire-invitation-responsable.tsx` (premier responsable) et `confirmation-suspension.tsx` (confirmation sur place de la suspension et de la reactivation).
+- Ecran E18 : `pages/administration/modeles-sectoriels/page-modeles-sectoriels.tsx`, avec `composants-admin/formulaire-secteur.tsx` (creation et modification), `liste-themes-secteur.tsx` (ajout et modification des themes) et `modeles-secteur.tsx` (questionnaires types en lecture seule).
+- Branchement : routes `admin/organisations` et `admin/secteurs` dans `App.tsx` (4 lignes), groupe "Administration DTS" dans `mise-en-page/menu-lateral.tsx` (visible seulement pour l'administrateur) et deux icones dans `mise-en-page/icones-menu.tsx`.
+- Textes : `traductions/fr/admin.ts` et `traductions/en/admin.ts` (231 textes, memes cles et memes accolades dans les deux langues), enregistres sous la cle `admin` dans `fr/textes.ts` et `en/textes.ts` (3 lignes chacun).
+- Aucun fichier backend aujourd'hui : les 14 routes admin du jour 22 suffisaient.
+- Frontend : `tsc -b` sans erreur et `vite build` sans erreur ; `eslint` sur les 20 fichiers modifies : 49 erreurs `react-hooks/rules-of-hooks`, aucune autre (testes sur une copie du depot).
+
+**Decisions**
+- Acces : le menu et les deux pages sont reserves a l'administrateur DTS. Les autres roles sont renvoyes a l'accueil et les hooks n'appellent pas l'API pour eux ; le serveur reste la vraie barriere (403).
+- Apres la creation d'une organisation, le formulaire d'invitation du premier responsable s'affiche tout de suite. Une invitation ratee ne bloque rien : on peut la renvoyer avec "Inviter le responsable" depuis la liste.
+- Suspension et reactivation : toujours avec une confirmation qui nomme l'organisation.
+- Pas de logo a la creation : le premier responsable l'ajoute dans les parametres de l'organisation. Ses tables sont creees par lui-meme dans l'ecran E12.
+- E18 : on cree et on modifie les secteurs et leurs themes. Les questionnaires types sont en lecture seule. Le code d'un secteur et celui d'un theme ne changent plus apres la creation.
+- Un secteur sans questionnaire type affiche un message clair et permet quand meme de creer une organisation. Apres la creation d'un secteur, l'ecran propose d'en creer une.
+
+**A faire ensuite**
+- Fichier 19 : entree dans `apres-un-pull.md` (rien a relancer cote seed ; noter les nouvelles pages admin).
+- Verifications du soir, a faire a la main : menu E17 et E18 visible pour l'administrateur DTS, absent pour un responsable ou un gestionnaire (adresse tapee a la main renvoyee a l'accueil) ; scenario 13 (organisation sante creee depuis E17, invitation lue dans Mailpit, acceptee, tables creees dans E12, en moins de 15 minutes, temps note) ; modele sante copie en brouillon avec l'avertissement ; organisation suspendue (connexion refusee, QR code avec la page claire) puis reactivee ; nouveau secteur cree dans E18 puis organisation de ce secteur creee dans E17 ; tout lisible en francais et en anglais sur ordinateur, tablette et telephone.
+- Lancer `npm test` dans `backend` : toujours 23 fichiers et 320 tests attendus (aucun changement backend), noter le resultat.
+- Cloture : `git status --short`, pull request vers main (titre : "Jour 23 : back-office DTS (ecrans E17 et E18)"), fusion, `git checkout main` puis `git pull`. Ensuite jour 24 (journal d'audit, vue globale E19 et support).
+
+**Points d'attention**
+- Les 49 erreurs `react-hooks/rules-of-hooks` viennent des hooks nommes `utiliser...`, que la regle ne reconnait pas (comme les anciens fichiers) ; la configuration de la regle viendra un autre jour.
+- Le jour 23 est fait en avance sur le planning (prevu le mardi 17 novembre).
+- Le service d'e-mails de DTS n'est pas encore choisi : on garde Mailpit.

@@ -136,7 +136,7 @@ export function MenuLateral({ ouvert, onFermer, replie, onBasculerReplie }: Prop
 
   // Le groupe Administration DTS n'existe que pour l'administrateur.
   const estAdministrateur = utilisateur?.role === 'ADMINISTRATEUR'
-  const groupes = estAdministrateur ? [...GROUPES, GROUPE_ADMINISTRATION] : GROUPES
+  const groupes = estAdministrateur ? [GROUPE_ADMINISTRATION] : GROUPES
 
   const groupeActif = groupes.find((groupe) =>
     groupe.entrees.some((entree) => entreeActive(entree.chemin, pathname)),
@@ -150,7 +150,8 @@ export function MenuLateral({ ouvert, onFermer, replie, onBasculerReplie }: Prop
   const [groupesOuverts, setGroupesOuverts] = useState<Record<string, boolean>>(() => {
     const depart: Record<string, boolean> = {}
     for (const groupe of groupes) {
-      depart[groupe.cle] = groupe.titre === null || groupe.cle === cleGroupeActif
+      depart[groupe.cle] =
+        groupe.titre === null || groupe.cle === cleGroupeActif || groupes.length === 1
     }
     return depart
   })

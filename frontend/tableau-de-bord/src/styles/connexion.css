@@ -1,17 +1,20 @@
 /* ------------------------------------------------------------
    Ecrans accessibles sans etre connecte (connexion, mot de passe oublie,
-   reinitialisation). Le composant est composants-communs/cadre-authentification.tsx
-   et le defilement des messages est composants-communs/carrousel-connexion.tsx.
+   reinitialisation). Le composant est composants-communs/cadre-authentification.tsx,
+   le defilement des messages est composants-communs/carrousel-connexion.tsx,
+   la scene animee est composants-communs/scene-telephone.tsx (styles/scene-telephone.css)
+   et la bande du bas est composants-communs/bas-de-page-connexion.tsx.
 
    Regles de design de ces ecrans :
-   - rayon de 5 px au maximum, sur tous les boutons et cadres ;
+   - rayon de 5 px au maximum, sur tous les boutons et cadres (le telephone de la scene
+     est un dessin, il garde ses coins arrondis) ;
    - traits tres fins (1 px) et aucun fond de couleur a l'interieur des cadres ;
    - les couleurs viennent des variables des deux themes (index.css).
 
    Deux modes :
-   - Ecran large (au moins 1024 px) : a gauche le message qui defile, a droite
-     l'image. Sur l'ecran de connexion, le bouton "Espace client" remplace l'image
-     par le formulaire (attribut data-formulaire sur .connexion-ecran).
+   - Ecran large (au moins 1024 px) : a gauche le message qui defile, a droite la scene
+     animee. Sur l'ecran de connexion, le bouton "Espace client" (ou "Acceder a mon espace")
+     remplace la scene par le formulaire (attribut data-formulaire sur .connexion-ecran).
    - Petit ecran : le formulaire seul, avec le logo en haut.
    ------------------------------------------------------------ */
 
@@ -19,18 +22,59 @@
   --connexion-rayon: 5px;
   --connexion-trait: 1px;
   --connexion-accent: var(--couleur-principale);
+  /* Fond de la page (haut et bas du degrade) et fond des cartes de la scene */
+  --connexion-fond: var(--fond);
+  --connexion-fond-bas: var(--fond-alt);
+  --connexion-carte: var(--surface);
 
   position: relative;
   display: flex;
   flex-direction: column;
   height: 100dvh;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--fond) 0%, var(--fond-alt) 100%);
+  /* Le fond quadrille (::before) passe derriere le contenu, mais devant ce degrade */
+  isolation: isolate;
+  background: linear-gradient(135deg, var(--connexion-fond) 0%, var(--connexion-fond-bas) 100%);
 }
 
-/* Theme sombre : un indigo clair, sinon l'accent serait presque blanc comme le titre */
+/* Theme sombre : un indigo tres fonce, et un accent indigo clair
+   (sinon l'accent serait presque blanc comme le titre) */
 :root:not([data-theme='clair']) .connexion-ecran {
   --connexion-accent: #8f8af0;
+  --connexion-fond: #0b0820;
+  --connexion-fond-bas: #0f0b2e;
+  --connexion-carte: #120e31;
+}
+
+/* Fond quadrille, qui s'efface vers les bords */
+.connexion-ecran::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--connexion-accent) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--connexion-accent) 9%, transparent) 1px, transparent 1px);
+  background-size: 3.5rem 3.5rem;
+  mask-image: radial-gradient(ellipse 80% 75% at 68% 45%, #000 15%, transparent 75%);
+}
+
+/* Lueur douce derriere la scene */
+.connexion-ecran::after {
+  content: '';
+  position: absolute;
+  right: -10%;
+  top: 10%;
+  z-index: -1;
+  width: 60vw;
+  height: 70dvh;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--connexion-accent) 13%, transparent) 0%,
+    transparent 65%
+  );
 }
 
 /* Aucun bouton de ces ecrans ne depasse 5 px de rayon (ce fichier passe avant les classes
@@ -76,7 +120,7 @@
   gap: 0.5rem;
 }
 
-/* Visible seulement en ecran large, quand l'image est affichee (voir plus bas) */
+/* Visible seulement en ecran large, quand la scene est affichee (voir plus bas) */
 .connexion-bouton-espace {
   display: none;
   min-height: 2.75rem;
@@ -112,8 +156,9 @@
 }
 
 .connexion-gauche,
-.connexion-image-zone,
-.connexion-retour {
+.connexion-scene-zone,
+.connexion-retour,
+.connexion-bas {
   display: none;
 }
 
@@ -142,7 +187,7 @@
 }
 
 /* Toutes les diapos sont empilees dans la meme cellule : la hauteur reste celle de la plus
-   grande, donc les points ne bougent jamais */
+   grande, donc le bouton et les points ne bougent jamais */
 .connexion-diapos {
   display: grid;
 }
@@ -192,6 +237,7 @@
   margin-top: 2.5dvh;
   font-size: clamp(2rem, 3.6vw, 3.75rem);
   font-weight: 800;
+  letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--texte);
 }
@@ -210,13 +256,64 @@
   color: var(--texte-secondaire);
 }
 
-/* Les trois points, alignes a gauche, sous le message */
+/* Le bouton "Acceder a mon espace" et la phrase qui rassure */
+.connexion-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 4dvh;
+}
+
+.connexion-bouton-acces {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: var(--connexion-trait) solid var(--connexion-accent);
+  background: transparent;
+  color: var(--connexion-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.connexion-bouton-acces svg {
+  transition: transform 0.2s;
+}
+
+.connexion-bouton-acces:hover {
+  background: var(--connexion-accent);
+  color: var(--texte-sur-principale);
+}
+
+.connexion-bouton-acces:hover svg {
+  transform: translateX(3px);
+}
+
+.connexion-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--texte-secondaire);
+}
+
+/* Les trois points, alignes a gauche, avec le compteur a leur droite */
+.connexion-navigation {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3dvh;
+}
+
 .connexion-points {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 0.25rem;
-  margin-top: 4dvh;
 }
 
 /* Le bouton est plus grand que le point pour qu'on puisse le toucher facilement */
@@ -247,6 +344,48 @@
   border-color: var(--connexion-accent);
 }
 
+.connexion-compteur {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--texte-secondaire);
+}
+
+/* ---------- Bande du bas (composant bas-de-page-connexion.tsx) ---------- */
+.connexion-secteurs,
+.connexion-garanties {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.connexion-secteurs {
+  gap: 0.625rem;
+}
+
+.connexion-secteur {
+  padding: 0.35rem 0.75rem;
+  border: var(--connexion-trait) solid var(--bordure-forte);
+  border-radius: var(--connexion-rayon);
+  font-size: 0.8125rem;
+  color: var(--texte-secondaire);
+}
+
+.connexion-garanties {
+  gap: 0.5rem 1.5rem;
+}
+
+.connexion-garantie {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--texte-secondaire);
+}
+
 /* ---------- Animations ---------- */
 @keyframes connexion-apparition {
   from {
@@ -263,11 +402,13 @@
 @media (prefers-reduced-motion: reduce) {
   .connexion-diapo,
   .connexion-point,
-  .connexion-bouton-espace {
+  .connexion-bouton-espace,
+  .connexion-bouton-acces,
+  .connexion-bouton-acces svg {
     transition: none;
   }
 
-  .connexion-image-zone {
+  .connexion-scene-zone {
     animation: none !important;
   }
 }
@@ -280,6 +421,11 @@
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
     gap: clamp(2rem, 6vw, 7rem);
+    padding-bottom: 3dvh;
+  }
+
+  /* Pas de bande du bas (formulaire ouvert) : on garde la place du copyright */
+  .connexion-ecran[data-formulaire='ouvert'] .connexion-corps {
     padding-bottom: 8dvh;
   }
 
@@ -287,7 +433,7 @@
     display: block;
   }
 
-  /* Colonne de droite : l'image ou le formulaire, jamais les deux */
+  /* Colonne de droite : la scene ou le formulaire, jamais les deux */
   .connexion-droite {
     position: relative;
     display: flex;
@@ -295,23 +441,14 @@
     justify-content: center;
     max-width: none;
     height: 100%;
-    max-height: 72dvh;
+    max-height: 74dvh;
   }
 
-  .connexion-image-zone {
+  .connexion-scene-zone {
     display: block;
     position: absolute;
     inset: 0;
-    overflow: hidden;
     animation: connexion-apparition 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .connexion-image {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
   }
 
   /* Le formulaire : un cadre fin de 5 px, vide a l'interieur */
@@ -323,7 +460,7 @@
     background: transparent;
   }
 
-  /* Formulaire ferme : on voit l'image et le bouton "Espace client" */
+  /* Formulaire ferme : on voit la scene, le bouton "Espace client" et la bande du bas */
   .connexion-ecran[data-formulaire='ferme'] .connexion-formulaire {
     display: none;
   }
@@ -332,8 +469,8 @@
     display: inline-flex;
   }
 
-  /* Formulaire ouvert : il prend la place de l'image */
-  .connexion-ecran[data-formulaire='ouvert'] .connexion-image-zone {
+  /* Formulaire ouvert : il prend la place de la scene */
+  .connexion-ecran[data-formulaire='ouvert'] .connexion-scene-zone {
     display: none;
   }
 
@@ -352,5 +489,30 @@
 
   .connexion-retour:hover {
     color: var(--texte);
+  }
+
+  /* La bande du bas : un trait fin au-dessus, les secteurs a gauche, les garanties a droite */
+  .connexion-ecran[data-formulaire='ferme'] .connexion-bas {
+    position: relative;
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100rem;
+    margin-inline: auto;
+    padding: 2.5dvh clamp(1.5rem, 9vw, 10rem) 5dvh;
+  }
+
+  .connexion-ecran[data-formulaire='ferme'] .connexion-bas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: clamp(1.5rem, 9vw, 10rem);
+    right: clamp(1.5rem, 9vw, 10rem);
+    border-top: var(--connexion-trait) solid var(--bordure-forte);
   }
 }

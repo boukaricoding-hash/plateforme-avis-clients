@@ -9,9 +9,11 @@ import {
   IconeChevron,
   IconeDeconnexion,
   IconeExports,
+  IconeOrganisations,
   IconeParametres,
   IconeQrCodes,
   IconeQuestionnaires,
+  IconeSecteurs,
   IconeSites,
   IconeTableauDeBord,
   IconeUtilisateurs,
@@ -34,7 +36,7 @@ type Groupe = {
 
 // Tous les ecrans du tableau de bord, en groupes. Les ecrans pas encore construits affichent
 // un message "bientot disponible" jusqu'au jour de leur construction.
-// Tout le monde voit les memes entrees : aucun filtre par role pour l'instant.
+// Tout le monde voit ces groupes ; le groupe Administration DTS (plus bas) s'ajoute pour l'administrateur.
 const GROUPES: Groupe[] = [
   {
     cle: 'principal',
@@ -67,6 +69,17 @@ const GROUPES: Groupe[] = [
     ],
   },
 ]
+
+// Groupe reserve a l'administrateur DTS : ecrans E17 (organisations) et E18 (modeles sectoriels).
+// Il s'ajoute aux groupes ci-dessus seulement pour ce role ; le serveur refuse aussi les autres (403).
+const GROUPE_ADMINISTRATION: Groupe = {
+  cle: 'administration',
+  titre: 'admin.menu.groupe',
+  entrees: [
+    { chemin: '/admin/organisations', cle: 'admin.menu.organisations', icone: IconeOrganisations },
+    { chemin: '/admin/secteurs', cle: 'admin.menu.secteurs', icone: IconeSecteurs },
+  ],
+}
 
 // Meme regle que NavLink : l'accueil seulement sur '/', les autres sur leur adresse et en dessous.
 function entreeActive(chemin: string, adresse: string): boolean {
@@ -117,7 +130,11 @@ export function MenuLateral({ ouvert, onFermer, replie, onBasculerReplie }: Prop
   // La lettre de la marque ne change pas avec la langue.
   const initialeMarque = organisation === null ? 'A' : initialeOrganisation(organisation.nom)
 
-  const groupeActif = GROUPES.find((groupe) =>
+  // Le groupe Administration DTS n'existe que pour l'administrateur.
+  const estAdministrateur = utilisateur?.role === 'ADMINISTRATEUR'
+  const groupes = estAdministrateur ? [...GROUPES, GROUPE_ADMINISTRATION] : GROUPES
+
+  const groupeActif = groupes.find((groupe) =>
     groupe.entrees.some((entree) => entreeActive(entree.chemin, pathname)),
   )
   const cheminActif = groupeActif?.entrees.find((entree) =>
@@ -128,7 +145,7 @@ export function MenuLateral({ ouvert, onFermer, replie, onBasculerReplie }: Prop
   // Groupes ouverts : au depart seulement celui de la page active (les groupes sans titre restent ouverts).
   const [groupesOuverts, setGroupesOuverts] = useState<Record<string, boolean>>(() => {
     const depart: Record<string, boolean> = {}
-    for (const groupe of GROUPES) {
+    for (const groupe of groupes) {
       depart[groupe.cle] = groupe.titre === null || groupe.cle === cleGroupeActif
     }
     return depart
@@ -273,7 +290,7 @@ export function MenuLateral({ ouvert, onFermer, replie, onBasculerReplie }: Prop
           <span ref={indicateurRef} className="barre-laterale-indicateur" aria-hidden="true" hidden />
 
           <div ref={groupesRef}>
-            {GROUPES.map((groupe) => {
+            {groupes.map((groupe) => {
               const groupeOuvert = groupesOuverts[groupe.cle]
               const idContenu = 'menu-groupe-' + groupe.cle
               return (

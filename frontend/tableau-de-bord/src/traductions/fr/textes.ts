@@ -45,6 +45,28 @@ export const fr = {
     erreurIdentifiants: 'E-mail ou mot de passe incorrect.',
     erreurTropDeTentatives: 'Trop de tentatives. Réessayez dans une minute.',
     sessionExpiree: 'Votre session a expiré. Reconnectez-vous.',
+    espaceClient: 'Espace client',
+    retour: 'Retour',
+  },
+  // Messages qui defilent a gauche des ecrans de connexion
+  carrousel: {
+    titre: 'Présentation de la plateforme',
+    afficher: 'Afficher le message {nombre}',
+    diapo1Badge: 'Avis Clients • QR Code',
+    diapo1Titre: 'Collectez les avis de vos clients',
+    diapo1Accent: 'en un seul scan !',
+    diapo1Texte:
+      'Data Trace Africa vous permet de recueillir, gérer et analyser les avis de vos clients grâce à un QR code rapide, sécurisé et intuitif.',
+    diapo2Badge: 'Alertes en temps réel',
+    diapo2Titre: 'Soyez prévenu dès qu’un avis',
+    diapo2Accent: 'mérite votre attention.',
+    diapo2Texte:
+      'Une note basse déclenche une alerte par notification et par e-mail, pour que vous puissiez agir au bon moment.',
+    diapo3Badge: 'Tableau de bord et exports',
+    diapo3Titre: 'Analysez vos résultats',
+    diapo3Accent: 'et partagez-les facilement.',
+    diapo3Texte:
+      'Suivez vos indicateurs par site et par période, puis exportez vos avis en Excel, en CSV ou en rapport PDF.',
   },
   motDePasseOublie: {
     titre: 'Mot de passe oublié',

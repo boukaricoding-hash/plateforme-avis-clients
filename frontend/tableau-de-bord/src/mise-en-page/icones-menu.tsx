@@ -95,6 +95,22 @@ export const IconeSecteurs = creerIconeContour(
   </>,
 )
 
+// Entrees du groupe Administration DTS (jour 24) : journal d'audit (feuille avec ses lignes)
+// et vue globale (graphique en barres)
+export const IconeJournalAudit = creerIconeContour(
+  <>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" />
+    <path d="M14 3v5h5" />
+    <path d="M9 13h6M9 17h6" />
+  </>,
+)
+export const IconeVueGlobale = creerIconeContour(
+  <>
+    <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+    <path d="M8 17v-5M13 17V8M18 17V10" />
+  </>,
+)
+
 // Chevron vers le bas : le CSS le fait tourner quand le groupe se ferme
 export const IconeChevron = creerIconeContour(<path d="m6 9 6 6 6-6" />)
 

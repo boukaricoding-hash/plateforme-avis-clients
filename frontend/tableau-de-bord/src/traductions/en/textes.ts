@@ -1,7 +1,10 @@
 // Dashboard texts in English (day 13: layout, sign in, forgotten password;
 // day 14: screen E7, indicators and charts; home page redesign: shortcuts and card groups).
 // Texts in braces, like {minutes}, are replaced by the code.
+import { adminEn } from './admin'
+
 export const en = {
+  admin: adminEn,
   commun: {
     chargement: 'Loading…',
     langue: 'Language',

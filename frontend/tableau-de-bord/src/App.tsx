@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from 'react-router'
 import { utiliserLangue } from './hooks/utiliser-langue'
 import { CadreApplication } from './mise-en-page/cadre-application'
 import { CadreProtege } from './mise-en-page/cadre-protege'
+import { PageModelesSectoriels } from './pages/administration/modeles-sectoriels/page-modeles-sectoriels'
+import { PageOrganisations } from './pages/administration/organisations/page-organisations'
 import { PageConnexion } from './pages/connexion/page-connexion'
 import { PageAccepterInvitation } from './pages/invitation/page-accepter-invitation'
 import { PageMotDePasseOublie } from './pages/connexion/page-mot-de-passe-oublie'
@@ -52,6 +54,8 @@ export default function App() {
           <Route path="questionnaires/:id" element={<PageEditeurQuestionnaire />} />
           <Route path="utilisateurs" element={<PageUtilisateurs />} />
           <Route path="exports" element={<PageExports />} />
+          <Route path="admin/organisations" element={<PageOrganisations />} />
+          <Route path="admin/secteurs" element={<PageModelesSectoriels />} />
           {ECRANS_A_VENIR.map((ecran) => (
             <Route
               key={ecran.chemin}

@@ -53,15 +53,8 @@
   background: linear-gradient(135deg, var(--connexion-fond) 0%, var(--connexion-fond-bas) 100%);
 }
 
-/* Theme sombre : un indigo tres fonce, et un accent indigo clair
-   (sinon l'accent serait presque blanc comme le titre) */
-:root:not([data-theme='clair']) .connexion-ecran,
-:root:not([data-theme='clair']) .page-legale {
-  --connexion-accent: #8f8af0;
-  --connexion-fond: #0b0820;
-  --connexion-fond-bas: #0f0b2e;
-  --connexion-carte: #120e31;
-}
+/* Theme sombre : aucune couleur propre a ces ecrans. Ils reprennent le noir neutre de
+   l'application (--fond, --fond-alt, --surface et --couleur-principale de index.css). */
 
 /* Fond quadrille, qui s'efface vers les bords */
 .connexion-ecran::before {

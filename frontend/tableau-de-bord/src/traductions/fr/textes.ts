@@ -67,6 +67,33 @@ export const fr = {
     diapo3Accent: 'et partagez-les facilement.',
     diapo3Texte:
       'Suivez vos indicateurs par site et par période, puis exportez vos avis en Excel, en CSV ou en rapport PDF.',
+    acces: 'Accéder à mon espace',
+    sansApplication: 'Sans application, en moins d’une minute',
+  },
+  // Scene animee de la page d'accueil (composants-communs/scene-telephone.tsx)
+  scene: {
+    description: 'Illustration : un téléphone scanne un QR code pour donner un avis',
+    lieu: 'RESTAURANT',
+    table: 'TABLE 12',
+    scanner: 'Scannez pour donner votre avis',
+    noteValeur: '4,8 / 5',
+    noteLibelle: 'Note moyenne',
+    avisTitre: 'Nouvel avis',
+    avisDetail: 'Table 12 · 5/5 · il y a 2 s',
+    alerteTitre: 'Alerte envoyée',
+    alerteDetail: 'Avis 1/5 · Table 7',
+    npsValeur: 'NPS +45',
+    npsLibelle: 'Ce mois-ci',
+  },
+  // Bande du bas de la page d'accueil (composants-communs/bas-de-page-connexion.tsx)
+  vitrine: {
+    secteur1: 'Restauration',
+    secteur2: 'Santé',
+    secteur3: 'Éducation',
+    secteur4: 'Agroalimentaire',
+    secteur5: 'Événements',
+    garantie1: 'Données séparées par organisation',
+    garantie2: 'Alertes en temps réel',
   },
   motDePasseOublie: {
     titre: 'Mot de passe oublié',

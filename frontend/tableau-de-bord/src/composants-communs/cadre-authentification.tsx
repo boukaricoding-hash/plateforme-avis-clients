@@ -4,8 +4,10 @@ import { useLocation } from 'react-router'
 import { utiliserLangue } from '../hooks/utiliser-langue'
 import type { Langue } from '../types/langue'
 import '../styles/connexion.css'
+import { BasDePageConnexion } from './bas-de-page-connexion'
 import { BoutonTheme } from './bouton-theme'
 import { CarrouselConnexion } from './carrousel-connexion'
+import { SceneTelephone } from './scene-telephone'
 
 type Proprietes = {
   titre: string
@@ -14,32 +16,27 @@ type Proprietes = {
 }
 
 const NOM_ENTREPRISE = 'Data Trace Africa'
-// Les deux images se trouvent dans frontend/tableau-de-bord/public/
+// Le logo se trouve dans frontend/tableau-de-bord/public/
 const URL_LOGO = `${import.meta.env.BASE_URL}data.png`
-const URL_PHOTO = `${import.meta.env.BASE_URL}connexion.png`
 
 // Presentation commune des ecrans accessibles sans etre connecte (styles/connexion.css).
-// Ecran large : le message qui defile a gauche, a droite l'image ou le formulaire.
-// Sur l'ecran de connexion, l'image est montree en premier et le bouton "Espace client"
-// la remplace par le formulaire. Les autres ecrans montrent le formulaire tout de suite.
+// Ecran large : le message qui defile a gauche, a droite la scene animee ou le formulaire.
+// Sur l'ecran de connexion, la scene (telephone, QR code, orbite) est montree en premier :
+// le bouton "Espace client" ou "Acceder a mon espace" la remplace par le formulaire.
+// Les autres ecrans montrent le formulaire tout de suite.
 // Petit ecran : le formulaire seul, avec le logo en haut.
 export function CadreAuthentification({ titre, sousTitre, children }: Proprietes) {
   const { t, langue, changerLangue } = utiliserLangue()
   const emplacement = useLocation()
   const refFormulaire = useRef<HTMLDivElement>(null)
 
-  // Seul l'ecran de connexion montre l'image avant le formulaire.
+  // Seul l'ecran de connexion montre la scene avant le formulaire.
   const vitrine = emplacement.pathname === '/connexion'
   const [ouvert, setOuvert] = useState(!vitrine)
-  // Si une image est absente, on la cache au lieu d'afficher une icone cassee.
+  // Si le logo est absent, on le cache au lieu d'afficher une icone cassee.
   const [logoDisponible, setLogoDisponible] = useState(true)
-  const [photoDisponible, setPhotoDisponible] = useState(true)
 
-  // L'image n'existe que sur l'ecran de connexion. Sans elle, le formulaire est toujours ouvert.
-  const aUneImage = vitrine && photoDisponible
-  const formulaireOuvert = ouvert || !aUneImage
-
-  // Quand le formulaire remplace l'image, le curseur va dans le premier champ.
+  // Quand le formulaire remplace la scene, le curseur va dans le premier champ.
   useEffect(() => {
     if (vitrine && ouvert) {
       refFormulaire.current?.querySelector('input')?.focus()
@@ -70,7 +67,7 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
   }
 
   return (
-    <div className="connexion-ecran" data-formulaire={formulaireOuvert ? 'ouvert' : 'ferme'}>
+    <div className="connexion-ecran" data-formulaire={ouvert ? 'ouvert' : 'ferme'}>
       {/* Barre du haut : logo et nom a gauche, theme, langue et "Espace client" a droite */}
       <header className="connexion-barre">
         <div className="connexion-marque min-w-0">
@@ -93,7 +90,7 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
             {boutonLangue('fr', 'FR', t('commun.francais'))}
             {boutonLangue('en', 'EN', t('commun.anglais'))}
           </div>
-          {aUneImage && (
+          {vitrine && (
             <button type="button" className="connexion-bouton-espace" onClick={() => setOuvert(true)}>
               {t('connexion.espaceClient')}
             </button>
@@ -102,22 +99,16 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
       </header>
 
       <div className="connexion-corps">
-        {/* Ecran large : les trois messages qui defilent */}
+        {/* Ecran large : les trois messages qui defilent, avec le bouton d'acces sur la connexion */}
         <section className="connexion-gauche">
-          <CarrouselConnexion />
+          <CarrouselConnexion surAcces={vitrine ? () => setOuvert(true) : undefined} />
         </section>
 
         <div className="connexion-droite">
-          {/* Ecran large : l'image, remplacee par le formulaire apres un clic sur "Espace client" */}
-          {aUneImage && (
-            <div className="connexion-image-zone">
-              <img
-                src={URL_PHOTO}
-                alt=""
-                aria-hidden="true"
-                onError={() => setPhotoDisponible(false)}
-                className="connexion-image"
-              />
+          {/* Ecran large : la scene animee, remplacee par le formulaire apres un clic sur "Espace client" */}
+          {vitrine && (
+            <div className="connexion-scene-zone">
+              <SceneTelephone />
             </div>
           )}
 
@@ -132,7 +123,7 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
 
             <div className="mt-[4vh]">{children}</div>
 
-            {aUneImage && (
+            {vitrine && (
               <button type="button" className="connexion-retour" onClick={() => setOuvert(false)}>
                 {t('connexion.retour')}
               </button>
@@ -140,6 +131,9 @@ export function CadreAuthentification({ titre, sousTitre, children }: Proprietes
           </div>
         </div>
       </div>
+
+      {/* Ecran large, scene visible : les secteurs et les garanties */}
+      {vitrine && <BasDePageConnexion />}
 
       <p className="connexion-copyright">
         © {new Date().getFullYear()} {NOM_ENTREPRISE}

@@ -78,6 +78,23 @@ export const IconeParametres = creerIconeContour(
   </>,
 )
 
+// Entrees du groupe Administration DTS (ecrans E17 et E18, administrateur seulement)
+export const IconeOrganisations = creerIconeContour(
+  <>
+    <path d="M4 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16" />
+    <path d="M15 9h3a2 2 0 0 1 2 2v10" />
+    <path d="M2.5 21h19" />
+    <path d="M8 7.5h3M8 11.5h3M8 15.5h3" />
+  </>,
+)
+export const IconeSecteurs = creerIconeContour(
+  <>
+    <path d="M12 3 3 7.5l9 4.5 9-4.5L12 3Z" />
+    <path d="m3 12 9 4.5 9-4.5" />
+    <path d="m3 16.5 9 4.5 9-4.5" />
+  </>,
+)
+
 // Chevron vers le bas : le CSS le fait tourner quand le groupe se ferme
 export const IconeChevron = creerIconeContour(<path d="m6 9 6 6 6-6" />)
 

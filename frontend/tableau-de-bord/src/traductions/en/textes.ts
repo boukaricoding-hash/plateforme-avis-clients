@@ -67,6 +67,33 @@ export const en = {
     diapo3Accent: 'and share them easily.',
     diapo3Texte:
       'Track your indicators by site and by period, then export your feedback to Excel, CSV or a PDF report.',
+    acces: 'Go to my space',
+    sansApplication: 'No app needed, in under a minute',
+  },
+  // Animated scene of the home page (composants-communs/scene-telephone.tsx)
+  scene: {
+    description: 'Illustration: a phone scans a QR code to leave feedback',
+    lieu: 'RESTAURANT',
+    table: 'TABLE 12',
+    scanner: 'Scan to leave your feedback',
+    noteValeur: '4.8 / 5',
+    noteLibelle: 'Average score',
+    avisTitre: 'New feedback',
+    avisDetail: 'Table 12 · 5/5 · 2 s ago',
+    alerteTitre: 'Alert sent',
+    alerteDetail: 'Feedback 1/5 · Table 7',
+    npsValeur: 'NPS +45',
+    npsLibelle: 'This month',
+  },
+  // Bottom strip of the home page (composants-communs/bas-de-page-connexion.tsx)
+  vitrine: {
+    secteur1: 'Food service',
+    secteur2: 'Healthcare',
+    secteur3: 'Education',
+    secteur4: 'Agri-food',
+    secteur5: 'Events',
+    garantie1: 'Data separated by organization',
+    garantie2: 'Real-time alerts',
   },
   motDePasseOublie: {
     titre: 'Forgot your password',

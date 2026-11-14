@@ -4,6 +4,9 @@
    le defilement des messages est composants-communs/carrousel-connexion.tsx,
    la scene animee est composants-communs/scene-telephone.tsx (styles/scene-telephone.css)
    et la bande du bas est composants-communs/bas-de-page-connexion.tsx.
+   Sur petit ecran : composants-communs/accueil-telephone.tsx, bouton-contact.tsx et
+   pied-de-page-confiance.tsx. Les pages de texte (mentions legales, confidentialite) sont
+   composants-communs/cadre-page-legale.tsx (classes "page-legale", en bas de ce fichier).
 
    Regles de design de ces ecrans :
    - rayon de 5 px au maximum, sur tous les boutons et cadres (le telephone de la scene
@@ -15,10 +18,17 @@
    - Ecran large (au moins 1024 px) : a gauche le message qui defile, a droite la scene
      animee. Sur l'ecran de connexion, le bouton "Espace client" (ou "Acceder a mon espace")
      remplace la scene par le formulaire (attribut data-formulaire sur .connexion-ecran).
-   - Petit ecran : le formulaire seul, avec le logo en haut.
+   - Petit ecran (moins de 1024 px) : sur l'ecran de connexion, un accueil court (message,
+     bouton d'acces, bouton "Demander une demo", secteurs, garanties) ; le formulaire s'ouvre
+     apres un clic sur "Acceder a mon espace". La page defile si le telephone est petit.
+   - Lisibilite : le texte gris (var(--texte-secondaire)) a un contraste d'au moins 5,6 sur
+     les fonds de ces ecrans (6,6 pour l'accent indigo clair) ; le texte "discret" (3,3) n'est
+     jamais utilise pour du texte important ici. Le curseur du clavier est l'anneau de
+     index.css (:focus-visible), sauf sur les champs ligne fine (voir plus bas).
    ------------------------------------------------------------ */
 
-.connexion-ecran {
+.connexion-ecran,
+.page-legale {
   --connexion-rayon: 5px;
   --connexion-trait: 1px;
   --connexion-accent: var(--couleur-principale);
@@ -26,12 +36,18 @@
   --connexion-fond: var(--fond);
   --connexion-fond-bas: var(--fond-alt);
   --connexion-carte: var(--surface);
+  /* Trait des boutons : 70 % du gris du texte, donc au moins 3 de contraste sur le fond */
+  --connexion-bordure-controle: color-mix(in srgb, var(--texte-secondaire) 70%, transparent);
+}
 
+.connexion-ecran {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  overflow: hidden;
+  /* Petit ecran : la page peut etre plus haute que le telephone et defile (voir 1024 px) */
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
   /* Le fond quadrille (::before) passe derriere le contenu, mais devant ce degrade */
   isolation: isolate;
   background: linear-gradient(135deg, var(--connexion-fond) 0%, var(--connexion-fond-bas) 100%);
@@ -39,7 +55,8 @@
 
 /* Theme sombre : un indigo tres fonce, et un accent indigo clair
    (sinon l'accent serait presque blanc comme le titre) */
-:root:not([data-theme='clair']) .connexion-ecran {
+:root:not([data-theme='clair']) .connexion-ecran,
+:root:not([data-theme='clair']) .page-legale {
   --connexion-accent: #8f8af0;
   --connexion-fond: #0b0820;
   --connexion-fond-bas: #0f0b2e;
@@ -94,17 +111,18 @@
   width: 100%;
   max-width: 100rem;
   margin-inline: auto;
-  padding: 2.5dvh clamp(1.5rem, 9vw, 10rem) 0;
+  padding: calc(max(1rem, 2.5dvh) + env(safe-area-inset-top, 0px)) clamp(1rem, 4vw, 1.5rem) 0;
 }
 
 .connexion-marque {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .connexion-marque-nom {
-  font-size: clamp(1.125rem, 1.5vw, 1.5rem);
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1.1;
   color: var(--texte);
@@ -116,8 +134,9 @@
 
 .connexion-outils {
   display: flex;
+  flex: none;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 /* Visible seulement en ecran large, quand la scene est affichee (voir plus bas) */
@@ -152,14 +171,37 @@
   width: 100%;
   max-width: 100rem;
   margin-inline: auto;
-  padding: 0 clamp(1.5rem, 9vw, 10rem) 6dvh;
+  padding: 1.5rem clamp(1rem, 6vw, 3rem) 1.5rem;
 }
 
 .connexion-gauche,
 .connexion-scene-zone,
-.connexion-retour,
 .connexion-bas {
   display: none;
+}
+
+/* Petit ecran, accueil visible : le formulaire reste cache jusqu'au clic sur "Acceder a mon espace" */
+.connexion-ecran[data-formulaire='ferme'] .connexion-droite {
+  display: none;
+}
+
+/* "Retour" du formulaire vers l'accueil (petit ecran comme ecran large) */
+.connexion-retour {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin-top: 1.5rem;
+  padding: 0 0.75rem;
+  border: var(--connexion-trait) solid var(--connexion-bordure-controle);
+  background: transparent;
+  font-size: 0.875rem;
+  color: var(--texte-secondaire);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.connexion-retour:hover {
+  color: var(--texte);
 }
 
 .connexion-droite {
@@ -171,14 +213,17 @@
   width: 100%;
 }
 
-.connexion-copyright {
-  position: absolute;
-  bottom: 1.5dvh;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 0.75rem;
+/* Champs ligne fine du formulaire : le texte d'exemple (placeholder) est plus lisible que le
+   gris "discret" de index.css (3,3 de contraste), et le champ actif a un trait d'accent de
+   2 px (l'anneau de focus du navigateur est retire sur ces champs) */
+.connexion-ecran .champ-ligne::placeholder {
   color: var(--texte-secondaire);
+  opacity: 1;
+}
+
+.connexion-ecran .champ-ligne:focus {
+  border-bottom-color: var(--connexion-accent);
+  box-shadow: 0 1px 0 0 var(--connexion-accent);
 }
 
 /* ---------- Message qui defile (composant carrousel-connexion.tsx) ---------- */
@@ -331,7 +376,7 @@
   display: block;
   width: 0.625rem;
   height: 0.625rem;
-  border: var(--connexion-trait) solid var(--bordure-champ);
+  border: var(--connexion-trait) solid var(--connexion-bordure-controle);
   border-radius: var(--connexion-rayon);
   transition:
     width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
@@ -386,6 +431,217 @@
   color: var(--texte-secondaire);
 }
 
+/* ---------- Accueil du telephone (composant accueil-telephone.tsx) ---------- */
+.connexion-accueil-tel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 30rem;
+  overflow-wrap: break-word;
+}
+
+.connexion-accueil-tel .connexion-titre {
+  margin-top: 1.25rem;
+  font-size: clamp(1.75rem, 8vw, 2.5rem);
+}
+
+.connexion-accueil-tel .connexion-texte {
+  margin-top: 1rem;
+}
+
+/* Les boutons prennent toute la largeur : faciles a toucher du pouce */
+.connexion-accueil-tel .connexion-actions {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  margin-top: 1.75rem;
+  gap: 0.75rem;
+}
+
+.connexion-accueil-tel .connexion-bouton-acces {
+  justify-content: center;
+  width: 100%;
+}
+
+.connexion-accueil-tel .connexion-note {
+  text-align: center;
+}
+
+.connexion-contact-zone {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.connexion-contact-zone .connexion-contact {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.connexion-contact-zone .connexion-bouton-contact {
+  width: 100%;
+}
+
+.connexion-contact-zone .connexion-lien-contact {
+  justify-content: center;
+}
+
+/* Les trois messages du carrousel, en liste fixe */
+.connexion-points-forts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.connexion-point-fort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--texte-secondaire);
+}
+
+.connexion-point-fort svg {
+  flex: none;
+  color: var(--connexion-accent);
+}
+
+/* Secteurs et garanties sous l'accueil du telephone (cachees ailleurs que sur ecran large) */
+.connexion-accueil-tel .connexion-bas {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: var(--connexion-trait) solid var(--bordure-forte);
+}
+
+.connexion-accueil-tel .connexion-garanties {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ---------- Bouton "Demander une demo" (composant bouton-contact.tsx) ---------- */
+.connexion-contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+/* Dans la barre du haut : seulement sur ecran large (voir plus bas) */
+.connexion-contact[data-emplacement='barre'] {
+  display: none;
+}
+
+.connexion-bouton-contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: var(--connexion-trait) solid var(--connexion-bordure-controle);
+  border-radius: var(--connexion-rayon);
+  background: transparent;
+  color: var(--texte);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.connexion-bouton-contact svg {
+  color: var(--connexion-accent);
+}
+
+.connexion-bouton-contact:hover {
+  border-color: var(--connexion-accent);
+  background: var(--connexion-accent);
+  color: var(--texte-sur-principale);
+}
+
+.connexion-bouton-contact:hover svg {
+  color: inherit;
+}
+
+.connexion-lien-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  font-size: 0.8125rem;
+  color: var(--texte-secondaire);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition:
+    color 0.2s,
+    text-decoration-color 0.2s;
+}
+
+.connexion-lien-contact:hover {
+  color: var(--texte);
+  text-decoration-color: currentColor;
+}
+
+/* ---------- Pied de page (composant pied-de-page-confiance.tsx) ---------- */
+.connexion-pied {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100rem;
+  margin-inline: auto;
+  padding: 0.75rem clamp(1rem, 4vw, 1.5rem) calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+}
+
+.connexion-pied-copyright {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--texte-secondaire);
+}
+
+.connexion-pied-liens {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.25rem;
+}
+
+/* Liens assez hauts pour le doigt (2,75 rem sur telephone) */
+.connexion-pied-liens a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--texte-secondaire);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition:
+    color 0.2s,
+    text-decoration-color 0.2s;
+}
+
+.connexion-pied-liens a:hover {
+  color: var(--texte);
+  text-decoration-color: currentColor;
+}
+
 /* ---------- Animations ---------- */
 @keyframes connexion-apparition {
   from {
@@ -404,7 +660,13 @@
   .connexion-point,
   .connexion-bouton-espace,
   .connexion-bouton-acces,
-  .connexion-bouton-acces svg {
+  .connexion-bouton-acces svg,
+  .connexion-bouton-contact,
+  .connexion-bouton-contact svg,
+  .connexion-lien-contact,
+  .connexion-retour,
+  .connexion-pied-liens a,
+  .page-legale-retour {
     transition: none;
   }
 
@@ -417,16 +679,61 @@
    Ecran large
    ------------------------------------------------------------ */
 @media (min-width: 1024px) {
+  /* Une seule page, sans defilement : tout tient dans la hauteur de l'ecran */
+  .connexion-ecran {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .connexion-barre {
+    padding: 2.5dvh clamp(1.5rem, 9vw, 10rem) 0;
+  }
+
+  .connexion-marque {
+    gap: 0.75rem;
+  }
+
+  .connexion-marque-nom {
+    font-size: clamp(1.125rem, 1.5vw, 1.5rem);
+  }
+
+  .connexion-outils {
+    gap: 0.5rem;
+  }
+
+  /* L'accueil du telephone et son bouton de contact laissent la place au message qui defile */
+  .connexion-accueil-tel {
+    display: none;
+  }
+
+  .connexion-contact[data-emplacement='barre'] {
+    display: flex;
+  }
+
+  .connexion-contact[data-emplacement='barre'] .connexion-lien-contact {
+    display: none;
+  }
+
   .connexion-corps {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
     gap: clamp(2rem, 6vw, 7rem);
-    padding-bottom: 3dvh;
+    padding: 0 clamp(1.5rem, 9vw, 10rem) 3dvh;
   }
 
-  /* Pas de bande du bas (formulaire ouvert) : on garde la place du copyright */
-  .connexion-ecran[data-formulaire='ouvert'] .connexion-corps {
-    padding-bottom: 8dvh;
+  /* Le formulaire ferme reste dans la page : on le cache avec la scene visible (ci-dessous) */
+  .connexion-ecran[data-formulaire='ferme'] .connexion-droite {
+    display: flex;
+  }
+
+  .connexion-pied {
+    justify-content: space-between;
+    padding: 0 clamp(1.5rem, 9vw, 10rem) calc(1.5dvh + env(safe-area-inset-bottom, 0px));
+    text-align: left;
+  }
+
+  .connexion-pied-liens a {
+    min-height: 2rem;
   }
 
   .connexion-gauche {
@@ -475,20 +782,7 @@
   }
 
   .connexion-retour {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
     margin-top: 1.5dvh;
-    padding: 0 0.75rem;
-    border: var(--connexion-trait) solid var(--bordure-forte);
-    background: transparent;
-    font-size: 0.875rem;
-    color: var(--texte-secondaire);
-    transition: color 0.2s;
-  }
-
-  .connexion-retour:hover {
-    color: var(--texte);
   }
 
   /* La bande du bas : un trait fin au-dessus, les secteurs a gauche, les garanties a droite */
@@ -504,7 +798,7 @@
     width: 100%;
     max-width: 100rem;
     margin-inline: auto;
-    padding: 2.5dvh clamp(1.5rem, 9vw, 10rem) 5dvh;
+    padding: 2.5dvh clamp(1.5rem, 9vw, 10rem) 1.5dvh;
   }
 
   .connexion-ecran[data-formulaire='ferme'] .connexion-bas::before {
@@ -515,4 +809,164 @@
     right: clamp(1.5rem, 9vw, 10rem);
     border-top: var(--connexion-trait) solid var(--bordure-forte);
   }
+}
+
+/* ------------------------------------------------------------
+   Pages de texte publiques (composants-communs/cadre-page-legale.tsx) :
+   mentions legales (/mentions-legales) et confidentialite (/confidentialite).
+   Contrairement a l'ecran de connexion, la page defile librement.
+   Les variables de couleur viennent du bloc du haut (.page-legale).
+   ------------------------------------------------------------ */
+.page-legale {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: linear-gradient(135deg, var(--connexion-fond) 0%, var(--connexion-fond-bas) 100%);
+  color: var(--texte);
+}
+
+.page-legale-barre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: calc(0.75rem + env(safe-area-inset-top, 0px)) clamp(1rem, 5vw, 3rem) 0.75rem;
+  border-bottom: var(--connexion-trait) solid var(--bordure-forte);
+}
+
+.page-legale-marque {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--texte);
+  text-decoration: none;
+}
+
+.page-legale-outils {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.page-legale-corps {
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: 1.5rem clamp(1rem, 5vw, 2rem) 3rem;
+}
+
+.page-legale-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  font-size: 0.875rem;
+  color: var(--texte-secondaire);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.page-legale-retour:hover {
+  color: var(--texte);
+}
+
+.page-legale-titre {
+  margin-top: 1rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--texte);
+}
+
+.page-legale-texte {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+
+.page-legale-texte p {
+  margin: 0 0 1rem;
+}
+
+.page-legale-texte a {
+  color: var(--connexion-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.page-legale-texte a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.page-legale-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: var(--connexion-trait) solid var(--bordure-forte);
+}
+
+.page-legale-sous-titre {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--texte);
+}
+
+/* Fiche "Editeur du site" : libelle gris au-dessus (puis a gauche) de la valeur */
+.page-legale-liste {
+  margin: 0;
+}
+
+.page-legale-ligne {
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.625rem 0;
+  border-bottom: var(--connexion-trait) solid var(--bordure);
+}
+
+.page-legale-ligne dt {
+  font-size: 0.8125rem;
+  color: var(--texte-secondaire);
+}
+
+.page-legale-ligne dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.page-legale-puces {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.page-legale-puces li {
+  margin-bottom: 0.5rem;
+}
+
+.page-legale-puces li::marker {
+  color: var(--connexion-accent);
+}
+
+@media (min-width: 40rem) {
+  .page-legale-ligne {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Le pied de page (meme composant que sur la connexion) : un trait fin au-dessus */
+.page-legale .connexion-pied {
+  max-width: none;
+  padding-inline: clamp(1rem, 5vw, 3rem);
+  border-top: var(--connexion-trait) solid var(--bordure-forte);
 }

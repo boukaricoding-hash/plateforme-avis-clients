@@ -72,7 +72,16 @@ if (fs.existsSync(dossierTableau)) {
       res.status(404).end();
       return;
     }
-    res.sendFile(path.join(dossierTableau, "index.html"));
+    // Remplace __URL_SITE__ (apercu de partage) par l'adresse publique du site (PUBLIC_BASE_URL).
+    // Une adresse douteuse est ignoree : les balises gardent alors une adresse relative.
+    const adresseBrute = (process.env["PUBLIC_BASE_URL"] ?? "").trim().replace(/\/+$/, "");
+    const adresseSite = /^https?:\/\/[^\s"'<>&]+$/.test(adresseBrute) ? adresseBrute : "";
+    try {
+      const page = fs.readFileSync(path.join(dossierTableau, "index.html"), "utf8");
+      res.type("html").send(page.split("__URL_SITE__").join(adresseSite));
+    } catch {
+      next();
+    }
   });
 }
 

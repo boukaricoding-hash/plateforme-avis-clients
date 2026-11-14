@@ -45,6 +45,28 @@ export const en = {
     erreurIdentifiants: 'Incorrect email or password.',
     erreurTropDeTentatives: 'Too many attempts. Try again in a minute.',
     sessionExpiree: 'Your session has expired. Please sign in again.',
+    espaceClient: 'Customer area',
+    retour: 'Back',
+  },
+  // Messages that scroll on the left of the sign-in screens
+  carrousel: {
+    titre: 'Platform overview',
+    afficher: 'Show message {nombre}',
+    diapo1Badge: 'Customer Feedback • QR Code',
+    diapo1Titre: 'Collect your customers’ feedback',
+    diapo1Accent: 'with a single scan!',
+    diapo1Texte:
+      'Data Trace Africa lets you collect, manage and analyze your customers’ feedback with a fast, secure and intuitive QR code.',
+    diapo2Badge: 'Real-time alerts',
+    diapo2Titre: 'Get notified as soon as feedback',
+    diapo2Accent: 'deserves your attention.',
+    diapo2Texte:
+      'A low score triggers an alert by notification and by email, so you can act at the right time.',
+    diapo3Badge: 'Dashboard and exports',
+    diapo3Titre: 'Analyze your results',
+    diapo3Accent: 'and share them easily.',
+    diapo3Texte:
+      'Track your indicators by site and by period, then export your feedback to Excel, CSV or a PDF report.',
   },
   motDePasseOublie: {
     titre: 'Forgot your password',

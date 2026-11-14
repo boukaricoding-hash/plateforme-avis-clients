@@ -1400,6 +1400,33 @@ export const en = {
         tauxReponse: 'Share of people who scanned a QR code and sent a review.',
         alertes: 'Negative reviews still to handle (new or in progress), whatever the period.',
       },
+      blocs: {
+        role: 'What it is for',
+        lecture: 'How to read it',
+      },
+      roles: {
+        noteMoyenne: 'Sums up in one number what your customers think of your business.',
+        csat:
+          'Shows what share of your customers are satisfied, so the average does not hide unhappy ones.',
+        nps: 'Measures whether your customers would recommend you to people they know, a good sign of loyalty.',
+        nbAvis: 'Shows whether you have enough reviews for the other figures to be reliable.',
+        tauxReponse: 'Shows how many people who open a QR code go on to send their review.',
+        alertes: 'Flags unhappy customers to contact or handle first.',
+      },
+      lectures: {
+        noteMoyenne:
+          'A rating that drops from one period to the next deserves attention, even if it stays in the green.',
+        csat:
+          'The closer to 100%, the better. Example: 8 customers out of 10 giving 4 or 5 is 80%.',
+        nps:
+          'It ranges from −100 to +100. Customers giving 9 or 10 are promoters, those giving 0 to 6 are detractors, and 7 and 8 are not counted. Example: 60% promoters and 20% detractors give +40. Above 0, you have more promoters than detractors.',
+        nbAvis:
+          'With few reviews, a single rating moves the average a lot. The more there are, the more reliable the figures.',
+        tauxReponse:
+          'Example: 4 reviews for 9 scans is 44%. Compare your contact points with each other: a very low rate in one place may come from a badly placed stand.',
+        alertes:
+          'A review becomes an alert when its rating or NPS is at or below the thresholds set in Settings. The goal is to get back to zero.',
+      },
     },
   },
 }

@@ -1072,3 +1072,23 @@
     transition: none !important;
   }
 }
+
+/* ---------- Panneau d'une carte : role et lecture ---------- */
+
+.accueil-detail-bloc {
+  margin-top: 6px;
+}
+
+.accueil-detail-bloc-titre {
+  margin: 0 0 2px;
+  color: var(--texte);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.accueil-detail-bloc-texte {
+  margin: 0;
+  color: var(--a-texte-doux);
+  font-size: 13px;
+  line-height: 1.45;
+}

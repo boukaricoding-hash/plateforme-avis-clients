@@ -1378,6 +1378,35 @@ export const fr = {
         alertes:
           'Avis négatifs encore à traiter (nouveaux ou en cours), quelle que soit la période.',
       },
+      blocs: {
+        role: 'À quoi ça sert',
+        lecture: 'Comment le lire',
+      },
+      roles: {
+        noteMoyenne:
+          'Résume en un seul chiffre ce que vos clients pensent de votre établissement.',
+        csat:
+          'Montre quelle part de vos clients est satisfaite, sans que la moyenne cache les mécontents.',
+        nps: 'Mesure si vos clients vous recommanderaient à leurs proches, un bon signe de fidélité.',
+        nbAvis: 'Montre si vous avez assez d’avis pour que les autres chiffres soient fiables.',
+        tauxReponse:
+          'Montre combien de personnes qui ouvrent un QR code vont jusqu’à l’envoi de leur avis.',
+        alertes: 'Vous signale les clients mécontents à contacter ou à traiter en priorité.',
+      },
+      lectures: {
+        noteMoyenne:
+          'Une note qui baisse d’une période à l’autre mérite votre attention, même si elle reste dans le vert.',
+        csat:
+          'Plus il est proche de 100 %, mieux c’est. Exemple : 8 clients sur 10 qui donnent 4 ou 5, c’est 80 %.',
+        nps:
+          'Il va de −100 à +100. Les clients qui donnent 9 ou 10 sont des promoteurs, ceux qui donnent de 0 à 6 des détracteurs, et les 7 et 8 ne comptent pas. Exemple : 60 % de promoteurs et 20 % de détracteurs donnent +40. Au-dessus de 0, vous avez plus de promoteurs que de détracteurs.',
+        nbAvis:
+          'Avec peu d’avis, une seule note change beaucoup la moyenne. Plus il y en a, plus les chiffres sont fiables.',
+        tauxReponse:
+          'Exemple : 4 avis pour 9 scans, c’est 44 %. Comparez vos points de contact entre eux : un taux très bas à un endroit peut venir d’un chevalet mal placé.',
+        alertes:
+          'Un avis devient une alerte quand sa note ou son NPS est au niveau ou en dessous des seuils réglés dans Paramètres. L’objectif est de retomber à zéro.',
+      },
     },
   },
 }

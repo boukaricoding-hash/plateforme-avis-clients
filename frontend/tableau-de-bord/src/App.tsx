@@ -12,6 +12,8 @@ import { PageConnexion } from './pages/connexion/page-connexion'
 import { PageAccepterInvitation } from './pages/invitation/page-accepter-invitation'
 import { PageMotDePasseOublie } from './pages/connexion/page-mot-de-passe-oublie'
 import { PageReinitialisation } from './pages/connexion/page-reinitialisation'
+import { PageConfidentialite } from './pages/legal/page-confidentialite'
+import { PageMentionsLegales } from './pages/legal/page-mentions-legales'
 import { PageListeAvis } from './pages/liste-avis/page-liste-avis'
 import { PageParametres } from './pages/parametres-organisation/page-parametres'
 import { PageQrCodes } from './pages/qr-codes/page-qr-codes'
@@ -53,6 +55,8 @@ export default function App() {
       <Route path="/mot-de-passe-oublie" element={<PageMotDePasseOublie />} />
       <Route path="/reinitialiser-mot-de-passe" element={<PageReinitialisation />} />
       <Route path="/invitation" element={<PageAccepterInvitation />} />
+      <Route path="/mentions-legales" element={<PageMentionsLegales />} />
+      <Route path="/confidentialite" element={<PageConfidentialite />} />
 
       {/* Ecrans reserves aux utilisateurs connectes */}
       <Route element={<CadreProtege />}>

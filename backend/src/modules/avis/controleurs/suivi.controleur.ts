@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { enregistrerAudit } from "../../journal-audit/services/journal";
 import { sitesAutorises } from "../../../utilitaires/perimetre";
 import { repondreDonneesInvalides, repondreNonTrouve } from "../../../utilitaires/reponses";
 import { ajouterNoteInterne, changerStatutAvis } from "../services/suivi";
@@ -54,6 +55,15 @@ export async function changerLeStatut(req: Request, res: Response): Promise<void
       });
       return;
     case "ok":
+      await enregistrerAudit({
+        action: "AVIS_STATUT_MODIFIE",
+        utilisateurId: ctx.utilisateur.id,
+        organisationId: ctx.organisationId,
+        ip: req.ip,
+        entite: "avis",
+        entiteId: identifiant.data.id,
+        details: { ancien_statut: resultat.suivi.ancien_statut ?? null, nouveau_statut: resultat.statut_traitement },
+      });
       res.status(200).json({ statut_traitement: resultat.statut_traitement, suivi: resultat.suivi });
       return;
   }

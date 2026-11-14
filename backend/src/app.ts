@@ -21,6 +21,10 @@ import { routesInvitations } from "./modules/utilisateurs/routes/invitations.rou
 import { routesExports } from "./modules/rapports/routes/exports.routes";
 import { routesAdminOrganisations } from "./modules/administration/routes/organisations.routes";
 import { routesAdminSecteurs } from "./modules/secteurs/routes/secteurs.routes";
+import { routesAdminJournal } from "./modules/journal-audit/routes/journal.routes";
+import { routesAdminVueGlobale } from "./modules/administration/routes/vue-globale.routes";
+import { routesAdminSupport } from "./modules/administration/routes/support.routes";
+import { routesAccesSupport } from "./modules/organisations/routes/acces-support.routes";
 
 export const app = express();
 // Nombre d'intermediaires (tunnel, Nginx) entre le client et le serveur.
@@ -104,6 +108,8 @@ app.use("/api/v1/public", routesAvisPublic);
 app.use("/api/v1/avis", routesAvis);
 app.use("/api/v1/notifications", routesNotifications);
 app.use("/api/v1/organisation", routesParametres);
+// Accord de support (le Responsable autorise DTS a lire ses donnees) : meme adresse de base que les parametres
+app.use("/api/v1/organisation", routesAccesSupport);
 app.use("/api/v1/utilisateurs", routesUtilisateurs);
 // Invitations : routes publiques (verification du lien, acceptation)
 app.use("/api/v1/invitations", routesInvitations);
@@ -119,6 +125,10 @@ app.use("/api/v1/exports", routesExports);
 // Back-office DTS : routes reservees a l'administrateur
 app.use("/api/v1/admin/organisations", routesAdminOrganisations);
 app.use("/api/v1/admin/secteurs", routesAdminSecteurs);
+app.use("/api/v1/admin/journal-audit", routesAdminJournal);
+app.use("/api/v1/admin/vue-globale", routesAdminVueGlobale);
+// Consultation de support : lecture seule, uniquement avec l'accord de l'organisation
+app.use("/api/v1/admin/support", routesAdminSupport);
 // 404 : aucune route ne correspond
 app.use((_req: Request, res: Response) => {
   res.status(404).json({

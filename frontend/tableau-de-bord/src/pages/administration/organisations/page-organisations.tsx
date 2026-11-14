@@ -1,5 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import { ConfirmationSuspension } from '../../../composants-admin/confirmation-suspension'
 import { FormulaireInvitationResponsable } from '../../../composants-admin/formulaire-invitation-responsable'
 import { FormulaireOrganisation } from '../../../composants-admin/formulaire-organisation'
@@ -295,6 +295,12 @@ export function PageOrganisations() {
                       <PastilleStatutOrganisation statut={organisation.statut} />
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        to={`/admin/organisations/${organisation.id}/support`}
+                        className={`${CLASSE_BOUTON_SECONDAIRE} inline-flex items-center`}
+                      >
+                        {t('suiviDts.support.bouton')}
+                      </Link>
                       <button
                         type="button"
                         onClick={() => ouvrirSurOrganisation('modifier', organisation.id)}

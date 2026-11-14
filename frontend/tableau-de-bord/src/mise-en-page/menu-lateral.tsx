@@ -9,6 +9,7 @@ import {
   IconeChevron,
   IconeDeconnexion,
   IconeExports,
+  IconeJournalAudit,
   IconeOrganisations,
   IconeParametres,
   IconeQrCodes,
@@ -17,6 +18,7 @@ import {
   IconeSites,
   IconeTableauDeBord,
   IconeUtilisateurs,
+  IconeVueGlobale,
 } from './icones-menu'
 import '../styles/menu-lateral.css'
 
@@ -70,7 +72,7 @@ const GROUPES: Groupe[] = [
   },
 ]
 
-// Groupe reserve a l'administrateur DTS : ecrans E17 (organisations) et E18 (modeles sectoriels).
+// Groupe reserve a l'administrateur DTS : E17 (organisations), E18 (modeles sectoriels), journal d'audit et E19.
 // Il s'ajoute aux groupes ci-dessus seulement pour ce role ; le serveur refuse aussi les autres (403).
 const GROUPE_ADMINISTRATION: Groupe = {
   cle: 'administration',
@@ -78,6 +80,8 @@ const GROUPE_ADMINISTRATION: Groupe = {
   entrees: [
     { chemin: '/admin/organisations', cle: 'admin.menu.organisations', icone: IconeOrganisations },
     { chemin: '/admin/secteurs', cle: 'admin.menu.secteurs', icone: IconeSecteurs },
+    { chemin: '/admin/journal-audit', cle: 'suiviDts.menu.journalAudit', icone: IconeJournalAudit },
+    { chemin: '/admin/vue-globale', cle: 'suiviDts.menu.vueGlobale', icone: IconeVueGlobale },
   ],
 }
 
@@ -132,7 +136,7 @@ export function MenuLateral({ ouvert, onFermer, replie, onBasculerReplie }: Prop
 
   // Le groupe Administration DTS n'existe que pour l'administrateur.
   const estAdministrateur = utilisateur?.role === 'ADMINISTRATEUR'
-  const groupes = estAdministrateur ? [...GROUPES, GROUPE_ADMINISTRATION] : GROUPES
+  const groupes = estAdministrateur ? [GROUPE_ADMINISTRATION] : GROUPES
 
   const groupeActif = groupes.find((groupe) =>
     groupe.entrees.some((entree) => entreeActive(entree.chemin, pathname)),
@@ -146,7 +150,8 @@ export function MenuLateral({ ouvert, onFermer, replie, onBasculerReplie }: Prop
   const [groupesOuverts, setGroupesOuverts] = useState<Record<string, boolean>>(() => {
     const depart: Record<string, boolean> = {}
     for (const groupe of groupes) {
-      depart[groupe.cle] = groupe.titre === null || groupe.cle === cleGroupeActif
+      depart[groupe.cle] =
+        groupe.titre === null || groupe.cle === cleGroupeActif || groupes.length === 1
     }
     return depart
   })

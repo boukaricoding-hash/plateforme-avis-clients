@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router'
+import { SectionAccordSupport } from '../../composants-parametres/accord-support'
 import { SectionAlertes } from '../../composants-parametres/section-alertes'
 import { SectionLogo } from '../../composants-parametres/section-logo'
 import { SectionNotifications } from '../../composants-parametres/section-notifications'
@@ -7,7 +8,8 @@ import { utiliserParametres } from '../../hooks/utiliser-parametres'
 import type { ErreurService } from '../../services/api'
 
 // Ecran E14 : parametres de l'organisation (jour 16).
-// - Le Responsable voit tout : logo, couleur et seuils d'alerte, preference d'alerte.
+// - Le Responsable voit tout : logo, couleur et seuils d'alerte, accord de support DTS,
+//   preference d'alerte.
 // - Le Gestionnaire voit seulement sa preference d'alerte.
 // - L'administrateur DTS n'a pas d'organisation : il est renvoye a l'accueil.
 // La page n'appelle pas l'API : tout vient de utiliserParametres. Chaque bloc a son propre
@@ -90,6 +92,9 @@ export function PageParametres() {
           <SectionAlertes parametres={parametres} etat={alertes} />
         </>
       )}
+
+      {/* Accord de support DTS : Responsable seulement (le bloc n'affiche rien pour les autres) */}
+      {acces === 'responsable' && <SectionAccordSupport />}
 
       {/* Preference d'alerte : Responsable et Gestionnaire */}
       {chargementPreferences && (

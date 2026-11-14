@@ -548,3 +548,43 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - Les 49 erreurs `react-hooks/rules-of-hooks` viennent des hooks nommes `utiliser...`, que la regle ne reconnait pas (comme les anciens fichiers) ; la configuration de la regle viendra un autre jour.
 - Le jour 23 est fait en avance sur le planning (prevu le mardi 17 novembre).
 - Le service d'e-mails de DTS n'est pas encore choisi : on garde Mailpit.
+
+
+## Jour 24 - samedi 14 novembre 2026 : journal d'audit, vue globale E19 et support en lecture seule
+
+**Fait**
+- Backend, journal d'audit (`modules/journal-audit`) : `validations/journal.ts` (filtres page, limite, utilisateur, action, organisation, du, au), `services/consultation-journal.ts` (lecture filtree, e-mail de l'auteur, nom de l'organisation, details nettoyes), `controleurs/journal.controleur.ts` et `routes/journal.routes.ts` (GET `/api/v1/admin/journal-audit`, administrateur seulement).
+- Backend, vue globale E19 (`modules/administration`) : `services/vue-globale.ts`, `controleurs/vue-globale.controleur.ts` et `routes/vue-globale.routes.ts` (GET `/api/v1/admin/vue-globale`).
+- Petites insertions : `journal-audit/services/journal.ts` (`entite` et `entiteId` facultatifs, les anciens appels ne changent pas) et `avis/controleurs/suivi.controleur.ts` (action `AVIS_STATUT_MODIFIE` avec ancien et nouveau statut).
+- Backend, accord de support (`modules/organisations`) : `validations/acces-support.ts`, `services/acces-support.ts`, `controleurs/acces-support.controleur.ts` et `routes/acces-support.routes.ts` (GET, POST et DELETE `/api/v1/organisation/acces-support`, Responsable seul).
+- Backend, consultation de support : `middleware/exiger-acces-support.ts` (accord verifie a chaque requete, ecrit `SUPPORT_CONSULTATION`), `administration/services/consultation-support.ts`, `controleurs/support.controleur.ts` et `routes/support.routes.ts` (7 routes GET sous `/api/v1/admin/support/organisations/:id/...` : fiche, indicateurs, avis, un avis, sites, points de contact, utilisateurs).
+- Branchement : 4 groupes de routes dans `app.ts`.
+- Tests : `admin-journal-vue-globale.test.ts` et `support-lecture-seule.test.ts` (nouveaux) ; `isolation-admin.test.ts` : les 9 nouvelles routes admin (401 visiteur, 403 Responsable et Gestionnaire).
+- Tableau de bord (`frontend/tableau-de-bord/src`), donnees : `types/suivi-dts.ts` et `services/suivi-dts.ts`.
+- Journal : `hooks/utiliser-journal-audit.ts`, `composants-admin/filtres-journal-audit.tsx` et `liste-journal-audit.tsx`, `pages/administration/journal-audit-vue-globale/page-journal-audit.tsx`.
+- Ecran E19 : `hooks/utiliser-vue-globale.ts`, `composants-admin/cartes-vue-globale.tsx`, `courbe-avis-par-jour.tsx` et `liste-erreurs-recentes.tsx`, `page-vue-globale.tsx` (meme dossier que le journal).
+- Support : `hooks/utiliser-accord-support.ts` et `composants-parametres/accord-support.tsx` (bloc dans l'ecran E14, insere dans `page-parametres.tsx`), `hooks/utiliser-support.ts`, `composants-admin/consultation-support.tsx`, `pages/administration/support/page-support-organisation.tsx`, bouton "Support" dans `page-organisations.tsx` (E17).
+- Branchement : 3 routes dans `App.tsx` (`admin/journal-audit`, `admin/vue-globale`, `admin/organisations/:id/support`), 2 entrees dans `menu-lateral.tsx` et 2 icones dans `icones-menu.tsx`.
+- Textes : `traductions/fr/suivi-dts.ts` et `en/suivi-dts.ts` (148 textes, memes cles et memes accolades dans les deux langues), enregistres sous la cle `suiviDts` dans `fr/textes.ts` et `en/textes.ts` (2 lignes chacun).
+- Frontend : `tsc -b` sans erreur ; `eslint` sur les 25 fichiers du jour : 37 erreurs `react-hooks/rules-of-hooks`, aucune autre (testes sur une copie du depot).
+
+**Decisions**
+- Acces : journal, vue globale et consultation de support reserves a l'administrateur DTS (menu, redirection vers l'accueil, 403 du serveur).
+- Le journal n'affiche jamais de secret : toute cle de details qui ressemble a un mot de passe, un jeton ou un secret est retiree avant l'envoi.
+- E19 : organisations par statut, utilisateurs par role, avis par jour sur 30 jours (somme des agregats quotidiens). "Erreurs recentes" = actions d'echec du journal des 7 derniers jours, car il n'y a pas de table d'erreurs du serveur (Sentry est prevu au jour 28).
+- Accord de support : donne par le Responsable seul, dans l'ecran E14, pour 1 heure, 24 heures ou 7 jours. Un seul accord actif par organisation : un nouvel accord remplace le precedent. L'organisation vient toujours de la session.
+- Consultation : lecture seule, accord verifie a CHAQUE requete (sans accord, expire ou retire : 403). Aucune route d'ecriture sous `/admin/support` (une telle requete donne 404). Aucune route existante n'a ete ouverte a DTS.
+- Les coordonnees des clients (nom, telephone, e-mail) sont masquees dans la consultation de support.
+- Chaque accord donne, retire et chaque consultation ecrit une ligne dans le journal (`SUPPORT_ACCES_ACCORDE`, `SUPPORT_ACCES_RETIRE`, `SUPPORT_CONSULTATION`).
+
+**A faire ensuite**
+- Fichier 46 : entree dans `apres-un-pull.md` (rien a relancer cote seed ni migration, la table `acces_support` existe deja ; noter les nouvelles routes admin, l'interrupteur de l'ecran E14 et les nouvelles pages).
+- Lancer `npx tsc --noEmit` dans `backend`, puis `npm test` (Docker Desktop ouvert, base demarree) : les 23 fichiers et 320 tests du depart, plus les nouveaux, doivent tous passer ; noter le resultat.
+- Verifications du soir, a faire a la main : journal (chaque action retrouvee avec auteur et date, filtres, aucun secret), acces par role, chiffres de E19 egaux a un comptage dans Prisma Studio, support (sans accord, avec accord, apres retrait, coordonnees masquees), FR et EN, ordinateur, tablette et telephone.
+- Cloture : `git branch --show-current`, `git status --short`, pull request vers main (titre : "Jour 24 : journal d'audit, vue globale E19 et support en lecture seule"), fusion, `git checkout main` puis `git pull`. Fin de la semaine 4.
+
+**Points d'attention**
+- Les 37 erreurs `react-hooks/rules-of-hooks` viennent des hooks nommes `utiliser...`, que la regle ne reconnait pas (comme les anciens fichiers) ; la configuration de la regle viendra un autre jour.
+- La liste des consultations de support cote organisation n'est pas dans ce jour.
+- Le jour 24 est fait en avance sur le planning (prevu le mercredi 18 novembre).
+- Le service d'e-mails de DTS n'est pas encore choisi : on garde Mailpit.

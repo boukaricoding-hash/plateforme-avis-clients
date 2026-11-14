@@ -2,9 +2,11 @@
 // jour 14 : ecran E7, indicateurs et graphiques ; refonte de l'accueil : raccourcis et groupes de cartes).
 // Les textes entre accolades, comme {minutes}, sont remplaces par le code.
 import { adminFr } from './admin'
+import { suiviDtsFr } from './suivi-dts'
 
 export const fr = {
   admin: adminFr,
+  suiviDts: suiviDtsFr,
   commun: {
     chargement: 'Chargement…',
     langue: 'Langue',

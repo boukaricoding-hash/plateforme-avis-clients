@@ -312,3 +312,103 @@ describe("isolation admin : administrateur DTS", () => {
     expect(ids).toEqual([orgAId, orgBId].sort());
   });
 });
+
+// Jour 24 : les 9 nouvelles routes admin (journal d'audit, vue globale, consultation de support).
+// - visiteur : 401 sur les 9 routes ;
+// - Responsable et Gestionnaire : 403 sur les 9 routes, et aucune ligne SUPPORT_ n'est ecrite dans le journal ;
+// - l'administrateur DTS lit le journal et la vue globale (200), mais le support sans accord reste refuse (403).
+// Aucune connexion de plus : les memes comptes sont reutilises.
+function listerRoutesSuiviDts(): Route[] {
+  const support = "/api/v1/admin/support/organisations/" + orgBId;
+  const avisInconnu = "00000000-0000-4000-8000-000000000000";
+  return [
+    { methode: "get", chemin: "/api/v1/admin/journal-audit" },
+    { methode: "get", chemin: "/api/v1/admin/vue-globale" },
+    { methode: "get", chemin: support },
+    { methode: "get", chemin: support + "/indicateurs" },
+    { methode: "get", chemin: support + "/avis" },
+    { methode: "get", chemin: support + "/avis/" + avisInconnu },
+    { methode: "get", chemin: support + "/sites" },
+    { methode: "get", chemin: support + "/points-contact" },
+    { methode: "get", chemin: support + "/utilisateurs" },
+  ];
+}
+
+async function compterLignesSupport(): Promise<number> {
+  return prisma.auditLog.count({
+    where: { organisation_id: { in: [orgAId, orgBId] }, action: { startsWith: "SUPPORT_" } },
+  });
+}
+
+describe("isolation admin jour 24 : visiteur non connecte", () => {
+  it("les 9 routes du journal, de la vue globale et du support refusent un visiteur (401)", async () => {
+    const routes = listerRoutesSuiviDts();
+    expect(routes).toHaveLength(9);
+
+    for (const route of routes) {
+      const sansCookie = await appeler(request.agent(app), route);
+      expect(sansCookie.status, decrire(route) + " sans cookie").toBe(401);
+      expect(sansCookie.body.code).toBe("NON_CONNECTE");
+
+      const fauxCookie = request.agent(app);
+      const requete = fauxCookie[route.methode](route.chemin).set("Cookie", NOM_COOKIE_SESSION + "=jeton-invente");
+      const avecFauxCookie = await (route.corps ? requete.send(route.corps) : requete);
+      expect(avecFauxCookie.status, decrire(route) + " avec faux cookie").toBe(401);
+    }
+    expect(await compterLignesSupport()).toBe(0);
+  });
+});
+
+describe("isolation admin jour 24 : Responsable et Gestionnaire", () => {
+  it("un Responsable et un Gestionnaire recoivent 403 sur les 9 routes, sans rien lire ni rien journaliser", async () => {
+    const routes = listerRoutesSuiviDts();
+    const avant = await compterLignesSupport();
+
+    for (const route of routes) {
+      for (const [nom, agent] of [
+        ["Responsable A", agentResponsableA],
+        ["Gestionnaire A", agentGestionnaireA],
+        ["Responsable B", agentResponsableB],
+      ] as const) {
+        const reponse = await appeler(agent, route);
+        expect(reponse.status, nom + " : " + decrire(route)).toBe(403);
+        expect(reponse.body.code).toBe("ACCES_REFUSE");
+        // Le refus ne laisse sortir ni journal, ni chiffres, ni donnees de l'organisation
+        expect(reponse.body).not.toHaveProperty("entrees");
+        expect(reponse.body).not.toHaveProperty("organisations");
+        expect(reponse.body).not.toHaveProperty("utilisateurs");
+        expect(reponse.body).not.toHaveProperty("avis");
+      }
+    }
+
+    // Aucune consultation de support n'a ete ecrite dans le journal
+    expect(await compterLignesSupport()).toBe(avant);
+  });
+});
+
+describe("isolation admin jour 24 : administrateur DTS", () => {
+  it("l'administrateur lit le journal et la vue globale, sans mot de passe dans les reponses", async () => {
+    const journal = await agentAdmin.get("/api/v1/admin/journal-audit").expect(200);
+    expect(Array.isArray(journal.body.entrees)).toBe(true);
+    expect(journal.body.pagination.page).toBe(1);
+
+    const vue = await agentAdmin.get("/api/v1/admin/vue-globale").expect(200);
+    expect(vue.body.organisations.total).toBeGreaterThanOrEqual(2);
+    expect(vue.body.avis_par_jour.points.length).toBe(vue.body.avis_par_jour.jours);
+
+    const texte = JSON.stringify([journal.body, vue.body]);
+    expect(texte).not.toContain("mot_de_passe");
+  });
+
+  it("sans accord de l'organisation, l'administrateur est refuse sur les 7 routes du support, et rien n'est journalise", async () => {
+    const avant = await compterLignesSupport();
+
+    for (const route of listerRoutesSuiviDts().slice(2)) {
+      const reponse = await appeler(agentAdmin, route);
+      expect(reponse.status, decrire(route)).toBe(403);
+      expect(reponse.body.code, decrire(route)).toBe("ACCES_SUPPORT_NON_ACCORDE");
+    }
+
+    expect(await compterLignesSupport()).toBe(avant);
+  });
+});

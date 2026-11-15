@@ -56,7 +56,7 @@ export const fr = {
     diapo1Titre: 'Collectez les avis de vos clients',
     diapo1Accent: 'en un seul scan !',
     diapo1Texte:
-      'Data Trace Africa vous permet de recueillir, gérer et analyser les avis de vos clients grâce à un QR code rapide, sécurisé et intuitif.',
+      'Data Trace Service vous permet de recueillir, gérer et analyser les avis de vos clients grâce à un QR code rapide, sécurisé et intuitif.',
     diapo2Badge: 'Alertes en temps réel',
     diapo2Titre: 'Soyez prévenu dès qu’un avis',
     diapo2Accent: 'mérite votre attention.',

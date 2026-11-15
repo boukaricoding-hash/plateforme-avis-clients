@@ -12,7 +12,7 @@ type Proprietes = {
   children: ReactNode
 }
 
-const NOM_ENTREPRISE = 'Data Trace Africa'
+const NOM_ENTREPRISE = 'Data Trace Service'
 // Version allegee du logo (256 px), dans frontend/tableau-de-bord/public/
 const URL_LOGO = `${import.meta.env.BASE_URL}data-logo.webp`
 

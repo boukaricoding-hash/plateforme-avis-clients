@@ -56,7 +56,7 @@ export const en = {
     diapo1Titre: 'Collect your customers’ feedback',
     diapo1Accent: 'with a single scan!',
     diapo1Texte:
-      'Data Trace Africa lets you collect, manage and analyze your customers’ feedback with a fast, secure and intuitive QR code.',
+      'Data Trace Service lets you collect, manage and analyze your customers’ feedback with a fast, secure and intuitive QR code.',
     diapo2Badge: 'Real-time alerts',
     diapo2Titre: 'Get notified as soon as feedback',
     diapo2Accent: 'deserves your attention.',

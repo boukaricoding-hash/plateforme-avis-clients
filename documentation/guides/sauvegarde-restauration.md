@@ -13,6 +13,8 @@ Les fichiers vont dans `sauvegardes/` à la racine du dépôt (ignoré par Git, 
 
 ## Faire une sauvegarde
 
+    bash backend/scripts/sauvegarde/sauvegarder.sh
+
 - Le conteneur de la base doit tourner : `docker compose up -d base-de-donnees`.
 - Si l'application ne tourne pas, la base est sauvegardée mais pas les logos, et le script l'écrit.
 - Fin attendue : `✓ Sauvegarde terminée.`
@@ -21,6 +23,8 @@ Les fichiers vont dans `sauvegardes/` à la racine du dépôt (ignoré par Git, 
 ## Sauvegarde automatique chaque nuit (serveur)
 
 Sur le serveur Linux, ouvrir la planification avec `crontab -e` et ajouter cette ligne (remplacer le chemin) :
+
+    0 2 * * * cd /chemin/vers/plateforme-avis-clients && bash backend/scripts/sauvegarde/sauvegarder.sh >> /var/log/sauvegarde-avis.log 2>&1
 
 Le lendemain matin, vérifier avec `ls -l sauvegardes` et en lisant `/var/log/sauvegarde-avis.log`. Une sauvegarde gardée sur le même disque que la base ne protège pas d'une panne du disque : prévoir aussi une copie sur une autre machine.
 
@@ -38,6 +42,8 @@ Le lendemain matin, vérifier avec `ls -l sauvegardes` et en lisant `/var/log/sa
 La restauration se fait en une seule transaction : en cas d'échec, aucune donnée partielle n'est écrite. L'option `--logos` ne s'utilise pas avec `BASE_CIBLE`.
 
 ## Vérifier que ça marche (scénario 12)
+
+    bash backend/scripts/sauvegarde/verifier-restauration.sh
 
 Le test ne touche jamais à la vraie base. Il sauvegarde, restaure dans une base vide temporaire, puis compare, table par table, le nombre de lignes et une empreinte du contenu. La base et le dossier temporaires sont supprimés à la fin, même en cas d'échec.
 

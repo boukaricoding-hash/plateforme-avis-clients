@@ -626,3 +626,32 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 **Points d'attention**
 - Les scripts sont en bash : sous Windows, les lancer avec Git Bash ou `bash` dans le terminal VS Code. Leur syntaxe est verifiee (`bash -n`), mais ils n'ont pas encore ete executes contre ton Docker : c'est le role du test de verification.
 - Le jour 28 est fait en avance sur le planning (prevu le lundi 23 novembre).
+
+## Jour 26 - lundi 16 novembre 2026 : securite avant l'hebergement
+
+**Fait**
+- Branche `jour-26-securite`, une seule pull request a la fin.
+- `backend/package-lock.json` : `body-parser` passe de 2.3.0 a 2.4.0 et `fast-uri` de 3.1.8 a 3.1.9. `npm audit` passe de 4 a 2 vulnerabilites, dont 0 haute (restent `exceljs` et `uuid`, laisses pour l'instant). `package.json` ne change pas.
+- `backend/src/middleware/verifier-origine.ts` : protection CSRF. Une requete qui modifie des donnees (POST, PUT, PATCH, DELETE) et qui porte le cookie de session ne passe que si son en-tete `Origin` est connu : dans `ORIGINES_AUTORISEES`, ou meme hote que la requete. Sinon : 403, code `ORIGINE_REFUSEE`.
+- `backend/src/app.ts` : 3 lignes pour brancher ce controle juste apres `cookieParser`, avant les routes.
+- `backend/src/modules/avis-public/routes/avis-public.routes.ts` : limite de scans de QR (`GET /api/v1/public/q/:code`) : 60 par minute et par adresse IP, reglable avec `LIMITE_SCAN_PAR_MINUTE` (valeur lue a chaque requete). Au-dela : 429, code `TROP_DE_REQUETES`. La limite d'envoi d'avis ne change pas.
+- `backend/tests/integration/securite.test.ts` : 7 tests (6 pour le controle de l'origine, 1 pour la limite de scans). Le fichier cree son organisation et son utilisateur de test et les supprime a la fin.
+- `.github/workflows/tests.yml` : GitHub Actions. A chaque push, une base PostgreSQL 17 jetable est creee, puis `npm ci`, generation du client Prisma, `npx tsc --noEmit`, migrations, seed et `npm test -- --no-file-parallelism`.
+
+**Decisions**
+- Le controle de l'origine ne regarde que les requetes qui portent le cookie de session : l'avis public et la connexion (sans cookie) ne sont pas touches. Les requetes sans en-tete `Origin` (curl, Thunder Client, tests) et les lectures (GET, HEAD, OPTIONS) passent toujours.
+- Un site dont l'adresse differe de celle de l'API doit etre dans `ORIGINES_AUTORISEES` (adresses separees par des virgules). Derriere Nginx ou un tunnel, le meme hote passe tout seul. `docker-compose.yml` fixe deja `ORIGINES_AUTORISEES` a `PUBLIC_BASE_URL`.
+- La limite de scans est large (60 par minute) : un restaurant entier peut partager le meme Wi-Fi. Elle freine surtout un robot qui essaie des codes au hasard.
+- Dans GitHub Actions, les fichiers de test passent l'un apres l'autre (`--no-file-parallelism`) : `isolation-admin.test.ts` compte tous les secteurs de la base et echouait au hasard quand `admin-secteurs.test.ts` en creait en meme temps. En local, `npm test` reste parallele : si ce test echoue seul avec "secteurs : 6 contre 8", relancer une fois.
+- Le mot de passe de la base dans `tests.yml` est une valeur de test (la base disparait a la fin du test) : ce n'est pas un secret.
+
+**A faire ensuite**
+- Entree du jour dans `apres-un-pull.md`.
+- Cloture : `git branch --show-current`, `git status --short`, pull request vers main (titre : "Jour 26 : securite avant l'hebergement"), fusion, `git checkout main` puis `git pull`.
+- Ensuite : l'hebergement.
+- Plus tard, au choix : corriger le test des secteurs pour qu'il ne compte que les secteurs de depart, et traiter les 2 vulnerabilites restantes (`exceljs`, `uuid`).
+
+**Points d'attention**
+- Avant la fusion : verifier dans l'onglet Actions de GitHub que le test "Tests" de la branche a une coche verte.
+- `npm audit fix --force` ne se lance jamais.
+- Le client Prisma (`backend/generated/`) reste ignore par Git : GitHub Actions le genere a chaque lancement.

@@ -45,6 +45,125 @@ export const fr = {
     erreurIdentifiants: 'E-mail ou mot de passe incorrect.',
     erreurTropDeTentatives: 'Trop de tentatives. Réessayez dans une minute.',
     sessionExpiree: 'Votre session a expiré. Reconnectez-vous.',
+    espaceClient: 'Espace client',
+    retour: 'Retour',
+  },
+  // Messages qui defilent a gauche des ecrans de connexion
+  carrousel: {
+    titre: 'Présentation de la plateforme',
+    afficher: 'Afficher le message {nombre}',
+    diapo1Badge: 'Avis Clients • QR Code',
+    diapo1Titre: 'Collectez les avis de vos clients',
+    diapo1Accent: 'en un seul scan !',
+    diapo1Texte:
+      'Data Trace Service vous permet de recueillir, gérer et analyser les avis de vos clients grâce à un QR code rapide, sécurisé et intuitif.',
+    diapo2Badge: 'Alertes en temps réel',
+    diapo2Titre: 'Soyez prévenu dès qu’un avis',
+    diapo2Accent: 'mérite votre attention.',
+    diapo2Texte:
+      'Une note basse déclenche une alerte par notification et par e-mail, pour que vous puissiez agir au bon moment.',
+    diapo3Badge: 'Tableau de bord et exports',
+    diapo3Titre: 'Analysez vos résultats',
+    diapo3Accent: 'et partagez-les facilement.',
+    diapo3Texte:
+      'Suivez vos indicateurs par site et par période, puis exportez vos avis en Excel, en CSV ou en rapport PDF.',
+    acces: 'Accéder à mon espace',
+    sansApplication: 'Sans application, en moins d’une minute',
+  },
+  // Scene animee de la page d'accueil (composants-communs/scene-telephone.tsx)
+  scene: {
+    description: 'Illustration : un téléphone scanne un QR code pour donner un avis',
+    lieu: 'RESTAURANT',
+    table: 'TABLE 12',
+    scanner: 'Scannez pour donner votre avis',
+    noteValeur: '4,8 / 5',
+    noteLibelle: 'Note moyenne',
+    avisTitre: 'Nouvel avis',
+    avisDetail: 'Table 12 · 5/5 · il y a 2 s',
+    alerteTitre: 'Alerte envoyée',
+    alerteDetail: 'Avis 1/5 · Table 7',
+    npsValeur: 'NPS +45',
+    npsLibelle: 'Ce mois-ci',
+  },
+  // Bande du bas de la page d'accueil (composants-communs/bas-de-page-connexion.tsx)
+  vitrine: {
+    secteur1: 'Restauration',
+    secteur2: 'Santé',
+    secteur3: 'Éducation',
+    secteur4: 'Agroalimentaire',
+    secteur5: 'Événements',
+    garantie1: 'Données séparées par organisation',
+    garantie2: 'Alertes en temps réel',
+  },
+  // Bouton "Demander une demo" (composants-communs/bouton-contact.tsx)
+  contact: {
+    demande: 'Demander une démo',
+    canalWhatsapp: 'via WhatsApp',
+    parEmail: 'ou par e-mail',
+    sujetDemo: 'Demande de démonstration – plateforme d’avis clients',
+    messageDemo:
+      'Bonjour, je souhaite une démonstration de la plateforme d’avis clients par QR code. Merci de me recontacter.',
+  },
+  // Pied de page des ecrans publics (composants-communs/pied-de-page-confiance.tsx)
+  pied: {
+    navigation: 'Informations légales et contact',
+    mentionsLegales: 'Mentions légales',
+    confidentialite: 'Confidentialité',
+    contact: 'Contact',
+  },
+  // Mentions legales (pages/legal/page-mentions-legales.tsx)
+  mentions: {
+    titre: 'Mentions légales',
+    intro: 'Informations légales concernant ce site et la plateforme d’avis clients.',
+    editeurTitre: 'Éditeur du site',
+    libelleEditeur: 'Éditeur',
+    libelleResponsable: 'Responsable de la publication',
+    libelleAdresse: 'Adresse',
+    libelleEmail: 'E-mail',
+    libelleWhatsapp: 'WhatsApp',
+    hebergementTitre: 'Hébergement',
+    hebergementTexte: 'Ce site est hébergé par {nom}.',
+    proprieteTitre: 'Propriété intellectuelle',
+    proprieteTexte:
+      'Les textes, logos, images et éléments graphiques de ce site sont la propriété de {nom}, sauf mention contraire. Toute reproduction sans autorisation écrite préalable est interdite.',
+    responsabiliteTitre: 'Responsabilité',
+    responsabiliteTexte:
+      '{nom} s’efforce de fournir des informations exactes et à jour, mais ne peut garantir que le site soit exempt d’erreurs ou accessible sans interruption. Les avis recueillis par la plateforme sont rédigés par les clients des organisations qui l’utilisent ; {nom} n’en est pas l’auteur.',
+    donneesTitre: 'Données personnelles',
+    donneesTexte: 'Les informations enregistrées par la plateforme et vos droits sont décrits dans notre',
+    donneesLien: 'politique de confidentialité',
+  },
+  // Politique de confidentialite (pages/legal/page-confidentialite.tsx)
+  confidentialite: {
+    titre: 'Politique de confidentialité',
+    intro:
+      'Cette page explique quelles informations la plateforme d’avis clients enregistre, à quoi elles servent et combien de temps certaines sont gardées.',
+    responsableTitre: 'Qui édite la plateforme',
+    responsableTexte:
+      '{nom} édite et exploite la plateforme. Chaque organisation cliente l’utilise pour recueillir les avis de ses propres clients.',
+    comptesTitre: 'Comptes des responsables',
+    comptesTexte:
+      'Pour se connecter au tableau de bord, la plateforme enregistre le nom, l’adresse e-mail, le rôle et la langue de chaque utilisateur, ainsi que la date de sa dernière connexion.',
+    motDePasseTexte:
+      'Le mot de passe n’est jamais enregistré en clair : seule une empreinte chiffrée, impossible à inverser, est conservée.',
+    journalTexte:
+      'Les actions sensibles, comme les connexions et les accès du support, sont inscrites dans un journal avec la date, l’utilisateur concerné et l’adresse IP, pour la sécurité et le suivi.',
+    avisTitre: 'Avis des clients',
+    avisTexte:
+      'Le nom, le téléphone et l’adresse e-mail d’une personne qui donne son avis ne sont enregistrés que si elle choisit de les indiquer et donne son accord.',
+    avisContactTexte:
+      'Pour limiter les avis en double, une empreinte chiffrée de l’appareil et du réseau est gardée avec l’avis. L’adresse IP n’est jamais gardée en clair, et cette empreinte est effacée après 7 jours.',
+    cookiesTitre: 'Cookies et stockage sur l’appareil',
+    cookiesIntro:
+      'La plateforme n’utilise ni cookie publicitaire ni outil de suivi. Elle garde seulement :',
+    cookieSession:
+      'un cookie de connexion, nécessaire pour rester identifié : il disparaît à la fermeture du navigateur, ou au bout de 7 jours si « Se souvenir de moi » est coché. Sans cette option, la session se ferme après 30 minutes d’inactivité.',
+    cookieAppareil:
+      'sur l’appareil : un cookie de 180 jours sur la page d’avis, pour limiter les doublons, et quelques préférences (langue, thème, brouillon d’avis hors connexion).',
+    droitsTitre: 'Vos droits',
+    droitsTexte:
+      'Vous pouvez demander à consulter, corriger ou supprimer les informations qui vous concernent en nous contactant. Nos coordonnées figurent dans les',
+    droitsLien: 'mentions légales',
   },
   motDePasseOublie: {
     titre: 'Mot de passe oublié',
@@ -1258,6 +1377,35 @@ export const fr = {
         tauxReponse: 'Part des personnes qui ont scanné un QR code et envoyé leur avis.',
         alertes:
           'Avis négatifs encore à traiter (nouveaux ou en cours), quelle que soit la période.',
+      },
+      blocs: {
+        role: 'À quoi ça sert',
+        lecture: 'Comment le lire',
+      },
+      roles: {
+        noteMoyenne:
+          'Résume en un seul chiffre ce que vos clients pensent de votre établissement.',
+        csat:
+          'Montre quelle part de vos clients est satisfaite, sans que la moyenne cache les mécontents.',
+        nps: 'Mesure si vos clients vous recommanderaient à leurs proches, un bon signe de fidélité.',
+        nbAvis: 'Montre si vous avez assez d’avis pour que les autres chiffres soient fiables.',
+        tauxReponse:
+          'Montre combien de personnes qui ouvrent un QR code vont jusqu’à l’envoi de leur avis.',
+        alertes: 'Vous signale les clients mécontents à contacter ou à traiter en priorité.',
+      },
+      lectures: {
+        noteMoyenne:
+          'Une note qui baisse d’une période à l’autre mérite votre attention, même si elle reste dans le vert.',
+        csat:
+          'Plus il est proche de 100 %, mieux c’est. Exemple : 8 clients sur 10 qui donnent 4 ou 5, c’est 80 %.',
+        nps:
+          'Il va de −100 à +100. Les clients qui donnent 9 ou 10 sont des promoteurs, ceux qui donnent de 0 à 6 des détracteurs, et les 7 et 8 ne comptent pas. Exemple : 60 % de promoteurs et 20 % de détracteurs donnent +40. Au-dessus de 0, vous avez plus de promoteurs que de détracteurs.',
+        nbAvis:
+          'Avec peu d’avis, une seule note change beaucoup la moyenne. Plus il y en a, plus les chiffres sont fiables.',
+        tauxReponse:
+          'Exemple : 4 avis pour 9 scans, c’est 44 %. Comparez vos points de contact entre eux : un taux très bas à un endroit peut venir d’un chevalet mal placé.',
+        alertes:
+          'Un avis devient une alerte quand sa note ou son NPS est au niveau ou en dessous des seuils réglés dans Paramètres. L’objectif est de retomber à zéro.',
       },
     },
   },

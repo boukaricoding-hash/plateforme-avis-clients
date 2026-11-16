@@ -1,0 +1,177 @@
+/* ------------------------------------------------------------
+   Loader de demarrage : un trait de battement de coeur se trace de gauche a droite,
+   puis dessine la lettre D d'un seul trait.
+   Le composant est composants-communs/chargement-battement.tsx.
+
+   Chronologie (le hook utiliser-duree-minimale.ts garde le loader 2,5 s au moins) :
+   - de 0 s a 1,7 s : le battement se trace (classe chargement-ligne)
+   - de 1,65 s a 2,5 s : le D se dessine (classe chargement-lettre)
+   - ensuite : le battement s'estompe et le D respire doucement
+     tant que la page n'est pas prete
+
+   Les deux traces portent pathLength="1" : stroke-dasharray et stroke-dashoffset
+   vont donc de 0 a 1, quelle que soit la longueur reelle du trace.
+   Couleurs : uniquement les variables des themes (index.css), sombre et clair.
+   ------------------------------------------------------------ */
+
+.chargement-ecran {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--fond);
+  color: var(--texte);
+}
+
+/* Fin du loader : fondu de 0,4 s avant l'apparition de la page */
+.chargement-ecran--sortie {
+  pointer-events: none;
+  animation: chargement-sortie 0.4s ease forwards;
+}
+
+.chargement-centre {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+/* Halo qui bat derriere le dessin : deux petits coups, puis un temps de repos */
+.chargement-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--couleur-decor) 16%, transparent) 0%,
+    transparent 68%
+  );
+  animation: chargement-pulsation 1.1s ease-in-out infinite;
+}
+
+.chargement-dessin {
+  position: relative;
+  width: min(78vw, 360px);
+  height: auto;
+  overflow: visible;
+}
+
+/* Etat de depart des deux traces : rien n'est dessine.
+   1.02 (et non 1) evite un petit point au debut, cause par le bout arrondi du trait. */
+.chargement-ligne,
+.chargement-lettre {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1.02;
+}
+
+/* Le battement : vitesse constante, comme un moniteur */
+.chargement-ligne {
+  stroke: var(--couleur-decor);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--couleur-decor) 70%, transparent));
+  animation:
+    chargement-trace 1.7s linear both,
+    chargement-apaise 0.6s ease 2.5s forwards;
+}
+
+/* La lettre D : demarre quand le battement arrive a sa base, puis brille doucement */
+.chargement-lettre {
+  stroke: var(--couleur-principale);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--couleur-principale) 55%, transparent));
+  animation:
+    chargement-trace 0.85s cubic-bezier(0.4, 0, 0.2, 1) 1.65s both,
+    chargement-lueur 1.8s ease-in-out 2.6s infinite;
+}
+
+@keyframes chargement-trace {
+  from {
+    stroke-dashoffset: 1.02;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Le battement passe au second plan une fois le D ecrit */
+@keyframes chargement-apaise {
+  to {
+    opacity: 0.28;
+  }
+}
+
+@keyframes chargement-lueur {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--couleur-principale) 55%, transparent));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--couleur-principale) 85%, transparent));
+  }
+}
+
+@keyframes chargement-pulsation {
+  0%,
+  100% {
+    scale: 1;
+    opacity: 0.55;
+  }
+
+  14% {
+    scale: 1.1;
+    opacity: 1;
+  }
+
+  28% {
+    scale: 1;
+    opacity: 0.6;
+  }
+
+  42% {
+    scale: 1.06;
+    opacity: 0.9;
+  }
+
+  70% {
+    scale: 1;
+    opacity: 0.55;
+  }
+}
+
+@keyframes chargement-sortie {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Animations reduites : le D est affiche tout de suite, sans mouvement */
+@media (prefers-reduced-motion: reduce) {
+  .chargement-halo {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .chargement-ligne {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 0.28;
+  }
+
+  .chargement-lettre {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .chargement-ecran--sortie {
+    animation: none;
+    opacity: 0;
+  }
+}

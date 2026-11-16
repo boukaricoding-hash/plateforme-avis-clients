@@ -45,6 +45,124 @@ export const en = {
     erreurIdentifiants: 'Incorrect email or password.',
     erreurTropDeTentatives: 'Too many attempts. Try again in a minute.',
     sessionExpiree: 'Your session has expired. Please sign in again.',
+    espaceClient: 'Customer area',
+    retour: 'Back',
+  },
+  // Messages that scroll on the left of the sign-in screens
+  carrousel: {
+    titre: 'Platform overview',
+    afficher: 'Show message {nombre}',
+    diapo1Badge: 'Customer Feedback • QR Code',
+    diapo1Titre: 'Collect your customers’ feedback',
+    diapo1Accent: 'with a single scan!',
+    diapo1Texte:
+      'Data Trace Service lets you collect, manage and analyze your customers’ feedback with a fast, secure and intuitive QR code.',
+    diapo2Badge: 'Real-time alerts',
+    diapo2Titre: 'Get notified as soon as feedback',
+    diapo2Accent: 'deserves your attention.',
+    diapo2Texte:
+      'A low score triggers an alert by notification and by email, so you can act at the right time.',
+    diapo3Badge: 'Dashboard and exports',
+    diapo3Titre: 'Analyze your results',
+    diapo3Accent: 'and share them easily.',
+    diapo3Texte:
+      'Track your indicators by site and by period, then export your feedback to Excel, CSV or a PDF report.',
+    acces: 'Go to my space',
+    sansApplication: 'No app needed, in under a minute',
+  },
+  // Animated scene of the home page (composants-communs/scene-telephone.tsx)
+  scene: {
+    description: 'Illustration: a phone scans a QR code to leave feedback',
+    lieu: 'RESTAURANT',
+    table: 'TABLE 12',
+    scanner: 'Scan to leave your feedback',
+    noteValeur: '4.8 / 5',
+    noteLibelle: 'Average score',
+    avisTitre: 'New feedback',
+    avisDetail: 'Table 12 · 5/5 · 2 s ago',
+    alerteTitre: 'Alert sent',
+    alerteDetail: 'Feedback 1/5 · Table 7',
+    npsValeur: 'NPS +45',
+    npsLibelle: 'This month',
+  },
+  // Bottom strip of the home page (composants-communs/bas-de-page-connexion.tsx)
+  vitrine: {
+    secteur1: 'Food service',
+    secteur2: 'Healthcare',
+    secteur3: 'Education',
+    secteur4: 'Agri-food',
+    secteur5: 'Events',
+    garantie1: 'Data separated by organization',
+    garantie2: 'Real-time alerts',
+  },
+  // "Request a demo" button (composants-communs/bouton-contact.tsx)
+  contact: {
+    demande: 'Request a demo',
+    canalWhatsapp: 'via WhatsApp',
+    parEmail: 'or by email',
+    sujetDemo: 'Demo request – customer feedback platform',
+    messageDemo:
+      'Hello, I would like a demo of the customer feedback platform with QR codes. Please get back to me.',
+  },
+  // Footer of the public screens (composants-communs/pied-de-page-confiance.tsx)
+  pied: {
+    navigation: 'Legal information and contact',
+    mentionsLegales: 'Legal notice',
+    confidentialite: 'Privacy',
+    contact: 'Contact',
+  },
+  // Legal notice (pages/legal/page-mentions-legales.tsx)
+  mentions: {
+    titre: 'Legal notice',
+    intro: 'Legal information about this website and the customer feedback platform.',
+    editeurTitre: 'Site publisher',
+    libelleEditeur: 'Publisher',
+    libelleResponsable: 'Publication manager',
+    libelleAdresse: 'Address',
+    libelleEmail: 'Email',
+    libelleWhatsapp: 'WhatsApp',
+    hebergementTitre: 'Hosting',
+    hebergementTexte: 'This site is hosted by {nom}.',
+    proprieteTitre: 'Intellectual property',
+    proprieteTexte:
+      'The texts, logos, images and graphics on this site are the property of {nom}, unless stated otherwise. Any reproduction without prior written permission is prohibited.',
+    responsabiliteTitre: 'Liability',
+    responsabiliteTexte:
+      '{nom} strives to provide accurate and up-to-date information, but cannot guarantee that the site is free of errors or available without interruption. The feedback collected by the platform is written by the customers of the organizations that use it; {nom} is not its author.',
+    donneesTitre: 'Personal data',
+    donneesTexte: 'The information the platform records and your rights are described in our',
+    donneesLien: 'privacy policy',
+  },
+  // Privacy policy (pages/legal/page-confidentialite.tsx)
+  confidentialite: {
+    titre: 'Privacy policy',
+    intro:
+      'This page explains what information the customer feedback platform records, what it is used for and how long some of it is kept.',
+    responsableTitre: 'Who runs the platform',
+    responsableTexte:
+      '{nom} publishes and operates the platform. Each client organization uses it to collect feedback from its own customers.',
+    comptesTitre: 'Manager accounts',
+    comptesTexte:
+      'To sign in to the dashboard, the platform records each user’s name, email address, role and language, as well as the date of their last sign-in.',
+    motDePasseTexte:
+      'Passwords are never stored in plain text: only an encrypted fingerprint that cannot be reversed is kept.',
+    journalTexte:
+      'Sensitive actions, such as sign-ins and support access, are recorded in a log with the date, the user concerned and the IP address, for security and monitoring.',
+    avisTitre: 'Customer feedback',
+    avisTexte:
+      'The name, phone number and email address of a person leaving feedback are recorded only if they choose to provide them and give their consent.',
+    avisContactTexte:
+      'To limit duplicate feedback, an encrypted fingerprint of the device and network is kept with the feedback. The IP address is never kept in plain text, and this fingerprint is erased after 7 days.',
+    cookiesTitre: 'Cookies and on-device storage',
+    cookiesIntro: 'The platform uses no advertising cookies or tracking tools. It only keeps:',
+    cookieSession:
+      'a sign-in cookie, needed to stay identified: it disappears when the browser is closed, or after 7 days if “Remember me” is ticked. Without this option, the session ends after 30 minutes of inactivity.',
+    cookieAppareil:
+      'on the device: a 180-day cookie on the feedback page, to limit duplicates, and a few preferences (language, theme, offline feedback draft).',
+    droitsTitre: 'Your rights',
+    droitsTexte:
+      'You can ask to view, correct or delete the information about you by contacting us. Our contact details are in the',
+    droitsLien: 'legal notice',
   },
   motDePasseOublie: {
     titre: 'Forgot your password',
@@ -1281,6 +1399,33 @@ export const en = {
         nbAvis: 'Reviews received in the period, compared with the previous period.',
         tauxReponse: 'Share of people who scanned a QR code and sent a review.',
         alertes: 'Negative reviews still to handle (new or in progress), whatever the period.',
+      },
+      blocs: {
+        role: 'What it is for',
+        lecture: 'How to read it',
+      },
+      roles: {
+        noteMoyenne: 'Sums up in one number what your customers think of your business.',
+        csat:
+          'Shows what share of your customers are satisfied, so the average does not hide unhappy ones.',
+        nps: 'Measures whether your customers would recommend you to people they know, a good sign of loyalty.',
+        nbAvis: 'Shows whether you have enough reviews for the other figures to be reliable.',
+        tauxReponse: 'Shows how many people who open a QR code go on to send their review.',
+        alertes: 'Flags unhappy customers to contact or handle first.',
+      },
+      lectures: {
+        noteMoyenne:
+          'A rating that drops from one period to the next deserves attention, even if it stays in the green.',
+        csat:
+          'The closer to 100%, the better. Example: 8 customers out of 10 giving 4 or 5 is 80%.',
+        nps:
+          'It ranges from −100 to +100. Customers giving 9 or 10 are promoters, those giving 0 to 6 are detractors, and 7 and 8 are not counted. Example: 60% promoters and 20% detractors give +40. Above 0, you have more promoters than detractors.',
+        nbAvis:
+          'With few reviews, a single rating moves the average a lot. The more there are, the more reliable the figures.',
+        tauxReponse:
+          'Example: 4 reviews for 9 scans is 44%. Compare your contact points with each other: a very low rate in one place may come from a badly placed stand.',
+        alertes:
+          'A review becomes an alert when its rating or NPS is at or below the thresholds set in Settings. The goal is to get back to zero.',
       },
     },
   },

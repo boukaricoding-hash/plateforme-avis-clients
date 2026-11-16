@@ -83,6 +83,8 @@ type DefinitionCarte = {
   // Texte du panneau
   description: string
   aide?: string
+  role?: string
+  lecture?: string
   lien: string
 }
 
@@ -138,6 +140,8 @@ function construireCartes(
       etiquette: niveau === null ? undefined : t(cleTexteNiveau(niveau)),
       variation: { valeur: evolution.note_moyenne.difference, unite: '', decimales: 2 },
       description: t('tableau.accueil.descriptions.noteMoyenne'),
+      role: t('tableau.accueil.roles.noteMoyenne'),
+      lecture: t('tableau.accueil.lectures.noteMoyenne'),
       aide: t('tableau.cartes.legendeNote'),
       lien: lienTous,
     },
@@ -152,6 +156,8 @@ function construireCartes(
       unite: '%',
       variation: { valeur: evolution.csat.difference, unite: points, decimales: 1 },
       description: t('tableau.accueil.descriptions.csat'),
+      role: t('tableau.accueil.roles.csat'),
+      lecture: t('tableau.accueil.lectures.csat'),
       aide: t('tableau.cartes.csatAide'),
       lien: construireLienAvis(base, { note_min: 4 }),
     },
@@ -165,6 +171,8 @@ function construireCartes(
       fixe: false,
       variation: { valeur: evolution.nps.difference, unite: points, decimales: 1 },
       description: t('tableau.accueil.descriptions.nps'),
+      role: t('tableau.accueil.roles.nps'),
+      lecture: t('tableau.accueil.lectures.nps'),
       aide: t('tableau.cartes.npsAide', {
         promoteurs: indicateurs.nb_promoteurs,
         detracteurs: indicateurs.nb_detracteurs,
@@ -181,6 +189,8 @@ function construireCartes(
       fixe: false,
       variation: { valeur: evolution.nb_avis.pourcentage, unite: '%', decimales: 1 },
       description: t('tableau.accueil.descriptions.nbAvis'),
+      role: t('tableau.accueil.roles.nbAvis'),
+      lecture: t('tableau.accueil.lectures.nbAvis'),
       aide: t('tableau.cartes.nbAvisAide', { scans: indicateurs.nb_scans }),
       lien: lienTous,
     },
@@ -195,6 +205,8 @@ function construireCartes(
       unite: '%',
       variation: { valeur: evolution.taux_reponse.difference, unite: points, decimales: 1 },
       description: t('tableau.accueil.descriptions.tauxReponse'),
+      role: t('tableau.accueil.roles.tauxReponse'),
+      lecture: t('tableau.accueil.lectures.tauxReponse'),
       aide: t('tableau.cartes.tauxReponseAide'),
       lien: lienTous,
     },
@@ -210,6 +222,8 @@ function construireCartes(
       // Pas de comparaison pour les alertes : la ligne du bas dit l'anciennete de la plus vieille
       sousTitre: aideAlertes,
       description: t('tableau.accueil.descriptions.alertes'),
+      role: t('tableau.accueil.roles.alertes'),
+      lecture: t('tableau.accueil.lectures.alertes'),
       aide: aideAlertes,
       lien: construireLienAvis(base, { from: undefined, to: undefined, negatifs: true }),
     },
@@ -454,6 +468,8 @@ export function PageAccueil() {
         description={carte.description}
         variation={carte.variation}
         aide={carte.aide}
+        role={carte.role}
+        lecture={carte.lecture}
         lien={carte.lien}
         onFermer={fermer}
       />

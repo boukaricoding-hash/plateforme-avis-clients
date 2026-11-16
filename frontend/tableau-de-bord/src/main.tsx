@@ -6,6 +6,7 @@ import App from './App'
 import { FournisseurTheme } from './contextes/fournisseur-theme'
 import { FournisseurLangue } from './traductions/fournisseur-langue'
 import { FournisseurUtilisateur } from './contextes/fournisseur-utilisateur'
+import { CadreDemarrage } from './mise-en-page/cadre-demarrage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -14,7 +15,10 @@ createRoot(document.getElementById('root')!).render(
       <FournisseurTheme>
         <FournisseurLangue>
           <FournisseurUtilisateur>
-            <App />
+            {/* Le loader (battement de coeur puis lettre D) entoure toutes les pages */}
+            <CadreDemarrage>
+              <App />
+            </CadreDemarrage>
           </FournisseurUtilisateur>
         </FournisseurLangue>
       </FournisseurTheme>

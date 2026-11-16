@@ -57,13 +57,25 @@ type PropsDetailCarte = {
   description: string
   variation?: VariationCarte
   aide?: string
+  // A quoi sert la carte et comment la lire (facultatifs)
+  role?: string
+  lecture?: string
   // Lien vers la liste des avis concernes (le meme que celui de l'ancienne carte)
   lien: string
   onFermer: () => void
 }
 
 // Contenu du panneau quand on clique sur une carte d'indicateur
-export function DetailCarte({ titre, description, variation, aide, lien, onFermer }: PropsDetailCarte) {
+export function DetailCarte({
+  titre,
+  description,
+  variation,
+  aide,
+  role,
+  lecture,
+  lien,
+  onFermer,
+}: PropsDetailCarte) {
   const { t } = utiliserLangue()
 
   return (
@@ -73,6 +85,18 @@ export function DetailCarte({ titre, description, variation, aide, lien, onFerme
         <p className="accueil-detail-description">{description}</p>
         {variation !== undefined && <Variation variation={variation} />}
         {aide !== undefined && aide !== '' && <p className="accueil-detail-aide">{aide}</p>}
+        {role !== undefined && role !== '' && (
+          <div className="accueil-detail-bloc">
+            <h3 className="accueil-detail-bloc-titre">{t('tableau.accueil.blocs.role')}</h3>
+            <p className="accueil-detail-bloc-texte">{role}</p>
+          </div>
+        )}
+        {lecture !== undefined && lecture !== '' && (
+          <div className="accueil-detail-bloc">
+            <h3 className="accueil-detail-bloc-titre">{t('tableau.accueil.blocs.lecture')}</h3>
+            <p className="accueil-detail-bloc-texte">{lecture}</p>
+          </div>
+        )}
       </div>
       <div className="accueil-detail-actions">
         <Link to={lien} className="accueil-detail-bouton">

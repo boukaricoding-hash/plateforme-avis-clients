@@ -588,3 +588,15 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - La liste des consultations de support cote organisation n'est pas dans ce jour.
 - Le jour 24 est fait en avance sur le planning (prevu le mercredi 18 novembre).
 - Le service d'e-mails de DTS n'est pas encore choisi : on garde Mailpit.
+
+## Reglages de la recette du jour 24 - samedi 14 novembre 2026 : role de chaque carte du tableau de bord
+
+**Fait**
+- Branche `reglagedetail`. Le panneau qui s'ouvre au clic sur une carte de l'accueil affiche maintenant, sous la phrase existante, deux petits blocs : "A quoi ca sert" et "Comment le lire" (NPS, CSAT, note moyenne, nombre d'avis, taux de reponse, alertes ouvertes).
+- Petites insertions, sans reecriture : `composants-tableau/panneau-detail.tsx` (`DetailCarte` recoit `role` et `lecture`, facultatifs), `pages/tableau-de-bord/page-accueil.tsx` (les six cartes les envoient), `styles/accueil.css` (style des deux blocs), `traductions/fr/textes.ts` et `traductions/en/textes.ts` (`tableau.accueil.blocs`, `roles` et `lectures`).
+
+**Constats de la recette, a regler plus tard sur cette branche**
+- La couleur principale de l'organisation (E14) est bien enregistree, mais elle ne change rien dans le tableau de bord ni sur la page d'avis : elle sert seulement aux chevalets PDF. A decider avec DTS.
+- Le telephone d'un site accepte n'importe quel texte (30 caracteres maximum). La regle du telephone client (`+`, chiffres, espaces, parentheses, tirets, 6 a 30 caracteres) pourrait etre reprise.
+- La page QR codes ne se rafraichit pas toute seule : seuls le tableau de bord (10 secondes) et la cloche (30 secondes) le font.
+- Le scan reste compte a l'ouverture de la page d'avis : le taux de reponse et la conversion d'un QR code en dependent.

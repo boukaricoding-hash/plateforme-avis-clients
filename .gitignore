@@ -28,3 +28,6 @@ qr.png
 
 # Logos envoyes par les organisations (dossier du serveur, jamais dans Git)
 backend/televersements/
+
+# Sauvegardes de la base et des logos (vraies donnees : jamais dans Git)
+/sauvegardes/

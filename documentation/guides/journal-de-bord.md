@@ -600,3 +600,29 @@ Une entree par jour : ce qui a ete fait, les decisions prises, ce qui reste. Cel
 - Le telephone d'un site accepte n'importe quel texte (30 caracteres maximum). La regle du telephone client (`+`, chiffres, espaces, parentheses, tirets, 6 a 30 caracteres) pourrait etre reprise.
 - La page QR codes ne se rafraichit pas toute seule : seuls le tableau de bord (10 secondes) et la cloche (30 secondes) le font.
 - Le scan reste compte a l'ouverture de la page d'avis : le taux de reponse et la conversion d'un QR code en dependent.
+
+## Jour 28 (partie 1) - lundi 16 novembre 2026 : sauvegarde et restauration
+
+**Fait**
+- Branche `jour-28-sauvegarde-restauration`. Scripts bash dans `backend/scripts/sauvegarde/`.
+- `sauvegarder.sh` : sauvegarde la base (`pg_dump -Fc`) et les logos (archive `tar.gz` du volume `donnees-logos`) dans `sauvegardes/`, fichiers dates, lisibles par leur proprietaire seulement ; verifie que chaque fichier est lisible avant de le garder ; supprime les sauvegardes de plus de 30 jours (`RETENTION_JOURS`).
+- `restaurer.sh` : restaure une sauvegarde de la base (et des logos avec `--logos`). Une base vide ou nouvelle (`BASE_CIBLE`) se restaure directement ; une base qui contient deja des tables demande `--ecraser` et la saisie de son nom (`--oui` pour ne pas demander). Restauration en une seule transaction.
+- `verifier-restauration.sh` (scenario 12) : sauvegarde, restaure dans une base temporaire vide, puis compare table par table le nombre de lignes et une empreinte du contenu. La vraie base n'est jamais touchee. Codes de sortie : 0 identique, 1 echec, 2 test non concluant (la base a change pendant le test).
+- `.gitignore` : `/sauvegardes/` (vraies donnees, jamais dans Git).
+- `documentation/guides/sauvegarde-restauration.md` : procedure, ligne cron pour la sauvegarde quotidienne sur le serveur, tableau des resultats de test.
+
+**Decisions**
+- La sauvegarde couvre la base et les logos. Le fichier `.env` n'y est pas : il se garde a part, hors de Git.
+- Restaurer la base de la plateforme exige que l'application soit arretee (`docker compose stop application`), puis `docker compose up -d application`.
+- `--logos` ne s'utilise que pour la base de la plateforme, pas avec `BASE_CIBLE`.
+
+**A faire ensuite**
+- Lancer `bash backend/scripts/sauvegarde/verifier-restauration.sh` sur le PC (Docker Desktop ouvert, base demarree) et noter la date et le resultat dans le tableau du guide : pas encore fait au moment de cette entree.
+- Entree du jour dans `apres-un-pull.md`.
+- Reste du jour 28 au planning : journaux structures et page de sante de l'API, documentation OpenAPI (Swagger), Sentry si le temps le permet.
+- Sur le serveur : installer la ligne cron du guide et prevoir une copie des sauvegardes sur une autre machine.
+- Cloture : `git branch --show-current`, `git status --short`, pull request vers main (titre : "Jour 28 : sauvegarde et restauration de la base et des logos"), fusion, `git checkout main` puis `git pull`.
+
+**Points d'attention**
+- Les scripts sont en bash : sous Windows, les lancer avec Git Bash ou `bash` dans le terminal VS Code. Leur syntaxe est verifiee (`bash -n`), mais ils n'ont pas encore ete executes contre ton Docker : c'est le role du test de verification.
+- Le jour 28 est fait en avance sur le planning (prevu le lundi 23 novembre).

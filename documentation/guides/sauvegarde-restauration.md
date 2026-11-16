@@ -57,4 +57,5 @@ Le test ne touche jamais à la vraie base. Il sauvegarde, restaure dans une base
 
 | Date | Résultat | Remarque |
 | --- | --- | --- |
+| 16/11/2026 | ✓ Réussi : 23 tables, 175 lignes, 2 logos | Base de démonstration locale (Docker Desktop), restaurée dans une base vide temporaire |
 | à remplir | à remplir | |

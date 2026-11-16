@@ -25,6 +25,7 @@ import { routesAdminJournal } from "./modules/journal-audit/routes/journal.route
 import { routesAdminVueGlobale } from "./modules/administration/routes/vue-globale.routes";
 import { routesAdminSupport } from "./modules/administration/routes/support.routes";
 import { routesAccesSupport } from "./modules/organisations/routes/acces-support.routes";
+import { verifierOrigine } from "./middleware/verifier-origine";
 
 export const app = express();
 // Nombre d'intermediaires (tunnel, Nginx) entre le client et le serveur.
@@ -55,6 +56,8 @@ app.use(
 
 app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
+// Protection CSRF : refuse une requete qui modifie des donnees avec le cookie de session depuis une origine inconnue.
+app.use(verifierOrigine);
 
 // Tableau de bord des responsables : servi sous /tableau-de-bord quand le dossier existe (dans Docker).
 // Toute adresse sous /tableau-de-bord renvoie sa page, par exemple /tableau-de-bord/avis/12 : c'est la page qui choisit l'ecran.

@@ -1,0 +1,82 @@
+name: Tests
+
+# Lance les tests du backend a chaque push (toutes les branches) et a la demande.
+on:
+  push:
+  workflow_dispatch:
+
+# Un nouveau push sur la meme branche annule le test precedent encore en cours.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Base PostgreSQL jetable, meme version que docker-compose.yml.
+    # Le mot de passe ci-dessous n'est pas un secret : la base disparait a la fin du test.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: avis_admin
+          POSTGRES_PASSWORD: mot-de-passe-de-test-ci
+          POSTGRES_DB: plateforme_avis
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U avis_admin -d plateforme_avis"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://avis_admin:mot-de-passe-de-test-ci@localhost:5432/plateforme_avis?schema=public
+      ORIGINES_AUTORISEES: http://localhost:5173
+      PUBLIC_BASE_URL: http://localhost:5173
+      TABLEAU_DE_BORD_URL: http://localhost:5174
+      SEL_EMPREINTE: sel-de-test-ci-0123456789-abcdefghij
+      SEED_ADMIN_EMAIL: admin@test-ci.local
+      SEED_ADMIN_MOT_DE_PASSE: Admin-Test-CI-2026
+      SEED_RESPONSABLE_EMAIL: responsable@test-ci.local
+      SEED_RESPONSABLE_MOT_DE_PASSE: Responsable-Test-CI-2026
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v5
+
+      - name: Installer Node.js (version du fichier .nvmrc)
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Installer les dependances
+        run: npm ci
+
+      - name: Generer le client Prisma
+        run: npx prisma generate --config prisma7.config.ts
+
+      - name: Verifier le typage (tsc)
+        run: npx tsc --noEmit
+
+      - name: Creer les tables de la base
+        run: npx prisma migrate deploy --config prisma7.config.ts
+
+      - name: Remplir la base de depart (secteurs, themes, comptes de demonstration)
+        run: npx tsx prisma/seed.ts
+
+      # Les fichiers de test partagent la meme base : on les lance l'un apres l'autre
+      # pour eviter les echecs au hasard (comptage des secteurs, par exemple).
+      - name: Lancer les tests
+        run: npm test -- --no-file-parallelism
